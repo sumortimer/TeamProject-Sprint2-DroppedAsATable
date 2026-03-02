@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='mission_style.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='mission_display.js') }}" defer></script>
+
+    <title>Mission Display</title>
+</head>
+<body>
+
+    <div id="mission_display">
+        <h2>Mission 1</h2>
+        <p>{{ question }}</p>
+        <br>
+        <img id="missionpic" src="{{ url_for('static', filename='MissionRouteExample.png') }}" alt="Picture of the map with 3 routes displayed">
+        <p id="errormessage"></p>
+        <br>
+        <div class="options">
+            <input class="optionbutton" id="bluebutton" type="button" value="Blue">
+            <input class="optionbutton" id="greenbutton" type="button" value="Green">
+            <input class="optionbutton" id="redbutton" type="button" value="Red">
+        </div>
+    </div>
+    
+</body>
+</html>

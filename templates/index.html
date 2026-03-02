@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Exeter Route Demo</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <style>
+        #map {
+            height: 800px;
+            width: 100%;
+        }
+        .popup-form input {
+        width: 140px;
+        margin-bottom: 5px;
+        }
+
+        .popup-form button {
+        margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Custom Routes in Exeter, UK
+<br>This tool does not reflect real world data
+<br>This tool is not suitable for emergency use
+<br>Crime and Lighting indicators are synthetic and do not reflect real world values
+<br><button onclick="missions()">Missions</button>
+
+    <div>
+    <h3>Route Finder</h3>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <div>
+            <label>Start Node:</label>
+            <input type="number" id="routeStart" min="1" value="300" style="width: 80px;">
+        </div>
+        <div>
+            <label>End Node:</label>
+            <input type="number" id="routeEnd" min="1" value="600" style="width: 80px;">
+        </div>
+        <div>
+            <button onclick="findRoute()" id="findroutebutton">Find Route</button>
+            <button onclick="clearRoute()" >Clear</button>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+    <div>
+        <label>Start Location:</label>
+        <input type="string" id="routeStartName" value="The Imperial" style="width: 80px;">
+    </div>
+    <div>
+        <label>End Node:</label>
+        <input type="string" id="routeEndName" value="Southernhay House Surgery" style="width: 80px;">
+    </div>
+    <div>
+        <button onclick= "findRouteWithName()" id="findroutebuttonname">Find Route</button>
+        <button onclick="clearRoute()" >Clear</button>
+    </div>
+
+    <div>
+        <label>Distance:</label>
+        <input type="number" id="distance" min="0" max="1" value="1" style="width: 40px;">
+        <label>Lighting:</label>
+        <input type="number" id="lighting" min="0" max="1" value="0" style="width: 40px;">
+        <label>Greenery:</label>
+        <input type="number" id="greenery" min="0" max="1" value="0" style="width: 40px;">
+        <label>Gradient:</label>
+        <input type="number" id="gradient" min="0" max="1" value="0" style="width: 40px;">
+        <label>Crime:</label>
+        <input type="number" id="crime" min="0" max="1" value="0" style="width: 40px;">
+    </div>
+
+    </div>
+    <div id="routeInfo" style="margin-top: 15px; padding: 10px; background: white; border-radius: 3px; min-height: 50px;">
+        Enter start and end nodes and click "Find Route"
+    </div>
+    <button type="button" id="toggleNodesBtn">Hide Nodes</button>
+</div></h2>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script> ////////////// SETTING MAP BOUNDARIES AND CREATING MAP ///////////////////////////////////////////////////////////////////////////////////////////////////////
+    const exeterBounds = L.latLngBounds(
+    [50.695, -3.575], 
+    [50.755, -3.480] 
+    );
+    const map = L.map("map", {
+    maxBounds: exeterBounds,
+    maxBoundsViscosity: 1.0,
+    minZoom: 14
+    }).setView([50.72868246470866, -3.5257188929846914], 14);
+
+    setTimeout(() => map.setMinZoom(15), 500);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+
+    const nodesLayer = L.layerGroup().addTo(map);
+    let nodesVisible = true;
+
+    const toggleBtn = document.getElementById("toggleNodesBtn");
+    toggleBtn.onclick = () => {
+        toggleNodesVisibility();
+        toggleBtn.textContent = nodesVisible ? "Hide Nodes" : "Show Nodes";
+    };
+
+
+
+    /////////////////// KEY VARIABLES ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    const nodes = [];   // Array of node instance objects
+    const nodesMap = new Map();   // HashMap of nodes for O(1) access with nodeId
+    let edges = [];   // Array of segment instance objects
+    const markersMap = new Map();   // HashMap of Markers for later editing and O(1) access with nodeId
+    let locations = [];   // Array to store location objects
+    const locationsMap = new Map();   // HashMap of locations for later editing and O(1) access with locationId
+    const locationsByNodeId = new Map();   // HashMap of locations stored by NodeID for ease of creation
+    let nodeId = 0;
+    let edgeId = 0;
+    let locationId = 0;
+
+    let tempPopup = null;   // Keeps track of when a temporary popup exists
+    let newNode = null;   // NewNode variable for global reference
+    let newMarker = null;   // NewMarker variable for pre-emptive declaration
+    let newLocation = null;   // NewLocation varianle for pre-emptive declaration
+    let isCreating = false;   // Keeps track of whether user has the 'creating a new node' popup
+
+
+    /////////////////// CLASSES //////////////////
+
+    // Node class for creating node and storing node
+    class Node{
+        constructor(id, lat, lng, connections, lighting, crime, greenery, gradient){
+            this.id = id;
+            this.lat = lat;
+            this.lng = lng;
+            this.connections = connections;
+            this.lighting = lighting;
+            this.crime = crime;
+            this.greenery = greenery;
+            this.gradient = gradient;
+        }
+    }
+    // Segment class for creating segments that make up the edges
+    class Segment{
+        constructor(id, fromId, toId){
+            this.id = id;
+            this.fromId = fromId;
+            this.toId = toId;
+        }
+    }
+    // Location class that also contains its correspondent nodeID among other details
+    class Location{
+        constructor(id, nodeId, name, type){
+            this.id = id;
+            this.nodeId = nodeId;
+            this.name = name;
+            this.type = type;
+        }
+    }
+
+
+    /////////////////// CLICK EVENTS ////////////////////////////////
+    
+    // Upon left clicking the map,
+    map.on('click', function(x) {
+        if (isCreating) {   // If clicking while already creating, annul any further behaviour for better UX
+            isCreating=false;
+            tempPopup = null;
+            return;
+        }
+        isCreating = true;
+        // HTML popup content
+        //  Upon clicking done, run the function saveNode() with the coordinates of where the click happened
+        const popupContentLeftClick = `
+        <div class="popup-form">
+            <label>Node ID: ${nodeId}</label><br>
+            <input type="text" pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$" id="connectsTo" placeholder="Connects to: " /><br>
+            <button onclick="saveNode(${x.latlng.lat}, ${x.latlng.lng})">Done</button>
+            <button onclick="cancelNode()">Cancel</button>
+        </div>
+        `;
+        // Setup popup
+        tempPopup = L.popup({
+            popupType: 'node'
+        })
+        .setLatLng(x.latlng)
+        .setContent(popupContentLeftClick)
+        .openOn(map);
+
+        tempPopup._type = 'create';   // Used to keep track of popup type for click management and better UX
+    });
+    // Upon right clicking the map,
+    map.on('contextmenu', function (x) {
+        // Close existing popup if any
+        if (isCreating) {   // If clicking while already creating, annul any further behaviour for better UX
+            isCreating=false;
+            tempPopup = null;
+            return;
+        }
+        isCreating = true;
+
+        const popupContentRightClick = `
+        <div class="popup-form">
+            <label>Node ID: ${nodeId}</label><br>
+            <label>Name:</label><br>
+            <input type="text" id="markerName" placeholder="Enter name" />
+            <br>
+            <input type="text" pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$" id="connectsToLocation" placeholder="Connects to: " /><br>
+            <button onclick="saveLocation(${x.latlng.lat}, ${x.latlng.lng})">Done</button>
+            <button onclick="cancelLocation()">Cancel</button>
+        </div>
+        `;
+        tempPopup = L.popup({
+            popupType: 'location'
+        })
+        .setLatLng(x.latlng)
+        .setContent(popupContentRightClick)
+        .openOn(map);
+
+        tempPopup._type = 'create';   // Used to keep track of popup type for click management and better UX
+    });
+    // Upon opening up a popup on a node
+    map.on('popupopen', function (e) {
+        if (e.popup._type === 'view-node' || e.popup._type == 'view-location'){
+            isCreating = false; // Keeps track of user interactions for better UX
+            tempPopup = null;
+            const el = e.popup.getElement();
+            if (!el) return;
+
+            // Select all necessary HTML fields
+            const editBtn = el.querySelector(".btn-edit");
+            const saveBtn = el.querySelector(".btn-save");
+            const cancelBtn = el.querySelector(".btn-cancel");
+            const viewSpan = el.querySelector(".conn-view");
+            const input = el.querySelector(".conn-edit");
+            const nodeId = Number(el.querySelector(".popup-form").dataset.nodeId);
+
+            const lightingView = el.querySelector(".ind-lighting");
+            const crimeView = el.querySelector(".ind-crime");
+            const greeneryView = el.querySelector(".ind-greenery");
+            const gradientView = el.querySelector(".ind-gradient");
+
+            const lightingInput = el.querySelector(".ind-lighting-input");
+            const crimeInput = el.querySelector(".ind-crime-input");
+            const greeneryInput = el.querySelector(".ind-greenery-input");
+            const gradientInput = el.querySelector(".ind-gradient-input");
+
+            editBtn.onclick = () => {
+                viewSpan.style.display = "none";
+                input.style.display = "inline-block";
+                editBtn.style.display = "none";
+                saveBtn.style.display = "inline-block";
+                cancelBtn.style.display = "inline-block";
+                [lightingView, crimeView, greeneryView, gradientView].forEach(x => x.style.display = "none");   // Hides text spans
+                [lightingInput, crimeInput, greeneryInput, gradientInput].forEach(x => x.style.display = "inline-block");   // Allows for input
+
+                input.focus();
+                isCreating = true;
+            };
+            cancelBtn.onclick = () => {
+                input.value = viewSpan.textContent === "(none)" ? "" : viewSpan.textContent;
+                viewSpan.style.display = "inline";
+                input.style.display = "none";
+                editBtn.style.display = "inline-block";
+                saveBtn.style.display = "none";
+                cancelBtn.style.display = "none";
+                [lightingView, crimeView, greeneryView, gradientView].forEach(x => x.style.display = "inline");
+                [lightingInput, crimeInput, greeneryInput, gradientInput].forEach(x => x.style.display = "none");
+                markersMap.get(nodeId)?.closePopup();
+                isCreating = false;   // Keeps track of user actions for better UX
+                tempPopup = null;
+            };
+            saveBtn.onclick = () => {
+                const node = nodesMap.get(nodeId);
+                const newConnections = input;
+                const connectionsArray = handleConnectionsInput(newConnections, nodeId);
+                node.lighting = Number(lightingInput.value);
+                node.crime = Number(crimeInput.value);
+                node.greenery = Number(greeneryInput.value);
+                node.gradient = Number(gradientInput.value);
+                if (connectionsArray == false){   // Can't leave connectionsArray empty
+                    return;
+                }
+                editNode(nodeId, connectionsArray, node.lighting, node.crime, node.greenery, node.gradient);
+
+                viewSpan.textContent = connectionsArray.length ? connectionsArray.join(",") : "(none)";
+                viewSpan.style.display = "inline";
+                input.style.display = "none";
+                editBtn.style.display = "inline-block";
+                saveBtn.style.display = "none";
+                cancelBtn.style.display = "none";
+            };
+        }
+    });
+    
+
+    /////////////////// SAVE FUNCTIONS /////////////////////////////////////////////
+
+    // Runs when the Done button is clicked on the node creation popup
+    //  Creates and saves a node on the map
+    function saveNode(lat, lng){
+        const connectionsInput = document.getElementById('connectsTo');   // Gets the input entered into 'Connects to:' for the new node
+        const connectionsArray = handleConnectionsInput(connectionsInput, nodeId);
+        if (connectionsArray == false){
+            return;
+        }
+        connectionsArray.forEach(createSegment);   // For each number in connectionsArray, create a Segment connecting the origin node and the given connecting-node ID
+
+        newNode = new Node(nodeId++, lat, lng, connectionsArray, 0.0, 0.0, 0.0, 0.0);   // Create new Node class instance
+        nodesMap.set(nodeId - 1, newNode);   // Add to HashMap, accounting for increment
+
+        const viewPopup = L.popup()   // Setup new view popup to assign to the marker
+            .setContent(getNodePopup(newNode));
+        viewPopup._type = 'view-node';
+        newMarker = L.marker([newNode.lat, newNode.lng], {icon:L.icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png', iconSize:[16, 28]})})
+        .addTo(nodesLayer)
+        .bindPopup(viewPopup);
+        markersMap.set(nodeId - 1, newMarker)
+
+        nodes.push(newNode);   // Add the instance Node object to array nodes
+        // DEBUG
+        if (edges.length > 0){
+            console.log(edges[0].fromId);
+            console.log(nodesMap.get(edges[0].fromId).lat);
+        }
+        fetch("/addnode", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id: newNode.id,
+                coordx: newNode.lng,
+                coordy: newNode.lat,
+                lighting:0.0,
+                crime:0.0,
+                greenery:0.0,
+                gradient:0.0
+            })
+        });
+        isCreating = false;
+        tempPopup = null;
+        map.closePopup();
+    }
+    // Triggered when Done button is pressed while creating a location
+    function saveLocation(lat, lng) {
+        const name = document.getElementById('markerName').value.trim();
+        const connectionsInput = document.getElementById('connectsToLocation');
+        if (!name) {
+            alert("Please enter a name.");
+            return;
+        }
+        if (!connectionsInput.checkValidity() || !connectionsInput.value.trim()) {
+            alert("Please enter numbers for the connections. \nSeparate by commas, no whitespaces");
+            return;
+        }
+        const connectionsArray = handleConnectionsInput(connectionsInput, nodeId);
+        if (connectionsArray == false){
+            return;
+        }
+        connectionsArray.forEach(createSegment);   // For each number in connectionsArray, create a Segment connecting the origin node and the given connecting-node ID
+
+        let type = "Location";   // Temporary, in the future type will be customisable
+
+        newNode = new Node(nodeId++, lat, lng, connectionsArray, 0.0, 0.0, 0.0, 0.0);   // Create new Node class instance
+        nodesMap.set(nodeId - 1, newNode);   // Add to HashMap, accounting for increment
+        newLocation = new Location(locationId++, nodeId-1, name, type);
+        locationsMap.set(locationId - 1, newLocation);
+        locationsByNodeId.set(newLocation.nodeId, newLocation);
+
+        const viewPopup = L.popup()   // Setup new view popup to assign to the marker
+            .setContent(getLocationPopup(newLocation));
+        viewPopup._type = 'view-location';
+        newMarker = L.marker([newNode.lat, newNode.lng], {icon:redIcon})
+        .addTo(map)
+        .bindPopup(viewPopup);
+        markersMap.set(nodeId - 1, newMarker)
+
+        nodes.push(newNode);   // Add the instance Node object to array nodes
+        // DEBUG
+        if (edges.length > 0){
+            console.log(edges[0].fromId);
+            console.log(nodesMap.get(edges[0].fromId).lat);
+        }
+        fetch("/addnode", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id: newNode.id,
+                coordx: newNode.lng,
+                coordy: newNode.lat,
+                lighting:0.0,
+                crime:0.0,
+                greenery:0.0,
+                gradient:0.0
+            })
+        });
+        fetch("/addlocation", {
+            method: "POST",
+            headers:{
+                "Content-Type" : "application/json"
+            },
+            body: JSON.stringify({
+                id: newLocation.id,
+                nodeID: newNode.id,
+                name: newLocation.name,
+                locationType: newLocation.type
+            })
+        })
+        isCreating = false;
+        tempPopup = null;
+        map.closePopup();
+    }
+    
+
+    /////////////////// SUPPLEMENTARY FUNCTIONS FOR NODES AND LOCATIONS /////////////////////////////////////////////
+
+    // Triggered when done button is pressed while creating a named location
+    // Used when creating and editing a node to handle connections text input, returns an array of form ["2", "3", "4", etc]
+    function handleConnectionsInput(connectionsInput, nodeId){
+        if (!connectionsInput.checkValidity()){   // Check if valid by regular expression
+            alert('Enter only numbers excluding the node id. \nSeparate by commas, no whitespaces');
+            return false;
+        }
+        let connectionsArray = [];   // Used to formulate the '1,2,3' string input inside connectionsInput into an array
+        if (connectionsInput.value.trim() !== ''){
+            connectionsArray = connectionsInput.value.split(',');
+            if (connectionsArray.includes((nodeId).toString())){
+                alert('Enter only numbers excluding the node id. \nSeparate by commas, no whitespaces');
+                return false;
+            }
+            connectionsArray.map(Number);
+            connectionsArray.sort(function(a,b){   // Sorts the numbers inputted into ascending order
+                return a - b;
+            });
+            connectionsArray = [...new Set(connectionsArray)];   // Removes duplicates
+        }
+
+        return connectionsArray;
+    }
+    function toggleNodesVisibility() {
+        if (nodesVisible) {
+            map.removeLayer(nodesLayer);
+        } else {
+            map.addLayer(nodesLayer);
+        }
+        nodesVisible = !nodesVisible;
+    }
+    
+
+    /////////////////// EDIT AND DELETE FUNCTIONS ///////////////////////////////////////////////////////////////////
+
+    function editNode(nodeId, newConnections, lighting, crime, greenery, gradient){
+        if (lighting > 1 || lighting < 0 || crime > 1 || crime < 0 || greenery > 1 || greenery < 0 || gradient > 1 || gradient < 0){   // Bounds between 0 and 1 for indicators
+            alert("Indicator values must be between 0 and 1.");
+            return;
+        }
+        const node = nodesMap.get(nodeId);
+        node.connections = newConnections;   // Update the node's connections
+        edges = edges.filter(edge => edge.fromId !== nodeId);   // Delete all edges starting from this node to rewrite all connections after
+        fetch("/editnode", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id: nodeId,
+            })
+        });
+        fetch("/editindicators", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id: nodeId,
+                lighting: Number(lighting),
+                crime: Number(crime),
+                greenery: Number(greenery),
+                gradient: Number(gradient)
+            })
+        });
+        newConnections.forEach(toId => createSegmentForEdit(nodeId, toId));   // Create the new necessary edges for the node given the new connections
+        markersMap.get(nodeId).setPopupContent(getNodePopup(node));   // Update the node's popup content
+        console.log(edges);
+    }
+    
+
+    /////////////////// POPUP HELPER FUNCTIONS //////////////////////////////////////////////////////////////////////
+
+    // View popup when clicking existing node
+    function getNodePopup(node){
+        const connectionsText = node.connections.length ? node.connections.join(",") : "";
+        return `
+            <div class="popup-form" data-node-id="${node.id}">
+                <label>Node ID:</label> ${node.id}<br>
+
+                <label>Lighting:</label>
+                <span class="ind-view ind-lighting">${node.lighting ?? "(none)"}</span>
+                <input class="ind-edit ind-lighting-input" type="number" step="0.01" value="${node.lighting ?? 0}" style="display:none; width:90px;" />
+                <br>
+
+                <label>Crime:</label>
+                <span class="ind-view ind-crime">${node.crime ?? "(none)"}</span>
+                <input class="ind-edit ind-crime-input" type="number" step="0.01" value="${node.crime ?? 0}" style="display:none; width:90px;" />
+                <br>
+
+                <label>Greenery:</label>
+                <span class="ind-view ind-greenery">${node.greenery ?? "(none)"}</span>
+                <input class="ind-edit ind-greenery-input" type="number" step="0.01" value="${node.greenery ?? 0}" style="display:none; width:90px;" />
+                <br>
+
+                <label>Elevation:</label>
+                <span class="ind-view ind-gradient">${node.gradient ?? "(none)"}</span>
+                <input class="ind-edit ind-gradient-input" type="number" step="0.01" min="0" max="1" value="${node.gradient ?? 0}" style="display:none; width:90px;" />
+                <br><br>
+
+                <label>Connections:</label><br>
+                <span class="conn-view">${connectionsText || "(none)"}</span>
+                <input class="conn-edit" type="text" value="${connectionsText}"
+                    pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$"
+                    style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
+
+                <div style="margin-top:6px; display:flex; gap:1px;">
+                    <button class="btn-edit">Edit</button>
+                    <button class="btn-save" style="display:none;">Save</button>
+                    <button class="btn-cancel" style="display:none;">Cancel</button>
+                </div>
+            </div>
+        `;
+    }
+    // View Location when clicking a node
+    function getLocationPopup(location) {
+        const node = nodesMap.get(location.nodeId);
+        const connectionsText = node && node.connections.length ? node.connections.join(",") : "";
+        const nameText = (location.name || "").trim();
+
+        return `
+            <div class="popup-form" data-node-id="${location.nodeId}">
+                <strong>${nameText || "(unnamed)"}</strong><br>
+                <label>Node ID:</label> ${location.nodeId}<br>
+                <label>Location ID:</label> ${location.id}<br>
+
+                <label>Lighting:</label>
+                <span class="ind-view ind-lighting">${node.lighting ?? "(none)"}</span>
+                <input class="ind-edit ind-lighting-input" type="number" step="0.01" value="${node.lighting ?? 0}" style="display:none; width:90px;" />
+                <br>
+
+                <label>Crime:</label>
+                <span class="ind-view ind-crime">${node.crime ?? "(none)"}</span>
+                <input class="ind-edit ind-crime-input" type="number" step="0.01" value="${node.crime ?? 0}" style="display:none; width:90px;" />
+                <br>
+
+                <label>Greenery:</label>
+                <span class="ind-view ind-greenery">${node.greenery ?? "(none)"}</span>
+                <input class="ind-edit ind-greenery-input" type="number" step="0.01" value="${node.greenery ?? 0}" style="display:none; width:90px;" />
+                <br>
+
+                <label>Elevation:</label>
+                <span class="ind-view ind-gradient">${node.gradient ?? "(none)"}</span>
+                <input class="ind-edit ind-gradient-input" type="number" step="0.01" min="0" max="1" value="${node.gradient ?? 0}" style="display:none; width:90px;" />
+                <br><br>
+
+                <label>Connections:</label><br>
+                <span class="conn-view">${connectionsText || "(none)"}</span>
+                <input class="conn-edit" type="text" value="${connectionsText}"
+                    pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$"
+                    style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
+                <div style="margin-top:6px; display:flex; gap:1px;">
+                    <button class="btn-edit">Edit</button>
+                    <button class="btn-save" style="display:none;">Save</button>
+                    <button class="btn-cancel" style="display:none;">Cancel</button>
+                </div>
+            </div>
+        `;
+    }
+    // Upon pressing cancel on node creation popup
+    function cancelNode(){
+        isCreating = false;
+        tempPopup = false;
+        map.closePopup();
+    }
+    function cancelLocation() {
+        isCreating = false;
+        tempPopup = false;
+        map.closePopup();
+    }
+    
+
+    /////////////////// SEGMENT FUNCTIONS ///////////////////////////////////////////////////////////////////////////
+    
+    function createSegment(value, index, array){
+        console.log(edgeId, nodeId, value);   // Debug
+        console.log("EdgeID: " + edgeId);
+        const newSegment = new Segment(edgeId++, nodeId, value);
+        edges.push(newSegment);   // Add Segment to the array edges
+        fetch("/addsegment", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id: newSegment.id,
+                startNode: nodeId,
+                endNode: value,
+                length: 1.0
+            })
+        });
+    }
+    // Triggered when a node has been edited to rebuild edges from the new connections
+    function createSegmentForEdit(fromId, toId) {
+        console.log(edgeId, nodeId, toId);   // Debug
+        console.log("EdgeID: " + edgeId);
+        const newSegment = new Segment(edgeId++, fromId, toId);   // Add Segment to array edges
+        edges.push(newSegment);
+        fetch("/addsegment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                id: newSegment.id,
+                startNode: fromId,
+                endNode: toId,
+                length: 1.0
+            })
+        });
+    }
+
+    function missions(){
+        window.location.href = "missions_t1"
+    }
+    
+
+    /////////////////// ROUTE FUNCTIONS /////////////////////////////////////////////////////////////////////////////
+
+    function findRoute() {
+        const startNode = document.getElementById('routeStart').value;
+        const endNode = document.getElementById('routeEnd').value;
+        const preferences = [document.getElementById('distance').value, document.getElementById('lighting').value, document.getElementById('crime').value, document.getElementById('greenery').value, document.getElementById('gradient').value];
+        // Clear previous route
+        clearRoute();
+        
+        // Show loading
+        document.getElementById('routeInfo').innerHTML = "<p> Finding route...</p>";
+        document.getElementById("findroutebutton").disabled = true;
+        document.getElementById("findroutebuttonname").disabled = true;
+        
+        fetch('/getroute', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                startNode: startNode,
+                endNode: endNode,
+                weights: preferences
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayRoute(data);} 
+        })
+
+    }
+    function findRouteWithName() {
+        const startNode = document.getElementById('routeStartName').value;
+        const endNode = document.getElementById('routeEndName').value;
+        const preferences = [document.getElementById('distance').value, document.getElementById('lighting').value, document.getElementById('crime').value, document.getElementById('greenery').value, document.getElementById('gradient').value];
+        // Clear previous route
+        clearRoute();
+        
+        // Show loading
+        document.getElementById('routeInfo').innerHTML = "<p> Finding route...</p>";
+        document.getElementById("findroutebutton").disabled = true;
+        document.getElementById("findroutebuttonname").disabled = true;
+        
+        //scary scary code that I hobbled together please change if you want
+        fetch('/getroutefromname', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                startName: startNode,
+                endName: endNode,
+                weights: preferences
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayRoute(data);} 
+        })
+
+    }
+    function displayRoute(routeData, num) {
+        const pathOne = routeData.path;
+        const pathTwo = routeData.pathTwo;
+        const pathThree = routeData.pathThree;
+        
+        const coordinates = routeData.coordinates;
+        const coordinatesTwo = routeData.coordinatesTwo;
+        const coordinatesThree = routeData.coordinatesThree;
+
+        const costOne = Number(routeData.costOne ?? 0);
+        const costTwo = Number(routeData.costTwo ?? 0);
+        const costThree = Number(routeData.costThree ?? 0);
+
+        const scoreOne = routeData.scoreOne ?? [0,0,0,0];
+        const scoreTwo = routeData.scoreTwo ?? [0,0,0,0];
+        const scoreThree = routeData.scoreThree ?? [0,0,0,0];
+        
+        console.log(`Drawing route with ${coordinates.length} points`);
+        
+        // Draw the route as a thick red line
+        window.currentRouteLayer = L.polyline(coordinates, {
+            color: '#FF0000',
+            weight: 8,
+            opacity: 0.8,
+            smoothFactor: 1
+        }).addTo(map);
+
+        window.currentRouteLayer = L.polyline(coordinatesTwo, {
+            color: '#00FF00',
+            weight: 8,
+            opacity: 0.8,
+            smoothFactor: 1
+        }).addTo(map);
+
+        window.currentRouteLayer = L.polyline(coordinatesThree, {
+            color: '#0000FF',
+            weight: 8,
+            opacity: 0.8,
+            smoothFactor: 1
+        }).addTo(map);
+        
+        // Display route info
+        let info = `<h4>Route from Node ${routeData.start} to ${routeData.end}:</h4>`;
+        info += `<p><strong>Red Path:</strong> ${pathOne.join(' → ')}</p>`;
+        info += `<p><strong>Total Distance:</strong> ${costOne.toFixed(2)}</p>`;
+        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreOne[0].toFixed(2)}Crime: ${scoreOne[1].toFixed(2)}Greenery: ${scoreOne[2].toFixed(2)}Gradient: ${scoreOne[3].toFixed(2)}</p>`;
+        info += `<p><strong>Green Path:</strong> ${pathTwo.join(' → ')}</p>`;
+        info += `<p><strong>Total Distance:</strong> ${costTwo.toFixed(2)}</p>`;
+        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreTwo[0].toFixed(2)}Crime: ${scoreTwo[1].toFixed(2)}Greenery: ${scoreTwo[2].toFixed(2)}Gradient: ${scoreTwo[3].toFixed(2)}</p>`;
+        info += `<p><strong>Blue Path:</strong> ${pathThree.join(' → ')}</p>`;
+        info += `<p><strong>Total Distance:</strong> ${costThree.toFixed(2)}</p>`;
+        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreThree[0].toFixed(2)}Crime: ${scoreThree[1].toFixed(2)}Greenery: ${scoreThree[2].toFixed(2)}Gradient: ${scoreThree[3].toFixed(2)}</p>`;
+
+        document.getElementById('routeInfo').innerHTML = info;
+        
+    }
+    function clearRoute() {
+        if (window.currentRouteLayer) {
+            window.location.reload();
+        }
+        document.getElementById('routeInfo').innerHTML = '';
+    }
+
+    
+    /////////////////// ON LOAD FUNCTIONS /////////////////////////////////////
+
+    async function loadMapData() {
+        const res = await fetch("/getmapdata");   // Fetch database entries for nodes, edges, and locations
+        const data = await res.json();
+        if (data.nodes.length === 0 && data.edges.length === 0 && data.locations.length === 0) return;
+        renderMapFromData(data.nodes, data.edges, data.locations);   // Render the map with the help of these entries
+    }
+    loadMapData();
+
+    function renderMapFromData(dbNodes, dbEdges, dbLocations) {
+        dbLocations.forEach(createLocationFromData);
+        dbNodes.forEach(createNodeFromData);
+        dbEdges.forEach(createEdgeFromData);
+    }
+
+    function createNodeFromData(row, index){
+        console.log("Node: ", row, index);
+        const nodeIdFromData = row[0];
+        const nodeLng = row[1];
+        const nodeLat = row[2];
+        const lighting = row[3];
+        const crime = row[4];
+        const greenery = row[5];
+        const gradient = row[6];
+        newNode = new Node(nodeIdFromData, nodeLat, nodeLng, [], lighting, crime, greenery, gradient);   // Create new Node class instance
+        nodesMap.set(nodeIdFromData, newNode);   // Add to HashMap, accounting for increment
+        
+        console.log(locationsByNodeId);
+        if (locationsByNodeId.has(newNode.id)) {   // If a location already exists with this nodeID, set up a location popup
+            const viewPopup = L.popup()   // Setup new view popup to assign to the marker
+                .setContent(getLocationPopup(locationsByNodeId.get(newNode.id)));
+            viewPopup._type = 'view-location';
+            newMarker = L.marker([newNode.lat, newNode.lng], {icon:redIcon}).addTo(map)
+            .bindPopup(viewPopup);
+            markersMap.set(nodeIdFromData, newMarker);
+        }
+        else{   // Otherwise, set up a normal node popup
+            const viewPopup = L.popup()   // Setup new view popup to assign to the marker
+                .setContent(getNodePopup(newNode));
+            viewPopup._type = 'view-node';
+            newMarker = L.marker([newNode.lat, newNode.lng], {icon:L.icon({iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png', iconSize:[16, 28]})})
+            .addTo(nodesLayer)
+            .bindPopup(viewPopup);
+            markersMap.set(nodeIdFromData, newMarker);
+        }
+
+        nodes.push(newNode);   // Add the instanced Node object to array nodes
+        nodeId = nodeIdFromData + 1;   // Use most up to date node ID
+    }
+
+    function createEdgeFromData(row, index){
+        console.log("Edge: ", row, index);
+        const edgeIdFromData = row[0];
+        const edgeStartNode = row[1];
+        const edgeEndNode = row[2];
+        const edgeLength = row[3];
+        const newSegment = new Segment(edgeIdFromData, edgeStartNode, edgeEndNode);
+        if (nodesMap.has(edgeStartNode)){   // If the startNode exists on the map, add the appropriate connection to endNode
+            nodesMap.get(edgeStartNode).connections.push(edgeEndNode);
+            console.log(nodesMap.get(edgeStartNode));
+            if (locationsByNodeId.has(edgeStartNode)){   // Update the marker of the node based on whether it is a location or just a normal node
+                markersMap.get(edgeStartNode).setPopupContent(getLocationPopup(locationsByNodeId.get(edgeStartNode)));
+            }
+            else{
+                markersMap.get(edgeStartNode).setPopupContent(getNodePopup(nodesMap.get(edgeStartNode)));
+            }
+        }
+        edges.push(newSegment);   // Add Segment to the array edges
+        edgeId = edgeIdFromData + 1;   // Use most up to date edge ID
+    }
+
+    function createLocationFromData(row, index){
+        console.log("Location: ", row, index);
+        const locationIdFromData = row[0];
+        const nodeIdFromData = row[1];
+        const nameFromData = row[2];
+        const locationTypeFromData = row[3];
+        newLocation = new Location(locationIdFromData, nodeIdFromData, nameFromData, locationTypeFromData);
+        locations.push(newLocation);   // Add Location object to array locations
+        locationsMap.set(locationIdFromData, newLocation);   // Add Location object to Map locationsMap with locationId key
+        locationsByNodeId.set(nodeIdFromData, newLocation);   // Add Location object to Map locationsByNodeId with nodeId key
+        locationId = locationIdFromData + 1;   // Use most up to date location ID
+    }
+
+    function createIcon(color) {
+        return L.icon({
+            iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png`,
+            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34]
+        });
+    }
+    const redIcon = createIcon('red');
+    
+</script>
+
+</body>
+</html>
+

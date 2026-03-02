@@ -1,0 +1,113 @@
+:root {
+    --secondary-color: #3F3E40;
+    --accent-color: #0A0708;
+    --background-color: #4e4a4a;
+    --text-color: #B1B1B1;
+    --primary-color: #F5F5E9;
+    --incorrect-color: #e61430;
+}
+
+*{
+    padding: 0;
+    margin: 0;
+}
+
+html {
+    text-align: center;
+    vertical-align: middle;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+    
+
+body {
+    padding: 5%;
+    background-image: url(background_image.jpg);
+    min-height: 100vh;
+    background-size: cover;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+}
+
+.wrapper {
+    background-color: var(--background-color);
+    padding: max(5vw, 10px);
+    width: 40vw;
+    height: min(50vh, 400px);
+    border-radius: 30px;
+    border-color: var(--accent-color);
+    border-width: 8px;
+    border-style:solid;
+    min-width: 400px;
+    min-height: 330px;
+    position: absolute;
+    left:auto;
+    top: 15%;
+    margin: auto;
+    
+}
+
+.wrapper:hover {
+    border-color: var(--secondary-color);
+    transition: 200ms ease;
+}
+
+a {
+    color: var(--accent-color);
+}
+
+form {
+    padding: 50px;
+}
+
+form input {
+    padding: 3px;
+    margin: 2px;
+    border-radius: 6px;
+    border-width: 2px;
+    width: max(17%, 200px);
+    border-style: solid;
+    border-color: var(--accent-color);
+    background-color: var(--primary-color);
+}
+
+form input:focus{
+    outline: none;
+}
+
+form input::placeholder {
+    color: var(--accent-color);
+}
+
+form input:hover{
+    border-color: var(--secondary-color);
+    border-width: 2px;
+    transition: 200ms ease;
+}
+
+form div.incorrect input{
+    border-color: var(--incorrect-color);
+}
+
+form div.incorrect input::placeholder {
+    color: var(--incorrect-color);
+    opacity: .67;
+}
+
+form button {
+    border-radius: 40px;
+    width: 80px;
+    height: 40px;
+    background-color: var(--primary-color);
+}
+
+form button:hover {
+    background-color: var(--text-color);
+    transition: 200ms ease;
+}
+
+#error_message {
+    color: var(--incorrect-color);
+}

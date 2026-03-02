@@ -1,0 +1,47 @@
+
+<!-- Used to sign up -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='frontend_validation.js') }}" defer></script>
+    <title>Sign Up</title>
+</head>
+<body>
+
+    <div class="wrapper">
+        <h1>Sign Up</h1>
+        
+        <form id="form">
+            <div>
+                <input  type="text" id="username_input" placeholder="Username">
+            </div>
+
+            <div>
+                <input  type="text" id="email_input" placeholder="Email">
+            </div>
+
+            <div>
+                <input type="password" id="password_input" placeholder="Password">
+            </div>
+
+            <div>
+                <input  type="password" id="confirm_password_input" placeholder="Confirm Password">
+            </div>
+
+            <br>
+            <p id="error_message"></p>
+
+            <button type="submit">Sign Up</button>
+        </form>
+
+        <p>If you already have an account <a href="login.html">Log In</a></p>
+    </div>
+
+    
+
+</body>
+</html>

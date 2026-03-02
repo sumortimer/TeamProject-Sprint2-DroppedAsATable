@@ -1,0 +1,38 @@
+
+<!-- Used for editing a mission -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='mission_style.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='edit_mission.js') }}" defer></script>
+    <!-- <link rel="stylesheet" href="../static/mission_style.css"> -->
+    <!-- <script type="text/javascript" src="../static/missions.js" defer></script> -->
+    <title>Edit Mission</title>
+</head>
+<body>
+
+    <div id="topbar">
+        <a id="backbutton" href="javascript: history.back()">< Back</a>
+    </div>
+    
+    <form id="missioncontent" method="GET">
+        <h1 class="title">Edit Mission</h1>
+        <div class="labelandinput">
+            <h3 class="label">Mission 1</h3>
+            <!-- <input class="input" type="text" value="Mission Name 1" size="66" name="nameInput"> -->
+        </div>
+
+        <div class="labelandinput">
+            <p class="label">Mission Description</p>
+            <textarea class="input" id="question" type="textarea" cols="65" rows="10" name="question">{{ question }}</textarea>
+        </div>
+
+        <input id="updatebutton" type="submit" value="Update">
+    </form>
+
+    
+</body>
+</html>

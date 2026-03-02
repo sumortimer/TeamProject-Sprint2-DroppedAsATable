@@ -1,0 +1,256 @@
+.root{
+
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    padding-top: 2%;
+    background-color: antiquewhite;
+}
+
+#topbar {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    text-align: center;
+}
+
+#backbutton {
+    display: block;
+    background-color: aliceblue;
+    width: 40%;
+    border-radius: 15px;
+    text-decoration: none;
+    color: black;
+    padding: 14px 16px;
+    font-weight: bold;
+    margin: 0 10%;
+    border-style: solid;
+    border-color: black;
+    transition: 200ms ease;
+}
+
+#backbutton:visited {
+    color: black;
+}
+
+#backbutton:hover {
+    background-color: rgb(229, 232, 234);
+    transition: 300ms ease;
+}
+
+#tierselect {
+    display: grid;
+    grid-template-columns: auto auto auto;
+}
+
+.tierbutton {
+    background-color: aliceblue;
+    text-decoration: none;
+    padding: 16px 16px;
+    color: black;
+    border-width: 3px;
+    transition: 200ms ease;
+}
+
+.tierbutton:hover {
+    background-color: rgb(229, 232, 234);
+    transition: 300ms ease;
+}
+
+.tierbutton:visited {
+    color: black;
+}
+
+#tier1 {
+    border-radius: 30px 0px 0px 30px;
+    border-right-style: solid;
+    border-right-color: black;
+}
+
+#tier3 {
+    border-radius: 0px 30px 30px 0px;
+    border-left-style: solid;
+    border-left-color: black;
+}
+
+#totals {
+    display: flex;
+    float: left;
+    margin: 0 auto;
+}
+
+.missiontotal {
+    width: 50%;
+}
+
+#missiondisplay {
+    text-align: center;
+    margin-top: 10%;
+    padding: 30px;
+    display: grid;
+    grid-auto-rows: auto;
+    gap: 20px;
+    height: 40vh;
+    overflow-y: scroll;
+    scrollbar-width: none;
+}
+
+.mission {
+    width: 75%;
+    margin: 0 auto;
+    padding: 20px;
+    height: 10vh;
+    display: grid;
+    grid-template-columns: 10% 80% 10%;
+    visibility: visible;
+    transition: 200ms ease;
+}
+
+.mission:hover {
+    background-color: azure;
+    border-radius: 5px;
+    transition: 300ms ease;
+}
+
+.trophy {
+    width: 50px;
+    height: 50px;
+    border-radius: 100%;
+    border-color: black;
+    border-style: solid;
+    border-width: 2px;
+    padding: 12px 8px 3px 8px;
+    /* position: relative;
+    bottom: 25%;
+    left: 20%; */
+}
+
+.pin {
+    position: relative;
+    left: 48%;
+    bottom: 0;
+    visibility: hidden;
+}
+
+.editbutton {
+    border-radius: 100%;
+    background-color: aliceblue;
+    border-width: 2px;
+    width: 50px;
+    height: 50px;
+    padding: 16px 8px 0px 8px;
+    margin-right: 5px;
+    border-color: black;
+    border-style: solid;
+
+}
+
+.icons{
+    display:grid;
+    grid-template-columns: auto auto;
+    justify-content: left;
+}
+
+#missioncontent {
+    text-align: center;
+    margin-top: 12vh;
+}
+
+.label {
+    text-align: left;
+    padding: 3px;
+    margin-left: 3px;
+}
+
+.labelandinput {
+    width: 500px;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+.input {
+    border-radius: 3px;
+    border-style: solid;
+    padding: 6px;
+    border-width: 1px;
+    border-color: gray;
+    transition: 200ms ease;
+}
+
+.input:hover {
+    border-color: black;
+    transition: 300ms ease;
+}
+
+.input:focus{
+    outline: none;
+}
+
+#updatebutton {
+    width: 200px;
+    height: 40px;
+    border-radius: 30px;
+    margin: 10px;
+    background-color: aliceblue;
+}
+
+#updatebutton:hover {
+    background-color: lightgrey;
+}
+
+.title {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+#mission_display {
+    text-align: center;
+}
+
+.options {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    height: 15vh;
+}
+
+#missionpic {
+    border-radius: 10px;
+    height: 70vh;
+}
+
+#bluebutton {
+    background-color: lightblue;
+}
+
+#bluebutton:hover {
+    background-color: rgb(158, 199, 213);
+}
+
+#greenbutton {
+    background-color: lightgreen;
+}
+
+#greenbutton:hover {
+    background-color: rgb(117, 193, 117);
+}
+
+#redbutton {
+    background-color: lightcoral;
+}
+
+#redbutton:hover {
+    background-color: rgb(213, 108, 108);
+}
+
+.optionbutton {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+#errormessage {
+    color: red;
+}
