@@ -1,0 +1,10 @@
+1. Ensure everything works.
+2. Add sign-up.
+3. Stop storing passwords in plain text.
+    from werkzeug.security import check_password_hash
+    check_password_hash() amd generate_password_hash()
+4. Associate users with an account, so that they can sign in.
+    from flask import session
+    session["username"] = data["username"]
+5. Be able to authenticate users, and know if they have bogus session/cookie data.
+6. Redirect users to /login if they are on any page that isn't /login or /signup.
