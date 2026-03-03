@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, redirect
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 import sqlite3
 from database_methods import *
 import routefindingalgorithm
@@ -17,7 +17,7 @@ def index():
 
 @app.route("/map.html")
 def map_redir():
-    return redirect("/")
+    return redirect(url_for("index"))
 
 
 ############ ADD METHODS ###################
@@ -253,7 +253,7 @@ def mapdata():
 
 @app.route("/login.html")
 def login_redirect():
-    return redirect('login')
+    return redirect(url_for('login'))
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -267,12 +267,10 @@ def login():
 
                 # Checks if a username and password has actually been sent.
                 if "username" not in data or "password" not in data:
-                    myDatabase.closeConnection()
                     return "No username or password has been entered"
 
                 # Checks if a non-blank username and password has actually been sent.
                 if data["username"] == "" or data["password"] == "":
-                    myDatabase.closeConnection()
                     return "No username or password has been entered"
                 
 
@@ -280,29 +278,28 @@ def login():
                 database_response = myDatabase.getLoginDetails(data["username"])
 
                 # Checks if the response is blank.
-                if database_response == None or database_response == []:
+                if not database_response:
                     # Blanks response either means no user exists or bad database connection.
-                    myDatabase.closeConnection()
                     return "Incorrect username or password has been entered"
 
                 password = database_response[0][1]
-                myDatabase.closeConnection()
 
                 # If the passwords match then redirect the user to /map.
                 if password == data["password"]:
-                    return "/map"
+                    return redirect(url_for("map"))
                 else:
                     return "Incorrect username or password has been entered"
-            except:
-                myDatabase.closeConnection()
+            except Exception as e:
                 return "Incorrect username or password has been entered"
+            finally:
+                myDatabase.closeConnection()
             
         else:
             return "Invalid request"
 
 @app.route("/signup.html")
 def signup_redirect():
-    return redirect('signup')
+    return redirect(url_for('signup'))
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
@@ -315,7 +312,7 @@ def signup():
 
 @app.route("/missions_t1.html", methods=["GET"])
 def missions_1r():
-    return redirect('/missions_t1')
+    return redirect(url_for('/missions_t1'))
 
 @app.route("/missions_t1", methods=["GET"])
 def mission_1():
@@ -346,7 +343,7 @@ def mission_1():
 
 @app.route("/missions_t2.html", methods=["GET"])
 def missions_2r():
-    return redirect('/missions_t2')
+    return redirect(url_for('/missions_t2'))
 
 @app.route("/missions_t2", methods=["GET"])
 def mission_2():
@@ -355,7 +352,7 @@ def mission_2():
 
 @app.route("/missions_t3.html", methods=["GET"])
 def missions_3r():
-    return redirect('/missions_t3')
+    return redirect(url_for('/missions_t3'))
 
 @app.route("/missions_t3", methods=["GET"])
 def mission_3():
@@ -363,7 +360,7 @@ def mission_3():
 
 @app.route("/edit_mission.html", methods=["GET"])
 def edit_mission_r():
-    return redirect("/edit_mission")
+    return redirect(url_for("/edit_mission"))
 
 @app.route("/edit_mission", methods=["GET", "POST"])
 def edit_mission():
@@ -376,29 +373,26 @@ def edit_mission():
 
             # Checks if ID variable is actually in the URL.
             if id == None:
-                myDatabase.closeConnection()
-                return redirect("/missions_t1")
+                return redirect(url_for("/missions_t1"))
             
 
             # Gets question from the URL.
             database_response = myDatabase.getMissionQuestion(id)
 
             print(database_response)
-            if database_response == None or database_response == []:
-                myDatabase.closeConnection()
-                return redirect("/missions_t1")
+            if not database_response:
+                return redirect(url_for("/missions_t1"))
             if database_response[0] == None:
-                myDatabase.closeConnection()
-                return redirect("/missions_t1")
+                return redirect(url_for("/missions_t1"))
             
             question = database_response[0][0]
             print(question)
 
-            myDatabase.closeConnection()
             return render_template("edit_mission.html", question=question)
         except:
-            myDatabase.closeConnection()
             return 500
+        finally:
+            myDatabase.closeConnection()
     elif request.method == "POST":
         myDatabase = DatabaseMethods()
 
@@ -417,7 +411,6 @@ def edit_mission():
             # Check to see if required arguments were sent
             if id == None or question == None:
                 # Returns 400 BAD_REQUEST
-                myDatabase.closeConnection()
                 return 400
             
             print("Past the check")
@@ -428,8 +421,7 @@ def edit_mission():
             print(f"Response: {database_response}")
 
             # No mission with this ID exists
-            if database_response == None or database_response == []:
-                myDatabase.closeConnection()
+            if not database_response:
                 return 400
 
 
@@ -437,20 +429,21 @@ def edit_mission():
             # userID, missionID, newQuestion, focusIndicator, newStartNode,newEndNode
             print("editing mission")
             myDatabase.editMission(1, id, question, database_response[0][0], database_response[0][1], database_response[0][2])
-            myDatabase.closeConnection()
             print("About to redirect")
-            return "/missions_t1"
+            return redirect(url_for("/missions_t1"))
         
         except:
             print("ERROR!")
-            myDatabase.closeConnection()
             return 500
+        
+        finally:
+            myDatabase.closeConnection()
     
         
 
 @app.route("/user_profile.html", methods=["GET"])
 def user_profiler():
-    return redirect('/user_profile')
+    return redirect(url_for('/user_profile'))
 
 @app.route("/user_profile", methods=["GET"])
 def user_profile():
@@ -458,39 +451,38 @@ def user_profile():
 
 @app.route("/mission_display.html", methods=["GET"])
 def mission_display_r():
-    return redirect("mission_display")
+    return redirect(url_for("mission_display"))
 
 @app.route("/mission_display", methods=["GET", "POST"])
 def mission_display():
     if request.method == "GET":
         myDatabase = DatabaseMethods()
+        
         try:
             # Gets id from URL
             id = request.args.get('id', type=int)
 
             # Checks if ID variable is actually in the URL.
             if id == None:
-                myDatabase.closeConnection()
                 return redirect("missions_t1")
             
 
             # Gets question from the URL.
             database_response = myDatabase.getMissionQuestion(id)
 
-            if database_response == None or database_response == []:
-                myDatabase.closeConnection()
-                return redirect("missions_t1")
+            if not database_response:
+                return redirect(url_for("missions_t1"))
             if database_response[0] == None:
-                myDatabase.closeConnection()
-                return redirect("missions_t1")
+                return redirect(url_for("missions_t1"))
             
             question = database_response[0][0]
 
-            myDatabase.closeConnection()
             return render_template("mission_display.html", question=question)
         except:
+            return redirect(url_for("missions_t1"))
+        finally:
             myDatabase.closeConnection()
-            return redirect("missions_t1")
+
 ############ OTHER METHODS ###################
 
 def ensure_node_exists(database, node_id):
