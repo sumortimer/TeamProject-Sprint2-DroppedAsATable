@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for
+from flask import Flask, render_template, request, jsonify, redirect, url_for, abort
 import sqlite3
 from database_methods import *
 import routefindingalgorithm
@@ -18,6 +18,12 @@ def index():
 @app.route("/map.html")
 def map_redir():
     return redirect(url_for("index"))
+
+############ Idea for custom error pages ###################
+# @app.errorhandler(404)
+# def page_not_found(e):
+#     # e is the error object
+#     return render_template('404.html'), 404
 
 
 ############ ADD METHODS ###################
@@ -372,24 +378,22 @@ def edit_mission():
 
             # Checks if ID variable is actually in the URL.
             if id == None:
-                return redirect(url_for("missions_t1"))
+                abort(404)
             
 
             # Gets question from the URL.
             database_response = myDatabase.getMissionQuestion(id)
 
-            print(database_response) # REMOVE PRINT
             if not database_response:
-                return redirect(url_for("missions_t1"))
+                abort(404)
             if database_response[0] == None:
-                return redirect(url_for("missions_t1"))
+                abort(404)
             
             question = database_response[0][0]
-            print(question) # REMOVE PRINT
 
             return render_template("edit_mission.html", question=question)
         except Exception as e:
-            return 500
+            abort(500)
         finally:
             myDatabase.closeConnection()
 
@@ -404,36 +408,27 @@ def edit_mission():
                 id = None
                 question = None
 
-            print(f"ID: {id} \nQuestion: {question}") # REMOVE PRINT
 
             # Check to see if required arguments were sent
             if id == None or question == None:
-                # Returns 400 BAD_REQUEST
-                return 400
-            
-            print("Past the check") # REMOVE PRINT
+                abort(400)
 
             database_response = myDatabase.getMissionData(id)
 
-            print(f"Response: {database_response}") # REMOVE PRINT
-
             # No mission with this ID exists
             if not database_response:
-                return 400
+                abort(400)
 
 
             # Change userID when implementing login system.
-            print("editing mission") # REMOVE PRINT
             myDatabase.editMission(1, id, question, 
                                    database_response[0][0], # [0][0] is focusIndicator
                                    database_response[0][1], # [0][1] is startNode
                                    database_response[0][2]) # [0][2] is endNode
-            print("About to redirect") # REMOVE PRINT
-            return "missions_t1"
+            return "missions_t1" # Not a redirect, as the frontend handles the redirect. Change it so backend handles redirect like with login?
         
         except Exception as e:
-            print("ERROR!")
-            return 500
+            return abort(500)
         
         finally:
             myDatabase.closeConnection()
