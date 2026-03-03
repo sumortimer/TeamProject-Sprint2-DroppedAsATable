@@ -310,10 +310,10 @@ def signup():
 
 @app.route("/missions_t1.html", methods=["GET"])
 def missions_1r():
-    return redirect(url_for('/missions_t1'))
+    return redirect(url_for('missions_1'))
 
 @app.route("/missions_t1", methods=["GET"])
-def mission_1():
+def missions_1():
     if request.method == "GET":
         myDatabase = DatabaseMethods()
         question1 = "Mission Description"
@@ -341,20 +341,21 @@ def mission_1():
 
 @app.route("/missions_t2.html", methods=["GET"])
 def missions_2r():
-    return redirect(url_for('/missions_t2'))
+    return redirect(url_for('missions_2'))
 
 @app.route("/missions_t2", methods=["GET"])
-def mission_2():
+def missions_2():
     return render_template("missions_t2.html")
 
 
 @app.route("/missions_t3.html", methods=["GET"])
 def missions_3r():
-    return redirect(url_for('/missions_t3'))
+    return redirect(url_for('missions_3'))
 
 @app.route("/missions_t3", methods=["GET"])
-def mission_3():
+def missions_3():
     return render_template("missions_t3.html")
+
 
 @app.route("/edit_mission.html", methods=["GET"])
 def edit_mission_r():
@@ -391,11 +392,10 @@ def edit_mission():
             return 500
         finally:
             myDatabase.closeConnection()
+
     elif request.method == "POST":
         myDatabase = DatabaseMethods()
-
         try:
-
             try:
                 data = request.get_json()
                 id = data["id"]
