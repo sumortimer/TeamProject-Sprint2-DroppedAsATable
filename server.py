@@ -280,7 +280,6 @@ def login():
                 # Checks if the response is blank.
                 if not database_response:
                     # Blanks response either means no user exists or bad database connection.
-                    print(1)
                     return render_template("login.html", error="Incorrect username or password has been entered")
 
                 database_password = database_response[0][0]
@@ -289,10 +288,8 @@ def login():
                 if database_password == password:
                     return redirect(url_for("index"))
                 else:
-                    print(2)
                     return render_template("login.html", error="Incorrect username or password has been entered")
             except Exception as e:
-                print(e)
                 return render_template("login.html", error="Incorrect username or password has been entered")
             finally:
                 myDatabase.closeConnection()
