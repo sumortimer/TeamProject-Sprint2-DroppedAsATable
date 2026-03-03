@@ -372,7 +372,7 @@ def edit_mission():
 
             # Checks if ID variable is actually in the URL.
             if id == None:
-                return redirect(url_for("/missions_t1"))
+                return redirect(url_for("missions_t1"))
             
 
             # Gets question from the URL.
@@ -380,9 +380,9 @@ def edit_mission():
 
             print(database_response) # REMOVE PRINT
             if not database_response:
-                return redirect(url_for("/missions_t1"))
+                return redirect(url_for("missions_t1"))
             if database_response[0] == None:
-                return redirect(url_for("/missions_t1"))
+                return redirect(url_for("missions_t1"))
             
             question = database_response[0][0]
             print(question) # REMOVE PRINT
@@ -413,7 +413,6 @@ def edit_mission():
             
             print("Past the check") # REMOVE PRINT
 
-            # [0][0] is focusIndicator, [0][1] is startNode, [0][1] is endNode
             database_response = myDatabase.getMissionData(id)
 
             print(f"Response: {database_response}") # REMOVE PRINT
@@ -424,11 +423,13 @@ def edit_mission():
 
 
             # Change userID when implementing login system.
-            # userID, missionID, newQuestion, focusIndicator, newStartNode,newEndNode
             print("editing mission") # REMOVE PRINT
-            myDatabase.editMission(1, id, question, database_response[0][0], database_response[0][1], database_response[0][2])
+            myDatabase.editMission(1, id, question, 
+                                   database_response[0][0], # [0][0] is focusIndicator
+                                   database_response[0][1], # [0][1] is startNode
+                                   database_response[0][2]) # [0][2] is endNode
             print("About to redirect") # REMOVE PRINT
-            return redirect(url_for("/missions_t1"))
+            return "missions_t1"
         
         except Exception as e:
             print("ERROR!")
@@ -441,7 +442,7 @@ def edit_mission():
 
 @app.route("/user_profile.html", methods=["GET"])
 def user_profiler():
-    return redirect(url_for('/user_profile'))
+    return redirect(url_for('user_profile'))
 
 @app.route("/user_profile", methods=["GET"])
 def user_profile():
