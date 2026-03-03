@@ -378,17 +378,17 @@ def edit_mission():
             # Gets question from the URL.
             database_response = myDatabase.getMissionQuestion(id)
 
-            print(database_response)
+            print(database_response) # REMOVE PRINT
             if not database_response:
                 return redirect(url_for("/missions_t1"))
             if database_response[0] == None:
                 return redirect(url_for("/missions_t1"))
             
             question = database_response[0][0]
-            print(question)
+            print(question) # REMOVE PRINT
 
             return render_template("edit_mission.html", question=question)
-        except:
+        except Exception as e:
             return 500
         finally:
             myDatabase.closeConnection()
@@ -400,23 +400,23 @@ def edit_mission():
                 data = request.get_json()
                 id = data["id"]
                 question = data["question"]
-            except:
+            except Exception as e:
                 id = None
                 question = None
 
-            print(f"ID: {id} \nQuestion: {question}")
+            print(f"ID: {id} \nQuestion: {question}") # REMOVE PRINT
 
             # Check to see if required arguments were sent
             if id == None or question == None:
                 # Returns 400 BAD_REQUEST
                 return 400
             
-            print("Past the check")
+            print("Past the check") # REMOVE PRINT
 
             # [0][0] is focusIndicator, [0][1] is startNode, [0][1] is endNode
             database_response = myDatabase.getMissionData(id)
 
-            print(f"Response: {database_response}")
+            print(f"Response: {database_response}") # REMOVE PRINT
 
             # No mission with this ID exists
             if not database_response:
@@ -425,12 +425,12 @@ def edit_mission():
 
             # Change userID when implementing login system.
             # userID, missionID, newQuestion, focusIndicator, newStartNode,newEndNode
-            print("editing mission")
+            print("editing mission") # REMOVE PRINT
             myDatabase.editMission(1, id, question, database_response[0][0], database_response[0][1], database_response[0][2])
-            print("About to redirect")
+            print("About to redirect") # REMOVE PRINT
             return redirect(url_for("/missions_t1"))
         
-        except:
+        except Exception as e:
             print("ERROR!")
             return 500
         
@@ -476,7 +476,7 @@ def mission_display():
             question = database_response[0][0]
 
             return render_template("mission_display.html", question=question)
-        except:
+        except Exception as e:
             return redirect(url_for("missions_t1"))
         finally:
             myDatabase.closeConnection()
