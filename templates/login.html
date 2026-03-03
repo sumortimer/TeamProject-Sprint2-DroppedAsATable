@@ -15,17 +15,17 @@
     <div class="wrapper">
         <h1>Log In</h1>
 
-        <form id="form">
+        <form id="form" method="POST">
             <div>
-                <input type="text" id="username_input" placeholder="Username">
+                <input type="text" id="username_input" name="username" placeholder="Username">
             </div>
 
             <div>
-                <input type="password" id="password_input" placeholder="Password">
+                <input type="password" id="password_input" name="password" placeholder="Password">
             </div>
 
             <br>
-            <p id="error_message"></p>
+            <p id="error_message">{{ error }}</p>
 
             <button type="submit">Log In</button>
         </form>

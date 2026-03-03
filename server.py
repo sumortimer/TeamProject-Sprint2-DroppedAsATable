@@ -254,48 +254,49 @@ def mapdata():
 @app.route("/login.html")
 def login_redirect():
     return redirect(url_for('login'))
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
         return render_template("login.html")
     elif request.method == "POST":
-        if request.is_json:
             myDatabase = DatabaseMethods()
             try:
-                data = request.get_json()
+                username = request.form.get("username")
+                password = request.form.get("password")   
 
                 # Checks if a username and password has actually been sent.
-                if "username" not in data or "password" not in data:
-                    return "No username or password has been entered"
+                if (not username or not password):
+                    return render_template("login.html", error="No username or password has been entered")
 
                 # Checks if a non-blank username and password has actually been sent.
-                if data["username"] == "" or data["password"] == "":
-                    return "No username or password has been entered"
+                if username == "" or password == "":
+                    return render_template("login.html", error="No username or password has been entered")
                 
 
                 # Checks with the database to see if a user with this username exists.
-                database_response = myDatabase.getLoginDetails(data["username"])
+                database_response = myDatabase.getLoginDetails(username)
+                print(database_response[0][0])
 
                 # Checks if the response is blank.
                 if not database_response:
                     # Blanks response either means no user exists or bad database connection.
-                    return "Incorrect username or password has been entered"
+                    print(1)
+                    return render_template("login.html", error="Incorrect username or password has been entered")
 
-                password = database_response[0][1]
+                database_password = database_response[0][0]
 
                 # If the passwords match then redirect the user to /map.
-                if password == data["password"]:
-                    return redirect(url_for("map"))
+                if database_password == password:
+                    return redirect(url_for("index"))
                 else:
-                    return "Incorrect username or password has been entered"
+                    print(2)
+                    return render_template("login.html", error="Incorrect username or password has been entered")
             except Exception as e:
-                return "Incorrect username or password has been entered"
+                print(e)
+                return render_template("login.html", error="Incorrect username or password has been entered")
             finally:
                 myDatabase.closeConnection()
-            
-        else:
-            return "Invalid request"
+
 
 @app.route("/signup.html")
 def signup_redirect():
@@ -457,14 +458,14 @@ def mission_display_r():
 def mission_display():
     if request.method == "GET":
         myDatabase = DatabaseMethods()
-        
+
         try:
             # Gets id from URL
             id = request.args.get('id', type=int)
 
             # Checks if ID variable is actually in the URL.
             if id == None:
-                return redirect("missions_t1")
+                return redirect(url_for("missions_t1"))
             
 
             # Gets question from the URL.
