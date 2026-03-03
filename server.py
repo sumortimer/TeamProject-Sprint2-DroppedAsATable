@@ -323,10 +323,10 @@ def missions_1():
     if request.method == "GET":
         myDatabase = DatabaseMethods()
         question1 = "Mission Description"
-        id = 1
+        mission_id = 1
          
         try:
-            database_response = myDatabase.getMissionQuestion(id)
+            database_response = myDatabase.getMissionQuestion(mission_id)
             question1 = database_response[0][0]
         finally:
             myDatabase.closeConnection()
@@ -340,7 +340,7 @@ def missions_1():
 
 
 
-    #     print(url_for("edit_mission", id=data["number"]))
+    #     print(url_for("edit_mission", mission_id=data["number"]))
     #     return redirect(url_for("edit_mission", id=data["number"]))
     #     # return redirect(f"/edit_mission.html?id={data["number"]}")
 
@@ -373,16 +373,16 @@ def edit_mission():
         myDatabase = DatabaseMethods()
         try:
             # Gets id from URL
-            id = request.args.get('id', type=int)
+            mission_id = request.args.get('id', type=int)
 
 
             # Checks if ID variable is actually in the URL.
-            if id == None:
+            if mission_id == None:
                 abort(404)
             
 
             # Gets question from the URL.
-            database_response = myDatabase.getMissionQuestion(id)
+            database_response = myDatabase.getMissionQuestion(mission_id)
 
             if not database_response:
                 abort(404)
@@ -400,20 +400,18 @@ def edit_mission():
     elif request.method == "POST":
         myDatabase = DatabaseMethods()
         try:
-            try:
-                data = request.get_json()
-                id = data["id"]
-                question = data["question"]
-            except Exception as e:
-                id = None
-                question = None
+            data = request.get_json(silent=True)
+            if not data:
+                abort(400)
+            mission_id = data["id"]
+            question = data["question"]
 
 
             # Check to see if required arguments were sent
-            if id == None or question == None:
+            if mission_id == None or question == None:
                 abort(400)
 
-            database_response = myDatabase.getMissionData(id)
+            database_response = myDatabase.getMissionData(mission_id)
 
             # No mission with this ID exists
             if not database_response:
@@ -421,7 +419,7 @@ def edit_mission():
 
 
             # Change userID when implementing login system.
-            myDatabase.editMission(1, id, question, 
+            myDatabase.editMission(1, mission_id, question, 
                                    database_response[0][0], # [0][0] is focusIndicator
                                    database_response[0][1], # [0][1] is startNode
                                    database_response[0][2]) # [0][2] is endNode
@@ -454,15 +452,15 @@ def mission_display():
 
         try:
             # Gets id from URL
-            id = request.args.get('id', type=int)
+            mission_id = request.args.get('id', type=int)
 
             # Checks if ID variable is actually in the URL.
-            if id == None:
+            if mission_id == None:
                 return redirect(url_for("missions_t1"))
             
 
             # Gets question from the URL.
-            database_response = myDatabase.getMissionQuestion(id)
+            database_response = myDatabase.getMissionQuestion(mission_id)
 
             if not database_response:
                 return redirect(url_for("missions_t1"))
