@@ -7,6 +7,15 @@ class DatabaseMethods:
         self.connection.execute("PRAGMA foreign_keys = ON;") #enables foreign key constraints
         self.setup()
 
+    # Destructor that automatically commits and closes the databases once the DatabaseMethods object goes out of scope.
+    def __del__(self):
+        try:
+            self.connection.commit()
+            self.connection.close()
+        except:
+            pass
+            # Database is already closed.
+
     #call at the start, creates tables inside task6.db if they dont already exist
     def setup(self):
         try:
@@ -364,7 +373,7 @@ class DatabaseMethods:
     ################################
 
     #login and signup methods##################
-    def addUser(self,username, email, password, usertype): # Used when a user chooses to sign up and make an account
+    def addUser(self, username, email, password, usertype): # Used when a user chooses to sign up and make an account
         try:
             cursor=self.connection.cursor()
             cursor.execute("INSERT INTO users (userName,email,password,userType,points,lengthWeight,lightingWeight,crimeWeight, greeneryWeight, gradientWeight) VALUES (?,?,?,?,?,?,?,?,?,?)",

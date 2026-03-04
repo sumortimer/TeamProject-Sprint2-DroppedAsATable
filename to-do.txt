@@ -9,3 +9,4 @@ DONE DONE DONE 1. Ensure everything works. DONE DONE DONE
     session["username"] = data["username"]
 5. Be able to authenticate users, and know if they have bogus session/cookie data.
 6. Redirect users to /login if they are on any page that isn't /login or /signup.
+7. Log out?

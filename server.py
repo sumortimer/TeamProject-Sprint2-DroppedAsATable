@@ -352,6 +352,7 @@ def signup():
 
             # Should usernames be case-insensitive?
 
+
             # EMAIL CHECKS
 
             # Is the email invalid?
@@ -361,6 +362,7 @@ def signup():
             
             if (not re.fullmatch(re_email_valid, email)):
                 return render_template("signup.html", error="Invalid email.")
+
 
             # PASSWORD CHECKS
 
@@ -394,7 +396,11 @@ def signup():
             if (re.search(re_pass_valid, password.lower())):
                 return render_template("signup.html", error="Password must not contain the username.")
 
-            # If everything is valid, sign user up and create session.
+
+            # If everything is valid then sign the user up
+            myDatabase.addUser(username, email, password, usertype="A")
+
+            # Validate the user's session.
 
             return redirect(url_for("index"))
 
