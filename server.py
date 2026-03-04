@@ -1,10 +1,21 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, abort
 from werkzeug.security import generate_password_hash, check_password_hash
-import sqlite3, re
+import sqlite3, re, os
+from dotenv import load_dotenv
 from database_methods import *
 import routefindingalgorithm
 
 app = Flask(__name__)
+
+load_dotenv()
+SESSION_KEY = os.environ.get("SESSION_KEY")
+PEPPER_PASSWORD = os.environ.get("PEPPER_PASSWORD")
+
+if not PEPPER_PASSWORD or not SESSION_KEY:
+    raise ValueError("Missing required environment variables")
+
+app.secret_key = SESSION_KEY
+
 #lighting, greenery, elevation, crime, distance
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -291,7 +302,7 @@ def login():
                 database_password = database_response[0][0]
 
                 # If the passwords match then redirect the user to /map.
-                if check_password_hash(database_password, password):
+                if check_password_hash(database_password, password + PEPPER_PASSWORD):
                     return redirect(url_for("index"))
                 else:
                     return render_template("login.html", error="Incorrect username or password has been entered")
@@ -400,7 +411,7 @@ def signup():
 
 
             # If everything is valid then sign the user up
-            myDatabase.addUser(username, email, generate_password_hash(password), usertype="A")
+            myDatabase.addUser(username, email, generate_password_hash(password + PEPPER_PASSWORD), usertype="A")
 
             # Validate the user's session.
 
@@ -583,4 +594,5 @@ def ensure_node_exists(database, node_id):
    
 
 if __name__ == "__main__":
+
     app.run(debug=True)
