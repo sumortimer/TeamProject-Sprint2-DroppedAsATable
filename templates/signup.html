@@ -15,21 +15,21 @@
     <div class="wrapper">
         <h1>Sign Up</h1>
         
-        <form id="form">
+        <form id="form" method="POST">
             <div>
-                <input  type="text" id="username_input" placeholder="Username">
+                <input  type="text" id="username_input" name="username" required placeholder="Username">
             </div>
 
             <div>
-                <input  type="text" id="email_input" placeholder="Email">
+                <input  type="text" id="email_input" name="email" required placeholder="Email">
             </div>
 
             <div>
-                <input type="password" id="password_input" placeholder="Password">
+                <input type="password" id="password_input" name="password1" required placeholder="Password">
             </div>
 
             <div>
-                <input  type="password" id="confirm_password_input" placeholder="Confirm Password">
+                <input  type="password" id="confirm_password_input" name="password2" required placeholder="Confirm Password">
             </div>
 
             <br>

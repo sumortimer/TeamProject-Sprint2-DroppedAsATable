@@ -308,10 +308,40 @@ def signup_redirect():
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "GET":
-        return render_template("signup.html")
-    if request.method == "POST":
-        # Check with database
-        return render_template("signup.html")
+            return render_template("signup.html")
+    
+    # If someone tries to register a new account.
+    elif request.method == "POST":
+        myDatabase = DatabaseMethods()
+        try:
+            username = request.form.get("username")
+            email = request.form.get("email")
+            password = request.form.get("password1")   
+            password_confirm = request.form.get("password2")   
+
+            # Are all fields present in the request?
+            if (not username or not email or not password or not password_confirm):
+                return render_template("signup.html", error="Missing inputs in signup request.")
+            
+            # Do all fields actually have inputs?
+            if (username == "" or email == "" or password == "" or password_confirm == ""):
+                return render_template("signup.html", error="Empty inputs in signup request.")
+            
+            # Are passwords equal?
+            if (password != password_confirm):
+                return render_template("signup.html", error="Passwords do not match.")
+            
+            if (myDatabase.areUserDetailsUsed(username, email)):
+                return render_template("signup.html")
+
+            return redirect(url_for("index"))
+
+        except Exception as e:
+            print("Error:", e)
+            abort(500)
+        finally:
+            myDatabase.closeConnection()
+
 
 
 @app.route("/missions_t1.html", methods=["GET"])
