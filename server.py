@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, abort
-import sqlite3
+import sqlite3, re
 from database_methods import *
 import routefindingalgorithm
 
@@ -270,14 +270,12 @@ def login():
                 username = request.form.get("username")
                 password = request.form.get("password")   
 
-                # Checks if a username and password has actually been sent.
+                # Checks if a username and password have been sent and aren't blank.
                 if (not username or not password):
                     return render_template("login.html", error="No username or password has been entered")
-
-                # Checks if a non-blank username and password has actually been sent.
-                if username == "" or password == "":
-                    return render_template("login.html", error="No username or password has been entered")
                 
+                # # Usernames are case insensitive
+                # username = username.lower()
 
                 # Checks with the database to see if a user with this username exists.
                 database_response = myDatabase.getLoginDetails(username)
@@ -310,7 +308,7 @@ def signup():
     if request.method == "GET":
             return render_template("signup.html")
     
-    # If someone tries to register a new account.
+    # If someone tries to register a new account:
     elif request.method == "POST":
         myDatabase = DatabaseMethods()
         try:
@@ -319,20 +317,84 @@ def signup():
             password = request.form.get("password1")   
             password_confirm = request.form.get("password2")   
 
-            # Are all fields present in the request?
+            # Are all fields present and non-empty in the request?
             if (not username or not email or not password or not password_confirm):
-                return render_template("signup.html", error="Missing inputs in signup request.")
+                return render_template("signup.html", error="Missing or empty inputs in signup request.")
             
-            # Do all fields actually have inputs?
-            if (username == "" or email == "" or password == "" or password_confirm == ""):
-                return render_template("signup.html", error="Empty inputs in signup request.")
             
+            # Username(?) and email should be case-insensitive.
+            # username = username.lower()
+            email = email.lower()
+            
+            # Is the username or email already in use?
+            if (myDatabase.areUserDetailsUsed(username, email)):
+                return render_template("signup.html", error="Username or Email is already in use.")
+            
+            # USERNAME CHECKS
+
+            # Is username below 5 characters?
+            if (len(username) < 5):
+                return render_template("signup.html", error="Username must be at least 5 characters long.")
+            
+            # Is username below 20 characters?
+            if (len(username) > 20):
+                return render_template("signup.html", error="Usernames cannot be longer than 20 characters.")
+            
+            # Does username only contain alphanumeric characters and underscores/hyphens (no spaces or special characters)?
+            re_username_check = r"[\w-]+"
+            if (not re.fullmatch(re_username_check, username)):
+                return render_template("signup.html", error="Username should only contain alphanumeric characters or hyphens.")
+
+            # Does username start with a number or special character?
+            re_username_check = r"[A-Za-z][\w-]*"
+            if (not re.fullmatch(re_username_check, username)):
+                return render_template("signup.html", error="Username should not start with an underscore or hyphen.")
+
+            # Should usernames be case-insensitive?
+
+            # EMAIL CHECKS
+
+            # Is the email invalid?
+            re_email_valid = r"[a-zA-Z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,20}"
+                            # [a-zA-Z0-9._%+-]+ ensure one or more of specified characters, @ ensures mandatory at symbol, [A-Za-z0-9.-]+ one or more specificied characters in domain,
+                            # \. ensures a mandatory ., [A-Za-z]{2,20} enforces a top-level domain (e.g., .com or .gov)
+            
+            if (not re.fullmatch(re_email_valid, email)):
+                return render_template("signup.html", error="Invalid email.")
+
+            # PASSWORD CHECKS
+
             # Are passwords equal?
             if (password != password_confirm):
                 return render_template("signup.html", error="Passwords do not match.")
             
-            if (myDatabase.areUserDetailsUsed(username, email)):
-                return render_template("signup.html")
+            # Is the password at least 8 characters?
+            if (len(password) < 8):
+                return render_template("signup.html", error="Password must be at least 8 characters.")
+
+            # Is the password longer than 72 characters?
+            if (len(password) > 72):
+                return render_template("signup.html", error="Password cannot be longer than 72 characters.")
+
+            # Does the password contain at least one uppercase letter, one lowercase letter, one digit, and one special character?
+            re_pass_valid = r"(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^0-9A-Za-z])"
+                            # (?=.*[A-Z]) checks for one upper case letter, (?=.*[a-z]) checks for one lowercase letter,
+                            # (?=.*[0-9]) checks for one digit and (?=.*[^0-9A-Za-z]) checks for one special character.
+            if (not re.match(re_pass_valid, password)):
+                return render_template("signup.html", error="Password must contain at least one uppercase letter, one lower letter, one digit and a special character.")
+
+            # Does the password contain any whitespace characters?
+            re_pass_valid = r"(?=.*[\s])"
+                            # (?=.*[\s]) checks for one whitespace character
+            if (re.match(re_pass_valid, password)):
+                return render_template("signup.html", error="Password must not contain any whitespace (such as characters).")
+
+            # Does the password contain the username?
+            re_pass_valid = re.escape(username.lower())
+            if (re.search(re_pass_valid, password.lower())):
+                return render_template("signup.html", error="Password must not contain the username.")
+
+            # If everything is valid, sign user up and create session.
 
             return redirect(url_for("index"))
 
