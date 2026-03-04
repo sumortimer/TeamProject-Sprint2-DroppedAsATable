@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, abort
+from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3, re
 from database_methods import *
 import routefindingalgorithm
@@ -274,12 +275,13 @@ def login():
                 if (not username or not password):
                     return render_template("login.html", error="No username or password has been entered")
                 
+
+
                 # # Usernames are case insensitive
                 # username = username.lower()
 
                 # Checks with the database to see if a user with this username exists.
                 database_response = myDatabase.getLoginDetails(username)
-                print(database_response[0][0])
 
                 # Checks if the response is blank.
                 if not database_response:
@@ -289,7 +291,7 @@ def login():
                 database_password = database_response[0][0]
 
                 # If the passwords match then redirect the user to /map.
-                if database_password == password:
+                if check_password_hash(database_password, password):
                     return redirect(url_for("index"))
                 else:
                     return render_template("login.html", error="Incorrect username or password has been entered")
@@ -374,9 +376,9 @@ def signup():
             if (len(password) < 8):
                 return render_template("signup.html", error="Password must be at least 8 characters.")
 
-            # Is the password longer than 72 characters?
-            if (len(password) > 72):
-                return render_template("signup.html", error="Password cannot be longer than 72 characters.")
+            # Is the password longer than 128 characters?
+            if (len(password) > 128):
+                return render_template("signup.html", error="Password cannot be longer than 128 characters.")
 
             # Does the password contain at least one uppercase letter, one lowercase letter, one digit, and one special character?
             re_pass_valid = r"(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^0-9A-Za-z])"
@@ -398,7 +400,7 @@ def signup():
 
 
             # If everything is valid then sign the user up
-            myDatabase.addUser(username, email, password, usertype="A")
+            myDatabase.addUser(username, email, generate_password_hash(password), usertype="A")
 
             # Validate the user's session.
 

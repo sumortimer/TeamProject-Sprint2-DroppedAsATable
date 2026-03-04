@@ -1,7 +1,7 @@
 DONE DONE DONE 1. Ensure everything works. DONE DONE DONE
-2a. Add sign-up.
-2b. app.teardown_appcontext to always close database connection?
-3. Stop storing passwords in plain text.
+DONE DONE DONE 2a. Add sign-up. DONE DONE DONE 
+SKIPPED 2b. app.teardown_appcontext to always close database connection?
+DONE DONE DONE 3. Stop storing passwords in plain text.DONE DONE DONE 
     from werkzeug.security import check_password_hash
     check_password_hash() amd generate_password_hash()
 4. Associate users with an account, so that they can sign in.
