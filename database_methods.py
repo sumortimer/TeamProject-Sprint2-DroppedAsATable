@@ -7,6 +7,10 @@ class DatabaseMethods:
         self.connection.execute("PRAGMA foreign_keys = ON;") #enables foreign key constraints
         self.setup()
 
+    def __del__(self):
+        self.connection.commit()
+        self.connection.close()
+
     #call at the start, creates tables inside task6.db if they dont already exist
     def setup(self):
         try:
@@ -19,6 +23,7 @@ class DatabaseMethods:
             cursor.execute("CREATE TABLE IF NOT EXISTS changes(changeID INTEGER PRIMARY KEY, userID INTEGER, missionID INTEGER, time TEXT, FOREIGN KEY(userID) REFERENCES users(userID), FOREIGN KEY(missionID) REFERENCES missions(missionID))")
             cursor.execute("CREATE TABLE IF NOT EXISTS locations(locationID INTEGER PRIMARY KEY, name TEXT, nodeID INTEGER, locationType TEXT, FOREIGN KEY(nodeID) REFERENCES nodes(nodeID))") #type will be used if we want to display locations with icons on the map e.g station type with a small train image etc...
             cursor.execute("CREATE TABLE IF NOT EXISTS edges(edgeID INTEGER PRIMARY KEY, startNode INTEGER, endNode INTEGER, length REAL, FOREIGN KEY(startNode) REFERENCES nodes(nodeID), FOREIGN KEY(endNode) REFERENCES nodes(nodeID))")
+            cursor.execute("CREATE TABLE IF NOT EXISTS queryLog(queryID INTEGER PRIMARY KEY, userID INTEGER, startNode INTEGER, endNode INTEGER, FOREIGN KEY(userID) REFERENCES users(userID),FOREIGN KEY(startNode) REFERENCES nodes(nodeID), FOREIGN KEY(endNode) REFERENCES nodes(nodeID))")
             self.connection.commit()
             cursor.close()
         except(sqlite3.ProgrammingError):
@@ -382,13 +387,4 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
     #################################
-
-    def closeConnection(self): #please call this when you're finished
-        self.connection.commit()
-        self.connection.close()
-
-
-
-
-
 
