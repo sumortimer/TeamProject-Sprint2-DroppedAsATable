@@ -19,7 +19,7 @@ class DatabaseMethods:
             #table to store users, if anyone knows anything about password security stuff we could do that instead of storing plaintext
             cursor.execute("CREATE TABLE IF NOT EXISTS nodes(nodeID INTEGER PRIMARY KEY, coordinatesX REAL, coordinatesY REAL,lighting REAL, crime REAL, greenery REAL, gradient REAL)")
             cursor.execute("CREATE TABLE IF NOT EXISTS users(userID INTEGER PRIMARY KEY, userName TEXT, email TEXT, password TEXT,userType TEXT CHECK(userType in ('T','A','M')), points INTEGER, lengthWeight REAL, lightingWeight REAL, crimeWeight REAL, greeneryWeight REAL, gradientWeight)") # usertype enum is short for travellers, admins, maintainers as said in the spec
-            cursor.execute("CREATE TABLE IF NOT EXISTS missions(missionID INTEGER PRIMARY KEY, question TEXT, focusIndicator TEXT CHECK(focusIndicator IN ('length','lighting','crime','greenery','gradient')), startNode INTEGER, endNode INTEGER, FOREIGN KEY(startNode) REFERENCES nodes(nodeID), FOREIGN KEY(endNode) REFERENCES nodes(nodeID))")
+            cursor.execute("CREATE TABLE IF NOT EXISTS missions(missionID INTEGER PRIMARY KEY, question TEXT, focusIndicator TEXT CHECK(focusIndicator IN ('length','lighting','crime','greenery','gradient')), startNode INTEGER, endNode INTEGER, answer TEXT CHECK(answer IN ('Red','Green','Blue')), FOREIGN KEY(startNode) REFERENCES nodes(nodeID), FOREIGN KEY(endNode) REFERENCES nodes(nodeID))")
             cursor.execute("CREATE TABLE IF NOT EXISTS changes(changeID INTEGER PRIMARY KEY, userID INTEGER, missionID INTEGER, time TEXT, FOREIGN KEY(userID) REFERENCES users(userID), FOREIGN KEY(missionID) REFERENCES missions(missionID))")
             cursor.execute("CREATE TABLE IF NOT EXISTS locations(locationID INTEGER PRIMARY KEY, name TEXT, nodeID INTEGER, locationType TEXT, FOREIGN KEY(nodeID) REFERENCES nodes(nodeID))") #type will be used if we want to display locations with icons on the map e.g station type with a small train image etc...
             cursor.execute("CREATE TABLE IF NOT EXISTS edges(edgeID INTEGER PRIMARY KEY, startNode INTEGER, endNode INTEGER, length REAL, FOREIGN KEY(startNode) REFERENCES nodes(nodeID), FOREIGN KEY(endNode) REFERENCES nodes(nodeID))")
@@ -341,10 +341,10 @@ class DatabaseMethods:
     ################################
     
     #mission methods################
-    def addMission(self,question,focusIndicator, startNode,endNode):  #for use by an admin to add to the missions table
+    def addMission(self,question,focusIndicator, startNode,endNode, answer):  #for use by an admin to add to the missions table
         try:
             cursor=self.connection.cursor()
-            cursor.execute("INSERT INTO missions (missionID,question,focusIndicator,startNode,endNode) VALUES(?,?,?,?,?)",(None, question,focusIndicator, startNode,endNode))
+            cursor.execute("INSERT INTO missions (missionID,question,focusIndicator,startNode,endNode, answer) VALUES(?,?,?,?,?,?)",(None, question,focusIndicator, startNode,endNode, answer))
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
@@ -372,17 +372,17 @@ class DatabaseMethods:
     def getMissionData(self, missionID):
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT focusIndicator, startNode, endNode from missions WHERE missionID =?",(missionID,))
+            cursor.execute("SELECT focusIndicator, startNode, endNode,answer from missions WHERE missionID =?",(missionID,))
             missionData=cursor.fetchall()
             cursor.close()
             return(missionData)
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
-    def editMission(self,userID, missionID,newQuestion,newFocusIndicator, newStartNode,newEndNode):
+    def editMission(self,userID, missionID,newQuestion,newFocusIndicator, newStartNode,newEndNode,newAnswer):
         try:
             cursor=self.connection.cursor()
-            cursor.execute("UPDATE missions SET question=?,focusIndicator=?,startNode=?,endNode=? WHERE missionID=?",(newQuestion,newFocusIndicator, newStartNode,newEndNode,missionID))
+            cursor.execute("UPDATE missions SET question=?,focusIndicator=?,startNode=?,endNode=?, answer=? WHERE missionID=?",(newQuestion,newFocusIndicator, newStartNode,newEndNode,newAnswer,missionID))
             cursor.execute("INSERT INTO changes (changeID, userID, missionID, time) VALUES(?,?,?,?)",(None,userID,missionID,int(datetime.datetime.now().timestamp())))
             cursor.close()
         except(sqlite3.ProgrammingError):
