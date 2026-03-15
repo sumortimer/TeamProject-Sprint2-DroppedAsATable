@@ -387,6 +387,11 @@ class DatabaseMethods:
         self.connection.commit()
         self.connection.close()
 
+if __name__ == "__main__":
+    db = DatabaseMethods()
+    db.addMission("Choose the least steep route:", "gradient", 300, 600) # Green Path Correct
+    db.closeConnection()
+
 
 
 

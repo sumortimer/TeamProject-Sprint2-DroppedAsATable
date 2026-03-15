@@ -322,14 +322,19 @@ def mission_1():
     if request.method == "GET":
         myDatabase = DatabaseMethods()
         question1 = "Mission Description"
-        id = 1
+        ids = [1,2]
+        missions = []
+        for i in ids:
+            database_response = myDatabase.getMissionQuestion(i )
+            question = database_response[0][0]
+            missions.append({
+                'question': question,
+                'id': i
+            })
+        myDatabase.closeConnection()
          
-        try:
-            database_response = myDatabase.getMissionQuestion(id)
-            question1 = database_response[0][0]
-        finally:
-            myDatabase.closeConnection()
-            return render_template("missions_t1.html", question1=question1)
+        
+        return render_template("missions_t1.html", missions=missions)
     # elif request.method == "POST":
     #     data = request.get_json()
     #     print(data)
