@@ -301,7 +301,7 @@ class DatabaseMethods:
     ################################
 
     #querylog methods###############
-    def addQuery(self, userID, startNode, endNode, overallWeight):
+    def addQuery(self, userID, startNode, endNode, overallWeight): #adds a record of a route query to database, should be called every time the user searches for a route
         try:
             cursor=self.connection.cursor()
             cursor.execute("INSERT INTO queryLog (queryID, userID, startNode, endNode, overallWeight) VALUES (?,?,?,?,?)",(None, userID, startNode, endNode, overallWeight))
@@ -309,7 +309,7 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
-    def getStartCount(self): #returns the locations
+    def getStartCount(self): #returns the name and count of locations sorted by how often they were chosen as a start location
         try:
             cursor=self.connection.cursor()
             cursor.execute("SELECT name, COUNT(queryID) as noOcc FROM queryLog INNER JOIN locations on queryLog.startNode = locations.nodeID GROUP BY name ORDER BY noOcc DESC")
@@ -319,7 +319,7 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
-    def getEndCount(self):
+    def getEndCount(self): #returns the name and count of locations sorted by how often they were chosen as an end location
         try:
             cursor=self.connection.cursor()
             cursor.execute("SELECT name, COUNT(queryID) as noOcc FROM queryLog INNER JOIN locations on queryLog.endNode = locations.nodeID GROUP BY name ORDER BY noOcc DESC")
@@ -329,13 +329,24 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
-    def getUserCount(self):
+    def getUserCount(self): #returns a list of users and query count sorted by the number of queries made
         try:
             cursor=self.connection.cursor()
             cursor.execute("SELECT userName, COUNT(queryID) as noOcc FROM queryLog INNER JOIN users on queryLog.userID = users.userID GROUP BY userName ORDER BY noOcc DESC")
             rates=cursor.fetchall()
             cursor.close()
             return(rates)
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
+
+    def getIndicatorData(self,indicator): #returns every nodeID and an indicator value for the input indicator
+        try:
+            if indicator in ("lighting", "crime","greenery","gradient"):
+                cursor=self.connection.cursor()
+                cursor.execute(f"SELECT nodeID, {indicator} FROM nodes")
+                indicatorData=cursor.fetchall()
+                cursor.close()
+                return(indicatorData)
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
     ################################
