@@ -485,9 +485,14 @@ def mission_display():
                 return redirect("missions_t1")
             
             question = database_response[0][0]
+            image = "mission_"+str(id)+".png"
+            #Check correct option here
+            red = "Correct"
+            green = "Incorrect"
+            blue = "Incorrect"
 
             myDatabase.closeConnection()
-            return render_template("mission_display.html", question=question)
+            return render_template("mission_display.html", question=question, image=image, red=red, green=green, blue=blue)
         except:
             myDatabase.closeConnection()
             return redirect("missions_t1")
