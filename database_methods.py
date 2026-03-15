@@ -389,7 +389,8 @@ class DatabaseMethods:
 
 if __name__ == "__main__":
     db = DatabaseMethods()
-    db.addMission("Choose the least steep route:", "gradient", 300, 600) # Green Path Correct
+    #db.addMission("Choose the least steep route:", "gradient", 300, 600) # Green Path Correct
+    #db.addMission("Choose the route with the least crime:", "crime", 619, 519) # Blue Path Correct
     db.closeConnection()
 
 
