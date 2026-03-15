@@ -124,7 +124,18 @@ def edit_indicators():
     myDatabase.closeConnection()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
+@app.route("/deletenode", methods=["POST"])
+def delete_node():
+    data = request.get_json()
+    myDatabase = DatabaseMethods()
 
+    node_id = data["nodeID"]
+    
+    myDatabase.deleteNode(node_id)
+    nodes, edges, locations = myDatabase.getMapData()
+    myDatabase.closeConnection()
+    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+    
 ############ GET METHODS ###################
                 
 @app.route("/getroute", methods=["POST"])
