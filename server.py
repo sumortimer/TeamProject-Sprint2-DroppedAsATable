@@ -456,14 +456,19 @@ def missions_1():
     if request.method == "GET":
         myDatabase = DatabaseMethods()
         question1 = "Mission Description"
-        mission_id = 1
+        ids = [1,2]
+        missions = []
+        for i in ids:
+            database_response = myDatabase.getMissionQuestion(i )
+            question = database_response[0][0]
+            missions.append({
+                'question': question,
+                'id': i
+            })
+        myDatabase.closeConnection()
          
-        try:
-            database_response = myDatabase.getMissionQuestion(mission_id)
-            question1 = database_response[0][0]
-        finally:
-            myDatabase.closeConnection()
-            return render_template("missions_t1.html", question1=question1)
+        
+        return render_template("missions_t1.html", missions=missions)
     # elif request.method == "POST":
     #     data = request.get_json()
     #     print(data)
@@ -601,11 +606,15 @@ def mission_display():
                 return redirect(url_for("missions_t1"))
             
             question = database_response[0][0]
+            image = "mission_"+str(id)+".png"
+            #Check correct option here
+            red = "Correct"
+            green = "Incorrect"
+            blue = "Incorrect"
 
-            return render_template("mission_display.html", question=question)
-        except Exception as e:
-            return redirect(url_for("missions_t1"))
-        finally:
+            myDatabase.closeConnection()
+            return render_template("mission_display.html", question=question, image=image, red=red, green=green, blue=blue)
+        except:
             myDatabase.closeConnection()
 
 ############ OTHER METHODS ###################
