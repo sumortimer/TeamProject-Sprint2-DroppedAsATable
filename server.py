@@ -44,7 +44,6 @@ def add_node():
             
     nodes, edges, locations = myDatabase.getMapData()
     
-    myDatabase.closeConnection()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
     
 @app.route("/addsegment", methods=["POST"])
@@ -61,7 +60,6 @@ def add_segment():
     myDatabase.addEdge(segment_id, start_node, end_node, length)
     nodes, edges, locations = myDatabase.getMapData()
     
-    myDatabase.closeConnection()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
 @app.route("/addlocation", methods=["POST"])
@@ -84,7 +82,6 @@ def add_location():
             
     nodes, edges, locations = myDatabase.getMapData()
     
-    myDatabase.closeConnection()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
     
     
@@ -98,7 +95,6 @@ def edit_node():
     start_node = data["id"]
     myDatabase.deleteEdgeByStartNode(start_node)
     nodes, edges, locations = myDatabase.getMapData()
-    myDatabase.closeConnection()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
 
@@ -121,7 +117,6 @@ def edit_indicators():
     gradient = float(data["gradient"])
     myDatabase.editIndicators(node_id, lighting, crime, greenery, gradient)
     nodes, edges, locations = myDatabase.getMapData()
-    myDatabase.closeConnection()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
 
@@ -138,7 +133,7 @@ def get_route():
     # Get data from database
     myDatabase = DatabaseMethods()
     myDatabase.setUserWeights(1, weights)
-    myDatabase.closeConnection()
+     
     
     # Find route
     myDatabase = DatabaseMethods()
@@ -163,7 +158,7 @@ def get_route():
     scoresTwo = myDatabase.getScoreBreakdown(all_results[1])
     scoresThree = myDatabase.getScoreBreakdown(all_results[2])
 
-    myDatabase.closeConnection()
+     
     
     return jsonify({
         "success": True,
@@ -196,7 +191,7 @@ def get_route_from_name():
     end_node = myDatabase.getNodeFromLocation(end_name)
     print(start_node)
     myDatabase.setUserWeights(1, weights)
-    myDatabase.closeConnection()
+     
     # Find route
     all_results = routefindingalgorithm.findMultipleRoutes((start_node, end_node))
     print(all_results)
@@ -222,7 +217,7 @@ def get_route_from_name():
     scoresTwo = myDatabase.getScoreBreakdown(all_results[1])
     scoresThree = myDatabase.getScoreBreakdown(all_results[2])
 
-    myDatabase.closeConnection()
+     
     
     return jsonify({
         "success": True,
@@ -246,7 +241,7 @@ def get_route_from_name():
 def mapdata():
     myDatabase = DatabaseMethods()
     nodes, edges, locations = myDatabase.getMapData()
-    myDatabase.closeConnection()
+     
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
 ############ Mission Methods ###################
@@ -267,12 +262,12 @@ def login():
 
                 # Checks if a username and password has actually been sent.
                 if "username" not in data or "password" not in data:
-                    myDatabase.closeConnection()
+                     
                     return "No username or password has been entered"
 
                 # Checks if a non-blank username and password has actually been sent.
                 if data["username"] == "" or data["password"] == "":
-                    myDatabase.closeConnection()
+                     
                     return "No username or password has been entered"
                 
 
@@ -282,11 +277,11 @@ def login():
                 # Checks if the response is blank.
                 if database_response == None or database_response == []:
                     # Blanks response either means no user exists or bad database connection.
-                    myDatabase.closeConnection()
+                     
                     return "Incorrect username or password has been entered"
 
                 password = database_response[0][1]
-                myDatabase.closeConnection()
+                 
 
                 # If the passwords match then redirect the user to /map.
                 if password == data["password"]:
@@ -294,7 +289,7 @@ def login():
                 else:
                     return "Incorrect username or password has been entered"
             except:
-                myDatabase.closeConnection()
+                 
                 return "Incorrect username or password has been entered"
             
         else:
@@ -328,7 +323,7 @@ def mission_1():
             database_response = myDatabase.getMissionQuestion(id)
             question1 = database_response[0][0]
         finally:
-            myDatabase.closeConnection()
+             
             return render_template("missions_t1.html", question1=question1)
     # elif request.method == "POST":
     #     data = request.get_json()
@@ -376,7 +371,7 @@ def edit_mission():
 
             # Checks if ID variable is actually in the URL.
             if id == None:
-                myDatabase.closeConnection()
+                 
                 return redirect("/missions_t1")
             
 
@@ -385,19 +380,19 @@ def edit_mission():
 
             print(database_response)
             if database_response == None or database_response == []:
-                myDatabase.closeConnection()
+                 
                 return redirect("/missions_t1")
             if database_response[0] == None:
-                myDatabase.closeConnection()
+                 
                 return redirect("/missions_t1")
             
             question = database_response[0][0]
             print(question)
 
-            myDatabase.closeConnection()
+             
             return render_template("edit_mission.html", question=question)
         except:
-            myDatabase.closeConnection()
+             
             return 500
     elif request.method == "POST":
         myDatabase = DatabaseMethods()
@@ -417,7 +412,7 @@ def edit_mission():
             # Check to see if required arguments were sent
             if id == None or question == None:
                 # Returns 400 BAD_REQUEST
-                myDatabase.closeConnection()
+                 
                 return 400
             
             print("Past the check")
@@ -429,7 +424,7 @@ def edit_mission():
 
             # No mission with this ID exists
             if database_response == None or database_response == []:
-                myDatabase.closeConnection()
+                 
                 return 400
 
 
@@ -437,13 +432,13 @@ def edit_mission():
             # userID, missionID, newQuestion, focusIndicator, newStartNode,newEndNode
             print("editing mission")
             myDatabase.editMission(1, id, question, database_response[0][0], database_response[0][1], database_response[0][2])
-            myDatabase.closeConnection()
+             
             print("About to redirect")
             return "/missions_t1"
         
         except:
             print("ERROR!")
-            myDatabase.closeConnection()
+             
             return 500
     
         
@@ -470,7 +465,7 @@ def mission_display():
 
             # Checks if ID variable is actually in the URL.
             if id == None:
-                myDatabase.closeConnection()
+                 
                 return redirect("missions_t1")
             
 
@@ -478,18 +473,18 @@ def mission_display():
             database_response = myDatabase.getMissionQuestion(id)
 
             if database_response == None or database_response == []:
-                myDatabase.closeConnection()
+                 
                 return redirect("missions_t1")
             if database_response[0] == None:
-                myDatabase.closeConnection()
+                 
                 return redirect("missions_t1")
             
             question = database_response[0][0]
 
-            myDatabase.closeConnection()
+             
             return render_template("mission_display.html", question=question)
         except:
-            myDatabase.closeConnection()
+             
             return redirect("missions_t1")
 ############ OTHER METHODS ###################
 
