@@ -7,9 +7,14 @@ class DatabaseMethods:
         self.connection.execute("PRAGMA foreign_keys = ON;") #enables foreign key constraints
         self.setup()
 
+    # Destructor that automatically commits and closes the databases once the DatabaseMethods object goes out of scope.
     def __del__(self):
-        self.connection.commit()
-        self.connection.close()
+        try:
+            self.connection.commit()
+            self.connection.close()
+        except:
+            pass
+            # Database is already closed.
 
     #call at the start, creates tables inside task6.db if they dont already exist
     def setup(self):
@@ -234,6 +239,7 @@ class DatabaseMethods:
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
+
   
     def getMapData(self): #returns a tuple containing (node/location data (if a node isnt a location, location data columns are null) and edge data not including placeholders
         try:
@@ -419,22 +425,71 @@ class DatabaseMethods:
             print("Database connection has already been closed")
     ################################
 
-    #login methods##################
-    def addUser(self,username, email, password,usertype): #used when a user chooses to sign up and make an account
+    #login and signup methods##################
+    def addUser(self, username, email, password, usertype): # Used when a user chooses to sign up and make an account
         try:
             cursor=self.connection.cursor()
-            cursor.execute("INSERT INTO users (userID,userName,email,password,userType,points,lengthWeight,lightingWeight,crimeWeight, greeneryWeight, gradientWeight) VALUES (?,?,?,?,?,?,?,?,?,?,?)",(None, username, email, password, usertype,0,1,1,1,1,1))
+            cursor.execute("INSERT INTO users (userName,email,password,userType,points,lengthWeight,lightingWeight,crimeWeight, greeneryWeight, gradientWeight) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                           (username, email, password, usertype,0,1,1,1,1,1))
             cursor.close()
+            return True
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
+            return False
 
-    def getLoginDetails(self, username, email):  #given the username and email, returns passwords, also gives userID which is used for other user related database methods
+    def getLoginDetails(self, username, email=None):  # Given the username and (optionally) the email, returns passwords. Also returns userID, which is used for other user related database methods.
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT userID, password FROM users WHERE username = ? AND email = ?",(username, email))
+
+            if email is not None:
+                cursor.execute("SELECT userID, password FROM users WHERE username = ? AND email = ?", (username, email))
+            else:
+                cursor.execute("SELECT userID, password FROM users WHERE username = ?", (username,))
+
             userDetails = cursor.fetchall()
             cursor.close()
             return(userDetails)
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
+            return []
+
+    def areUserDetailsUsed(self, username, email): # Given username and email, are either already used in the account database?
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT userID FROM users WHERE username = ?", (username,))
+            usernameDetails = cursor.fetchall()
+            cursor.close()
+
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT userID FROM users WHERE email = ?", (email,))
+            emailDetails = cursor.fetchall()
+            cursor.close()
+
+            # Returns true if either the username or email is used in the database.
+            return len(usernameDetails) > 0 or len(emailDetails) > 0
+        except Exception as e:
+            if e == sqlite3.ProgrammingError:
+                print("Database connection has already been closed")
+            else:
+                print("Error: ", e)
+            return True # Returns true in case of an error, to disallow duplicate entries in the event areUserDetailsUsed fails.
+
+    # An alternative to getUserType that involves using a username instead
+    def getUserTypeViaUsername(self, username):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT userType from users WHERE username=?",(username,))
+            type=cursor.fetchall()
+            cursor.close()
+            return(type)
+        except Exception as e:
+            if e == sqlite3.ProgrammingError:
+                print("Database connection has already been closed")
+            else:
+                print("Error: ", e)
+
     #################################
+
+    def closeConnection(self): # Please call this when you're finished
+        self.connection.commit()
+        self.connection.close()
