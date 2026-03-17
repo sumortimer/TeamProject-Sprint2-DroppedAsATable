@@ -9,7 +9,6 @@ var inputs = [];
 
 form.addEventListener('submit', (e) => {
 
-    e.preventDefault();
 
     let errors = [];
 
@@ -27,51 +26,48 @@ form.addEventListener('submit', (e) => {
     if (errors.length > 0){
         error_message.innerText = errors.join(". ")
     }
-    else {
-        sendData();
-    }
 })
 
-async function sendData(){
-    const data = {
-        username: username_input.value,
-        password: password_input.value
-    }
+// async function sendData(){
+//     const data = {
+//         username: username_input.value,
+//         password: password_input.value
+//     }
 
-        try{
-            const response = await fetch(window.location.href, {
-                method: "POST",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data),
-            });
+//         try{
+//             const response = await fetch(window.location.href, {
+//                 method: "POST",
+//                 headers: {
+//                     'Accept': 'application/json',
+//                     'Content-Type': 'application/json'
+//                 },
+//                 body: JSON.stringify(data),
+//             });
 
-            // let clone = response.clone()
+//             // let clone = response.clone()
 
-            // try {
-            //     const content = await response.json();
-            //     console.log(content);
-            //     error_message.innerText = response.error;
-            // } catch {
-            //     const content = await clone.text();
-            //     window.location.href = content;
-            // }
+//             // try {
+//             //     const content = await response.json();
+//             //     console.log(content);
+//             //     error_message.innerText = response.error;
+//             // } catch {
+//             //     const content = await clone.text();
+//             //     window.location.href = content;
+//             // }
 
-            const content = await response.text();
-            if (content[0] == "/") {
-                window.location.href = content;
-            } else {
-                console.log(content);
-                error_message.innerText = content;
-            }
+//             const content = await response.text();
+//             if (content[0] == "/") {
+//                 window.location.href = content;
+//             } else {
+//                 console.log(content);
+//                 error_message.innerText = content;
+//             }
 
-        }
-        catch (e){
-            console.log(e);
-        }
-}
+//         }
+//         catch (e){
+//             console.log(e);
+//         }
+// }
 
 function signUpErrors(username, email, password, confirm_password){
 
@@ -101,21 +97,21 @@ function signUpErrors(username, email, password, confirm_password){
     return errors;
 }
 
-function logInErrors(username, password){
+// function logInErrors(username, password){
 
-    let errors = [];
+//     let errors = [];
 
-    if (username === "" || username === null){
-        errors.push("Username is missing");
-        username_input.parentElement.classList.add('incorrect')
-    }
-    if (password === "" || password === null){
-        errors.push("Password is missing");
-        password_input.parentElement.classList.add('incorrect')
-    }
+//     if (username === "" || username === null){
+//         errors.push("Username is missing");
+//         username_input.parentElement.classList.add('incorrect')
+//     }
+//     if (password === "" || password === null){
+//         errors.push("Password is missing");
+//         password_input.parentElement.classList.add('incorrect')
+//     }
 
-    return errors;
-}
+//     return errors;
+// }
 
 
 
