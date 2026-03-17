@@ -62,7 +62,6 @@ def add_node():
             
     nodes, edges, locations = myDatabase.getMapData()
     
-    myDatabase.closeConnection()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
     
 @app.route("/addsegment", methods=["POST"])
@@ -79,7 +78,6 @@ def add_segment():
     myDatabase.addEdge(segment_id, start_node, end_node, length)
     nodes, edges, locations = myDatabase.getMapData()
     
-    myDatabase.closeConnection()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
 @app.route("/addlocation", methods=["POST"])
@@ -102,7 +100,6 @@ def add_location():
             
     nodes, edges, locations = myDatabase.getMapData()
     
-    myDatabase.closeConnection()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
     
     
@@ -116,7 +113,6 @@ def edit_node():
     start_node = data["id"]
     myDatabase.deleteEdgeByStartNode(start_node)
     nodes, edges, locations = myDatabase.getMapData()
-    myDatabase.closeConnection()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
 
@@ -139,7 +135,6 @@ def edit_indicators():
     gradient = float(data["gradient"])
     myDatabase.editIndicators(node_id, lighting, crime, greenery, gradient)
     nodes, edges, locations = myDatabase.getMapData()
-    myDatabase.closeConnection()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
 @app.route("/deletenode", methods=["POST"])
@@ -167,7 +162,7 @@ def get_route():
     # Get data from database
     myDatabase = DatabaseMethods()
     myDatabase.setUserWeights(1, weights)
-    myDatabase.closeConnection()
+     
     
     # Find route
     myDatabase = DatabaseMethods()
@@ -192,7 +187,7 @@ def get_route():
     scoresTwo = myDatabase.getScoreBreakdown(all_results[1])
     scoresThree = myDatabase.getScoreBreakdown(all_results[2])
 
-    myDatabase.closeConnection()
+     
     
     return jsonify({
         "success": True,
@@ -225,7 +220,7 @@ def get_route_from_name():
     end_node = myDatabase.getNodeFromLocation(end_name)
     print(start_node)
     myDatabase.setUserWeights(1, weights)
-    myDatabase.closeConnection()
+     
     # Find route
     all_results = routefindingalgorithm.findMultipleRoutes((start_node, end_node))
     print(all_results)
@@ -251,7 +246,7 @@ def get_route_from_name():
     scoresTwo = myDatabase.getScoreBreakdown(all_results[1])
     scoresThree = myDatabase.getScoreBreakdown(all_results[2])
 
-    myDatabase.closeConnection()
+     
     
     return jsonify({
         "success": True,
@@ -275,7 +270,7 @@ def get_route_from_name():
 def mapdata():
     myDatabase = DatabaseMethods()
     nodes, edges, locations = myDatabase.getMapData()
-    myDatabase.closeConnection()
+     
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
 ############ Mission Methods ###################
