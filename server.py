@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for, abort
+from flask import Flask, render_template, request, jsonify, redirect, url_for, abort, session
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3, re, os
 from dotenv import load_dotenv
@@ -274,6 +274,10 @@ def login_redirect():
     return redirect(url_for('login'))
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    # Checks if user is authenticated, if they are then they are directed away from the log in page.
+    if session.get("username"):
+        return redirect(url_for("index"))
+
     if request.method == "GET":
         return render_template("login.html")
     elif request.method == "POST":
@@ -285,29 +289,40 @@ def login():
                 # Checks if a username and password have been sent and aren't blank.
                 if (not username or not password):
                     return render_template("login.html", error="No username or password has been entered")
-                
 
-
-                # # Usernames are case insensitive
+                # Usernames are case insensitive(?)
                 # username = username.lower()
 
                 # Checks with the database to see if a user with this username exists.
                 database_response = myDatabase.getLoginDetails(username)
+                #[0][0] = user_id, [0][1] = password
 
                 # Checks if the response is blank.
                 if not database_response:
-                    # Blanks response either means no user exists or bad database connection.
+                    # Blank response either means no user exists or bad database connection.
+                    return render_template("login.html", error="Incorrect username or password has been entered")
+                database_id = database_response[0][0]
+                database_password = database_response[0][1]
+
+                database_usertype = myDatabase.getUserType(database_id)
+                if not database_usertype:
+                    return render_template("login.html", error="Incorrect username or password has been entered")
+                if not database_usertype[0]:
+                    return render_template("login.html", error="Incorrect username or password has been entered")
+                if not database_usertype[0][0]:
                     return render_template("login.html", error="Incorrect username or password has been entered")
 
-                database_password = database_response[0][0]
-
-                # If the passwords match then redirect the user to /map.
+                # If the passwords match then create session and redirect the user to /map.
                 if check_password_hash(database_password, password + PEPPER_PASSWORD):
+
+                    session["user_role"] = database_usertype[0][0]
+                    session["user_name"] = username
+
                     return redirect(url_for("index"))
                 else:
                     return render_template("login.html", error="Incorrect username or password has been entered")
             except Exception as e:
-                return render_template("login.html", error="Incorrect username or password has been entered")
+                return render_template("login.html", error=e)
             finally:
                 myDatabase.closeConnection()
 
@@ -318,6 +333,10 @@ def signup_redirect():
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
+    # Checks if user is authenticated, if they are then they are directed away from the sign up page.
+    if session.get("username"):
+        return redirect(url_for("index"))
+
     if request.method == "GET":
             return render_template("signup.html")
     
@@ -411,9 +430,12 @@ def signup():
 
 
             # If everything is valid then sign the user up
-            myDatabase.addUser(username, email, generate_password_hash(password + PEPPER_PASSWORD), usertype="A")
+            if (not myDatabase.addUser(username, email, generate_password_hash(password + PEPPER_PASSWORD), usertype="A")):
+                return render_template("signup.html", error="Database error.")
 
             # Validate the user's session.
+            session["user_role"] = "T"
+            session["user_name"] = username
 
             return redirect(url_for("index"))
 

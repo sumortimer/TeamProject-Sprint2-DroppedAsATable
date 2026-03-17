@@ -391,7 +391,7 @@ class DatabaseMethods:
             if email is not None:
                 cursor.execute("SELECT userID, password FROM users WHERE username = ? AND email = ?", (username, email))
             else:
-                cursor.execute("SELECT password FROM users WHERE username = ?", (username,))
+                cursor.execute("SELECT userID, password FROM users WHERE username = ?", (username,))
 
             userDetails = cursor.fetchall()
             cursor.close()
@@ -420,6 +420,20 @@ class DatabaseMethods:
             else:
                 print("Error: ", e)
             return True # Returns true in case of an error, to disallow duplicate entries in the event areUserDetailsUsed fails.
+
+    # An alternative to getUserType that involves using a username instead
+    def getUserTypeViaUsername(self, username):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT userType from users WHERE username=?",(username,))
+            type=cursor.fetchall()
+            cursor.close()
+            return(type)
+        except Exception as e:
+            if e == sqlite3.ProgrammingError:
+                print("Database connection has already been closed")
+            else:
+                print("Error: ", e)
 
     #################################
 
