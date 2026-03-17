@@ -1,9 +1,21 @@
-from flask import Flask, render_template, request, jsonify, redirect
-import sqlite3
+from flask import Flask, render_template, request, jsonify, redirect, url_for, abort, session
+from werkzeug.security import generate_password_hash, check_password_hash
+import sqlite3, re, os
+from dotenv import load_dotenv
 from database_methods import *
 import routefindingalgorithm
 
 app = Flask(__name__)
+
+load_dotenv()
+SESSION_KEY = os.environ.get("SESSION_KEY")
+PEPPER_PASSWORD = os.environ.get("PEPPER_PASSWORD")
+
+if not PEPPER_PASSWORD or not SESSION_KEY:
+    raise ValueError("Missing required environment variables")
+
+app.secret_key = SESSION_KEY
+
 #lighting, greenery, elevation, crime, distance
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -17,7 +29,13 @@ def index():
 
 @app.route("/map.html")
 def map_redir():
-    return redirect("/")
+    return redirect(url_for("index"))
+
+############ Idea for custom error pages ###################
+# @app.errorhandler(404)
+# def page_not_found(e):
+#     # e is the error object
+#     return render_template('404.html'), 404
 
 
 ############ ADD METHODS ###################
@@ -119,7 +137,18 @@ def edit_indicators():
     nodes, edges, locations = myDatabase.getMapData()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
+@app.route("/deletenode", methods=["POST"])
+def delete_node():
+    data = request.get_json()
+    myDatabase = DatabaseMethods()
 
+    node_id = data["nodeID"]
+    
+    myDatabase.deleteNode(node_id)
+    nodes, edges, locations = myDatabase.getMapData()
+    myDatabase.closeConnection()
+    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+    
 ############ GET METHODS ###################
                 
 @app.route("/getroute", methods=["POST"])
@@ -248,83 +277,204 @@ def mapdata():
 
 @app.route("/login.html")
 def login_redirect():
-    return redirect('login')
-
+    return redirect(url_for('login'))
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    # Checks if user is authenticated, if they are then they are directed away from the log in page.
+    if session.get("username"):
+        return redirect(url_for("index"))
+
     if request.method == "GET":
         return render_template("login.html")
     elif request.method == "POST":
-        if request.is_json:
             myDatabase = DatabaseMethods()
             try:
-                data = request.get_json()
+                username = request.form.get("username")
+                password = request.form.get("password")   
 
-                # Checks if a username and password has actually been sent.
-                if "username" not in data or "password" not in data:
-                     
-                    return "No username or password has been entered"
+                # Checks if a username and password have been sent and aren't blank.
+                if (not username or not password):
+                    return render_template("login.html", error="No username or password has been entered")
 
-                # Checks if a non-blank username and password has actually been sent.
-                if data["username"] == "" or data["password"] == "":
-                     
-                    return "No username or password has been entered"
-                
+                # Usernames are case insensitive(?)
+                # username = username.lower()
 
                 # Checks with the database to see if a user with this username exists.
-                database_response = myDatabase.getLoginDetails(data["username"])
+                database_response = myDatabase.getLoginDetails(username)
+                #[0][0] = user_id, [0][1] = password
 
                 # Checks if the response is blank.
-                if database_response == None or database_response == []:
-                    # Blanks response either means no user exists or bad database connection.
-                     
-                    return "Incorrect username or password has been entered"
+                if not database_response:
+                    # Blank response either means no user exists or bad database connection.
+                    return render_template("login.html", error="Incorrect username or password has been entered")
+                database_id = database_response[0][0]
+                database_password = database_response[0][1]
 
-                password = database_response[0][1]
-                 
+                database_usertype = myDatabase.getUserType(database_id)
+                if not database_usertype:
+                    return render_template("login.html", error="Incorrect username or password has been entered")
+                if not database_usertype[0]:
+                    return render_template("login.html", error="Incorrect username or password has been entered")
+                if not database_usertype[0][0]:
+                    return render_template("login.html", error="Incorrect username or password has been entered")
 
-                # If the passwords match then redirect the user to /map.
-                if password == data["password"]:
-                    return "/map"
+                # If the passwords match then create session and redirect the user to /map.
+                if check_password_hash(database_password, password + PEPPER_PASSWORD):
+
+                    session["user_role"] = database_usertype[0][0]
+                    session["user_name"] = username
+
+                    return redirect(url_for("index"))
                 else:
-                    return "Incorrect username or password has been entered"
-            except:
-                 
-                return "Incorrect username or password has been entered"
-            
-        else:
-            return "Invalid request"
+                    return render_template("login.html", error="Incorrect username or password has been entered")
+            except Exception as e:
+                return render_template("login.html", error=e)
+            finally:
+                myDatabase.closeConnection()
+
 
 @app.route("/signup.html")
 def signup_redirect():
-    return redirect('signup')
+    return redirect(url_for('signup'))
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
+    # Checks if user is authenticated, if they are then they are directed away from the sign up page.
+    if session.get("username"):
+        return redirect(url_for("index"))
+
     if request.method == "GET":
-        return render_template("signup.html")
-    if request.method == "POST":
-        # Check with database
-        return render_template("signup.html")
+            return render_template("signup.html")
+    
+    # If someone tries to register a new account:
+    elif request.method == "POST":
+        myDatabase = DatabaseMethods()
+        try:
+            username = request.form.get("username")
+            email = request.form.get("email")
+            password = request.form.get("password1")   
+            password_confirm = request.form.get("password2")   
+
+            # Are all fields present and non-empty in the request?
+            if (not username or not email or not password or not password_confirm):
+                return render_template("signup.html", error="Missing or empty inputs in signup request.")
+            
+            
+            # Username(?) and email should be case-insensitive.
+            # username = username.lower()
+            email = email.lower()
+            
+            # Is the username or email already in use?
+            if (myDatabase.areUserDetailsUsed(username, email)):
+                return render_template("signup.html", error="Username or Email is already in use.")
+            
+            # USERNAME CHECKS
+
+            # Is username below 5 characters?
+            if (len(username) < 5):
+                return render_template("signup.html", error="Username must be at least 5 characters long.")
+            
+            # Is username below 20 characters?
+            if (len(username) > 20):
+                return render_template("signup.html", error="Usernames cannot be longer than 20 characters.")
+            
+            # Does username only contain alphanumeric characters and underscores/hyphens (no spaces or special characters)?
+            re_username_check = r"[\w-]+"
+            if (not re.fullmatch(re_username_check, username)):
+                return render_template("signup.html", error="Username should only contain alphanumeric characters or hyphens.")
+
+            # Does username start with a number or special character?
+            re_username_check = r"[A-Za-z][\w-]*"
+            if (not re.fullmatch(re_username_check, username)):
+                return render_template("signup.html", error="Username should not start with an underscore or hyphen.")
+
+            # Should usernames be case-insensitive?
+
+
+            # EMAIL CHECKS
+
+            # Is the email invalid?
+            re_email_valid = r"[a-zA-Z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,20}"
+                            # [a-zA-Z0-9._%+-]+ ensure one or more of specified characters, @ ensures mandatory at symbol, [A-Za-z0-9.-]+ one or more specificied characters in domain,
+                            # \. ensures a mandatory ., [A-Za-z]{2,20} enforces a top-level domain (e.g., .com or .gov)
+            
+            if (not re.fullmatch(re_email_valid, email)):
+                return render_template("signup.html", error="Invalid email.")
+
+
+            # PASSWORD CHECKS
+
+            # Are passwords equal?
+            if (password != password_confirm):
+                return render_template("signup.html", error="Passwords do not match.")
+            
+            # Is the password at least 8 characters?
+            if (len(password) < 8):
+                return render_template("signup.html", error="Password must be at least 8 characters.")
+
+            # Is the password longer than 128 characters?
+            if (len(password) > 128):
+                return render_template("signup.html", error="Password cannot be longer than 128 characters.")
+
+            # Does the password contain at least one uppercase letter, one lowercase letter, one digit, and one special character?
+            re_pass_valid = r"(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^0-9A-Za-z])"
+                            # (?=.*[A-Z]) checks for one upper case letter, (?=.*[a-z]) checks for one lowercase letter,
+                            # (?=.*[0-9]) checks for one digit and (?=.*[^0-9A-Za-z]) checks for one special character.
+            if (not re.match(re_pass_valid, password)):
+                return render_template("signup.html", error="Password must contain at least one uppercase letter, one lower letter, one digit and a special character.")
+
+            # Does the password contain any whitespace characters?
+            re_pass_valid = r"(?=.*[\s])"
+                            # (?=.*[\s]) checks for one whitespace character
+            if (re.match(re_pass_valid, password)):
+                return render_template("signup.html", error="Password must not contain any whitespace (such as characters).")
+
+            # Does the password contain the username?
+            re_pass_valid = re.escape(username.lower())
+            if (re.search(re_pass_valid, password.lower())):
+                return render_template("signup.html", error="Password must not contain the username.")
+
+
+            # If everything is valid then sign the user up
+            if (not myDatabase.addUser(username, email, generate_password_hash(password + PEPPER_PASSWORD), usertype="A")):
+                return render_template("signup.html", error="Database error.")
+
+            # Validate the user's session.
+            session["user_role"] = "T"
+            session["user_name"] = username
+
+            return redirect(url_for("index"))
+
+        except Exception as e:
+            print("Error:", e)
+            abort(500)
+        finally:
+            myDatabase.closeConnection()
+
 
 
 @app.route("/missions_t1.html", methods=["GET"])
 def missions_1r():
-    return redirect('/missions_t1')
+    return redirect(url_for('missions_1'))
 
 @app.route("/missions_t1", methods=["GET"])
-def mission_1():
+def missions_1():
     if request.method == "GET":
         myDatabase = DatabaseMethods()
         question1 = "Mission Description"
-        id = 1
+        ids = [1,2]
+        missions = []
+        for i in ids:
+            database_response = myDatabase.getMissionQuestion(i )
+            question = database_response[0][0]
+            missions.append({
+                'question': question,
+                'id': i
+            })
+        myDatabase.closeConnection()
          
-        try:
-            database_response = myDatabase.getMissionQuestion(id)
-            question1 = database_response[0][0]
-        finally:
-             
-            return render_template("missions_t1.html", question1=question1)
+        
+        return render_template("missions_t1.html", missions=missions)
     # elif request.method == "POST":
     #     data = request.get_json()
     #     print(data)
@@ -334,31 +484,32 @@ def mission_1():
 
 
 
-    #     print(url_for("edit_mission", id=data["number"]))
+    #     print(url_for("edit_mission", mission_id=data["number"]))
     #     return redirect(url_for("edit_mission", id=data["number"]))
     #     # return redirect(f"/edit_mission.html?id={data["number"]}")
 
 
 @app.route("/missions_t2.html", methods=["GET"])
 def missions_2r():
-    return redirect('/missions_t2')
+    return redirect(url_for('missions_2'))
 
 @app.route("/missions_t2", methods=["GET"])
-def mission_2():
+def missions_2():
     return render_template("missions_t2.html")
 
 
 @app.route("/missions_t3.html", methods=["GET"])
 def missions_3r():
-    return redirect('/missions_t3')
+    return redirect(url_for('missions_3'))
 
 @app.route("/missions_t3", methods=["GET"])
-def mission_3():
+def missions_3():
     return render_template("missions_t3.html")
+
 
 @app.route("/edit_mission.html", methods=["GET"])
 def edit_mission_r():
-    return redirect("/edit_mission")
+    return redirect(url_for("/edit_mission"))
 
 @app.route("/edit_mission", methods=["GET", "POST"])
 def edit_mission():
@@ -366,86 +517,69 @@ def edit_mission():
         myDatabase = DatabaseMethods()
         try:
             # Gets id from URL
-            id = request.args.get('id', type=int)
+            mission_id = request.args.get('id', type=int)
 
 
             # Checks if ID variable is actually in the URL.
-            if id == None:
-                 
-                return redirect("/missions_t1")
+            if mission_id == None:
+                abort(404)
             
 
             # Gets question from the URL.
-            database_response = myDatabase.getMissionQuestion(id)
+            database_response = myDatabase.getMissionQuestion(mission_id)
 
-            print(database_response)
-            if database_response == None or database_response == []:
-                 
-                return redirect("/missions_t1")
+            if not database_response:
+                abort(404)
             if database_response[0] == None:
-                 
-                return redirect("/missions_t1")
+                abort(404)
             
             question = database_response[0][0]
-            print(question)
 
-             
             return render_template("edit_mission.html", question=question)
-        except:
-             
-            return 500
+        except Exception as e:
+            abort(500)
+        finally:
+            myDatabase.closeConnection()
+
     elif request.method == "POST":
         myDatabase = DatabaseMethods()
-
         try:
+            data = request.get_json(silent=True)
+            if not data:
+                abort(400)
+            mission_id = data["id"]
+            question = data["question"]
 
-            try:
-                data = request.get_json()
-                id = data["id"]
-                question = data["question"]
-            except:
-                id = None
-                question = None
-
-            print(f"ID: {id} \nQuestion: {question}")
 
             # Check to see if required arguments were sent
-            if id == None or question == None:
-                # Returns 400 BAD_REQUEST
-                 
-                return 400
-            
-            print("Past the check")
+            if mission_id == None or question == None:
+                abort(400)
 
-            # [0][0] is focusIndicator, [0][1] is startNode, [0][1] is endNode
-            database_response = myDatabase.getMissionData(id)
-
-            print(f"Response: {database_response}")
+            database_response = myDatabase.getMissionData(mission_id)
 
             # No mission with this ID exists
-            if database_response == None or database_response == []:
-                 
-                return 400
+            if not database_response:
+                abort(400)
 
 
             # Change userID when implementing login system.
-            # userID, missionID, newQuestion, focusIndicator, newStartNode,newEndNode
-            print("editing mission")
-            myDatabase.editMission(1, id, question, database_response[0][0], database_response[0][1], database_response[0][2])
-             
-            print("About to redirect")
-            return "/missions_t1"
+            myDatabase.editMission(1, mission_id, question, 
+                                   database_response[0][0], # [0][0] is focusIndicator
+                                   database_response[0][1], # [0][1] is startNode
+                                   database_response[0][2]) # [0][2] is endNode
+            return "missions_t1" # Not a redirect, as the frontend handles the redirect. Change it so backend handles redirect like with login?
         
-        except:
-            print("ERROR!")
-             
-            return 500
+        except Exception as e:
+            return abort(500)
+        
+        finally:
+            myDatabase.closeConnection()
     
         
 
 @app.route("/user_profile.html", methods=["GET"])
 def user_profiler():
-    return redirect('/user_profile')
+    return redirect(url_for('user_profile'))
 
 @app.route("/user_profile", methods=["GET"])
 def user_profile():
@@ -453,39 +587,42 @@ def user_profile():
 
 @app.route("/mission_display.html", methods=["GET"])
 def mission_display_r():
-    return redirect("mission_display")
+    return redirect(url_for("mission_display"))
 
 @app.route("/mission_display", methods=["GET", "POST"])
 def mission_display():
     if request.method == "GET":
         myDatabase = DatabaseMethods()
+
         try:
             # Gets id from URL
-            id = request.args.get('id', type=int)
+            mission_id = request.args.get('id', type=int)
 
             # Checks if ID variable is actually in the URL.
-            if id == None:
-                 
-                return redirect("missions_t1")
+            if mission_id == None:
+                return redirect(url_for("missions_t1"))
             
 
             # Gets question from the URL.
-            database_response = myDatabase.getMissionQuestion(id)
+            database_response = myDatabase.getMissionQuestion(mission_id)
 
-            if database_response == None or database_response == []:
-                 
-                return redirect("missions_t1")
+            if not database_response:
+                return redirect(url_for("missions_t1"))
             if database_response[0] == None:
-                 
-                return redirect("missions_t1")
+                return redirect(url_for("missions_t1"))
             
             question = database_response[0][0]
+            image = "mission_"+str(id)+".png"
+            #Check correct option here
+            red = "Correct"
+            green = "Incorrect"
+            blue = "Incorrect"
 
-             
-            return render_template("mission_display.html", question=question)
+            myDatabase.closeConnection()
+            return render_template("mission_display.html", question=question, image=image, red=red, green=green, blue=blue)
         except:
-             
-            return redirect("missions_t1")
+            myDatabase.closeConnection()
+
 ############ OTHER METHODS ###################
 
 def ensure_node_exists(database, node_id):
@@ -494,4 +631,5 @@ def ensure_node_exists(database, node_id):
    
 
 if __name__ == "__main__":
-    app.run(debug=False)
+
+    app.run(debug=True)
