@@ -404,6 +404,15 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed") 
 
+    def editMissionQuestion(self, userID, missionID, newQuestion):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("UPDATE missions SET question=? WHERE missionID=?", (newQuestion, missionID))
+            cursor.execute("INSERT INTO changes (changeID, userID, missionID, time) VALUES(?,?,?,?)", (None, userID, missionID, int(datetime.datetime.now().timestamp())))
+            cursor.close()
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed") 
+
     def getLog(self):
         try:
             cursor=self.connection.cursor()
@@ -428,8 +437,8 @@ class DatabaseMethods:
     def addUser(self, username, email, password, usertype): # Used when a user chooses to sign up and make an account
         try:
             cursor=self.connection.cursor()
-            cursor.execute("INSERT INTO users (userName,email,password,userType,points,lengthWeight,lightingWeight,crimeWeight, greeneryWeight, gradientWeight) VALUES (?,?,?,?,?,?,?,?,?,?)",
-                           (username, email, password, usertype,0,1,1,1,1,1))
+            cursor.execute("INSERT INTO users (userName, email, password, userType, points, lengthWeight, lightingWeight, crimeWeight, greeneryWeight, gradientWeight) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                           (username, email, password, usertype, 0, 1, 1, 1, 1, 1))
             cursor.close()
             return True
         except(sqlite3.ProgrammingError):
@@ -475,6 +484,20 @@ class DatabaseMethods:
 
     # An alternative to getUserType that involves using a username instead
     def getUserTypeViaUsername(self, username):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT userType from users WHERE username=?",(username,))
+            type=cursor.fetchall()
+            cursor.close()
+            return(type)
+        except Exception as e:
+            if e == sqlite3.ProgrammingError:
+                print("Database connection has already been closed")
+            else:
+                print("Error: ", e)
+
+    # An alternative to getUserType that involves using a username instead
+    def getIDFromUsername(self, username):
         try:
             cursor=self.connection.cursor()
             cursor.execute("SELECT userType from users WHERE username=?",(username,))
