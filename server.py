@@ -32,10 +32,7 @@ def map_redir():
     return redirect(url_for("index"))
 
 def isUserAuthenticated():
-    if session.get("user_name"):
-        return True
-    else:
-        return False
+    return bool(session.get("user_name"))
 
 ############ Idea for custom error pages ###################
 # @app.errorhandler(404)
@@ -518,7 +515,7 @@ def missions_3():
 
 @app.route("/edit_mission.html", methods=["GET"])
 def edit_mission_r():
-    return redirect(url_for("/edit_mission"))
+    return redirect(url_for("edit_mission"))
 
 @app.route("/edit_mission", methods=["GET", "POST"])
 def edit_mission():
@@ -617,8 +614,8 @@ def mission_display():
                 return redirect(url_for("missions_t1"))
             
             question = database_response[0][0]
-            image = "mission_"+str(id)+".png"
-            #Check correct option here
+            image = "mission_"+str(mission_id)+".png"
+            # Check correct option here
             red = "Correct"
             green = "Incorrect"
             blue = "Incorrect"
