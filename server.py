@@ -32,7 +32,7 @@ def map_redir():
     return redirect(url_for("index"))
 
 def isUserAuthenticated():
-    return bool(session.get("user_name"))
+    return bool(session.get("user_name"))  
 
 ############ Idea for custom error pages ###################
 # @app.errorhandler(404)
