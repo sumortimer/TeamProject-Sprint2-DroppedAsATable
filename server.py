@@ -522,6 +522,9 @@ def edit_mission():
     if not isUserAuthenticated():
         return redirect(url_for("index"))
 
+    if session["user_role"] == "T":
+        abort(403)
+
     if request.method == "GET":
         myDatabase = DatabaseMethods()
         try:
