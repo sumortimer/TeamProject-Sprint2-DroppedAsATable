@@ -468,6 +468,16 @@ class DatabaseMethods:
             print("Database connection has already been closed")
         except Exception as e:
             print("Error: ", e)
+
+    def getUserPoints(self,userID):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT points FROM users WHERE userID = ?", (userID,))
+            points=cursor.fetchall()
+            cursor.close()
+            return(points)
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
     ################################
 
     #login and signup methods##################
