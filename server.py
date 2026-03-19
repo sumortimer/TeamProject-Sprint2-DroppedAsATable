@@ -681,21 +681,31 @@ def mission_display():
             myDatabase.closeConnection()
 
 # Needs to be tested
+def getAuditLog():
+    myDatabase = DatabaseMethods()
+    try:
+        audit_log = []
+        database_response = myDatabase.getLog()
+        for record in database_response:
+            audit_log.append({
+                'changeID': record[0],
+                'userID': record[1],
+                'missionID': record[2],
+                'time': record[3]
+            })
+        return database_response
+    except Exception as e:
+        print("Error", e)
+        return []
+    finally:
+        myDatabase.closeConnection()
+
 @app.route("/dev_panel", methods=["GET", "POST"])
 def dev_panel():
     if not isUserAuthenticated(devNeeded=True):
         return redirect(url_for("index"))
     
-    myDatabase = DatabaseMethods()
-    audit_log = []
-    database_response = myDatabase.getLog()
-    for record in database_response:
-        audit_log.append({
-            'changeID': record[0],
-            'userID': record[1],
-            'missionID': record[2],
-            'time': record[3]
-        })
+    audit_log = getAuditLog()
 
     if request.method == "GET":
 
@@ -769,8 +779,18 @@ def dev_panel():
     finally:
         myDatabase.closeConnection()
 
+@app.route("/admin_panel", methods=["GET"])
+def admin_panel():
+    if not isUserAuthenticated(adminNeeded=True):
+        return redirect(url_for("index"))
+
+    if request.method == "GET":
+        audit_log = getAuditLog()
+        return render_template("admin_panel.html", audit_log=audit_log)
+
+
 @app.route("/logout", methods=["GET"])
-def log_out():
+def logout():
     session.clear()
     return redirect(url_for("index"))
 
