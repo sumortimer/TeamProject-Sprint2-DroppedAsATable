@@ -31,6 +31,9 @@ def index():
 def map_redir():
     return redirect(url_for("index"))
 
+def isUserAuthenticated():
+    return bool(session.get("user_name"))  
+
 ############ Idea for custom error pages ###################
 # @app.errorhandler(404)
 # def page_not_found(e):
@@ -281,7 +284,7 @@ def login_redirect():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     # Checks if user is authenticated, if they are then they are directed away from the log in page.
-    if session.get("username"):
+    if isUserAuthenticated():
         return redirect(url_for("index"))
 
     if request.method == "GET":
@@ -321,6 +324,7 @@ def login():
                 # If the passwords match then create session and redirect the user to /map.
                 if check_password_hash(database_password, password + PEPPER_PASSWORD):
 
+                    session["user_id"] = database_id
                     session["user_role"] = database_usertype[0][0]
                     session["user_name"] = username
 
@@ -340,7 +344,7 @@ def signup_redirect():
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     # Checks if user is authenticated, if they are then they are directed away from the sign up page.
-    if session.get("username"):
+    if isUserAuthenticated():
         return redirect(url_for("index"))
 
     if request.method == "GET":
@@ -436,12 +440,21 @@ def signup():
 
 
             # If everything is valid then sign the user up
-            if (not myDatabase.addUser(username, email, generate_password_hash(password + PEPPER_PASSWORD), usertype="A")):
+            if (not myDatabase.addUser(username, email, generate_password_hash(password + PEPPER_PASSWORD), usertype="T")):
                 return render_template("signup.html", error="Database error.")
+            
+            database_response = myDatabase.getLoginDetails(username)
+            #[0][0] = user_id, [0][1] = password
+
+            if not database_response:
+                return render_template("signup.html", error="Database error.")
+            
+            user_id = database_response[0][0]
 
             # Validate the user's session.
             session["user_role"] = "T"
             session["user_name"] = username
+            session["user_id"] = user_id
 
             return redirect(url_for("index"))
 
@@ -462,17 +475,16 @@ def missions_1():
     if request.method == "GET":
         myDatabase = DatabaseMethods()
         question1 = "Mission Description"
-        ids = [1,2]
+        ids = [1]
         missions = []
         for i in ids:
-            database_response = myDatabase.getMissionQuestion(i )
+            database_response = myDatabase.getMissionQuestion(i)
             question = database_response[0][0]
             missions.append({
                 'question': question,
                 'id': i
             })
         myDatabase.closeConnection()
-         
         
         return render_template("missions_t1.html", missions=missions)
     # elif request.method == "POST":
@@ -509,10 +521,16 @@ def missions_3():
 
 @app.route("/edit_mission.html", methods=["GET"])
 def edit_mission_r():
-    return redirect(url_for("/edit_mission"))
+    return redirect(url_for("edit_mission"))
 
 @app.route("/edit_mission", methods=["GET", "POST"])
 def edit_mission():
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
+
+    if session["user_role"] == "T":
+        abort(403)
+
     if request.method == "GET":
         myDatabase = DatabaseMethods()
         try:
@@ -551,22 +569,15 @@ def edit_mission():
             question = data["question"]
 
 
-            # Check to see if required arguments were sent
+            # Checks to see if required arguments were sent
             if mission_id == None or question == None:
                 abort(400)
 
-            database_response = myDatabase.getMissionData(mission_id)
-
             # No mission with this ID exists
-            if not database_response:
+            if not myDatabase.getMissionQuestion(mission_id):
                 abort(400)
 
-
-            # Change userID when implementing login system.
-            myDatabase.editMission(1, mission_id, question, 
-                                   database_response[0][0], # [0][0] is focusIndicator
-                                   database_response[0][1], # [0][1] is startNode
-                                   database_response[0][2]) # [0][2] is endNode
+            myDatabase.editMissionQuestion(session["user_id"], mission_id, question) # [0][2] is endNode
             return "missions_t1" # Not a redirect, as the frontend handles the redirect. Change it so backend handles redirect like with login?
         
         except Exception as e:
@@ -612,8 +623,8 @@ def mission_display():
                 return redirect(url_for("missions_t1"))
             
             question = database_response[0][0]
-            image = "mission_"+str(id)+".png"
-            #Check correct option here
+            image = "mission_"+str(mission_id)+".png"
+            # Check correct option here
             red = "Correct"
             green = "Incorrect"
             blue = "Incorrect"
