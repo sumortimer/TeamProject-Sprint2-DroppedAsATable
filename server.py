@@ -643,7 +643,6 @@ def mission_display():
             if mission_id == None:
                 return redirect(url_for("missions_t1"))
             
-
             # Gets question from the URL.
             database_response = myDatabase.getMissionQuestion(mission_id)
 
