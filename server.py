@@ -19,20 +19,42 @@ app.secret_key = SESSION_KEY
 #lighting, greenery, elevation, crime, distance
 @app.route("/", methods=["GET", "POST"])
 def index():
+
     if request.method == "POST":
         start = request.form["start"]
         end = request.form["end"]
 
         return "Route saved to database!"
+    
+    # Sends user to login if they are not logged in
+    if not isUserAuthenticated():
+        return redirect(url_for("login"))
 
-    return render_template("index.html")
+    # If the user hasn't accepted the disclaimers this session then tell the index.html to pop-up the disclaimers.
+    if not session.get("acceptedTerms"):
+        session["acceptedTerms"] = True;
+        return render_template("index.html", termsNeeded="True")
+
+    return render_template("index.html", termsNeeded="False")
 
 @app.route("/map.html")
 def map_redir():
     return redirect(url_for("index"))
 
-def isUserAuthenticated():
+# Check for whether user is logged in or not
+# If action requires the user to be an admin or above, then set adminNeeded, vice versa devNeeded.
+# By default if app.debug is set to true then isUserAuthenticated is overridden for testing,
+# you can override this to test this method while still remaining in debug by changing overrideDebug here to True.
+def isUserAuthenticated(adminNeeded=False, devNeeded=False, overrideDebug=False):
+    if app.debug and not overrideDebug:
+        return True
+
+    if adminNeeded:
+        return bool(session.get("user_role") == "A" or session.get("user_role") == "M")
+    elif devNeeded:
+        return bool(session.get("user_role") == "M")
     return bool(session.get("user_name"))
+
 
 ############ Idea for custom error pages ###################
 # @app.errorhandler(404)
@@ -472,6 +494,9 @@ def missions_1r():
 
 @app.route("/missions_t1", methods=["GET"])
 def missions_1():
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
+
     if request.method == "GET":
         myDatabase = DatabaseMethods()
         question1 = "Mission Description"
@@ -507,6 +532,8 @@ def missions_2r():
 
 @app.route("/missions_t2", methods=["GET"])
 def missions_2():
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
     return render_template("missions_t2.html")
 
 
@@ -516,6 +543,8 @@ def missions_3r():
 
 @app.route("/missions_t3", methods=["GET"])
 def missions_3():
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
     return render_template("missions_t3.html")
 
 
@@ -525,11 +554,8 @@ def edit_mission_r():
 
 @app.route("/edit_mission", methods=["GET", "POST"])
 def edit_mission():
-    if not isUserAuthenticated():
+    if not isUserAuthenticated(adminNeeded=True):
         return redirect(url_for("index"))
-
-    if session["user_role"] == "T":
-        abort(403)
 
     if request.method == "GET":
         myDatabase = DatabaseMethods()
@@ -577,11 +603,15 @@ def edit_mission():
             if not myDatabase.getMissionQuestion(mission_id):
                 abort(400)
 
-            myDatabase.editMissionQuestion(session["user_id"], mission_id, question) # [0][2] is endNode
+            if not session.get("user_id"): # DEBUG
+                myDatabase.editMissionQuestion(-1, mission_id, question)
+            else:
+                myDatabase.editMissionQuestion(session["user_id"], mission_id, question)
             return "missions_t1" # Not a redirect, as the frontend handles the redirect. Change it so backend handles redirect like with login?
         
         except Exception as e:
-            return abort(500)
+            print("Error", e)
+            abort(500)
         
         finally:
             myDatabase.closeConnection()
@@ -594,6 +624,8 @@ def user_profiler():
 
 @app.route("/user_profile", methods=["GET"])
 def user_profile():
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
     return render_template("user_profile.html")
 
 @app.route("/mission_display.html", methods=["GET"])
@@ -602,6 +634,9 @@ def mission_display_r():
 
 @app.route("/mission_display", methods=["GET", "POST"])
 def mission_display():
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
+
     if request.method == "GET":
         myDatabase = DatabaseMethods()
 
@@ -613,7 +648,6 @@ def mission_display():
             if mission_id == None:
                 return redirect(url_for("missions_t1"))
             
-
             # Gets question from the URL.
             database_response = myDatabase.getMissionQuestion(mission_id)
 
