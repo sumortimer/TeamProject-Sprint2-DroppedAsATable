@@ -238,6 +238,7 @@
 
             // Select all necessary HTML fields
             const editBtn = el.querySelector(".btn-edit");
+            const deleteBtn = el.querySelector(".btn-delete");
             const saveBtn = el.querySelector(".btn-save");
             const cancelBtn = el.querySelector(".btn-cancel");
             const viewSpan = el.querySelector(".conn-view");
@@ -258,6 +259,7 @@
                 viewSpan.style.display = "none";
                 input.style.display = "inline-block";
                 editBtn.style.display = "none";
+                deleteBtn.style.display = "none";
                 saveBtn.style.display = "inline-block";
                 cancelBtn.style.display = "inline-block";
                 [lightingView, crimeView, greeneryView, gradientView].forEach(x => x.style.display = "none");   // Hides text spans
@@ -266,11 +268,16 @@
                 input.focus();
                 isCreating = true;
             };
+            deleteBtn.onclick = () => {
+                if (!confirm(`Delete node ${nodeId}?`)) return;
+                deleteNode(nodeId);
+            };
             cancelBtn.onclick = () => {
                 input.value = viewSpan.textContent === "(none)" ? "" : viewSpan.textContent;
                 viewSpan.style.display = "inline";
                 input.style.display = "none";
                 editBtn.style.display = "inline-block";
+                deleteBtn.style.display = "inline-block";
                 saveBtn.style.display = "none";
                 cancelBtn.style.display = "none";
                 [lightingView, crimeView, greeneryView, gradientView].forEach(x => x.style.display = "inline");
@@ -296,6 +303,7 @@
                 viewSpan.style.display = "inline";
                 input.style.display = "none";
                 editBtn.style.display = "inline-block";
+                deleteBtn.style.display = "inline-block";
                 saveBtn.style.display = "none";
                 cancelBtn.style.display = "none";
             };
@@ -461,6 +469,7 @@
 
     /////////////////// EDIT AND DELETE FUNCTIONS ///////////////////////////////////////////////////////////////////
 
+    // Triggered when save is pressed inside the edit menu of a node
     function editNode(nodeId, newConnections, lighting, crime, greenery, gradient){
         if (lighting > 1 || lighting < 0 || crime > 1 || crime < 0 || greenery > 1 || greenery < 0 || gradient > 1 || gradient < 0){   // Bounds between 0 and 1 for indicators
             alert("Indicator values must be between 0 and 1.");
@@ -495,7 +504,38 @@
         markersMap.get(nodeId).setPopupContent(getNodePopup(node));   // Update the node's popup content
         console.log(edges);
     }
-    
+    // Triggered when OK is selected in the popup made from deleting a node
+    function deleteNode(nodeId){
+        fetch("/deletenode", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                nodeID: nodeId   // Sends the nodeId which the database wipes from its records in nodes, edges, and locations
+            })
+        });
+        const nodeIndex = nodes.findIndex(n => n.id === nodeId);   // Index where nodeId is found in nodes inside a node object
+        if (nodeIndex !== -1) {
+            nodes.splice(nodeIndex, 1);   // If there wasn't an error finding it, delete 1 entry at the index
+        }
+        nodesMap.delete(nodeId);   // Delete the node entry in nodesMap too
+
+        const marker = markersMap.get(nodeId);   // Finding the marker to remove from the map by the nodeId
+        if (marker) {
+            map.removeLayer(marker);
+        }
+        markersMap.delete(nodeId);   // Delete the marker from markersMap too
+
+        const locationIndex = locations.findIndex(loc => loc.nodeId === nodeId);   // Index where nodeId is found in locations inside a location object
+        if (locationIndex !== -1) {
+            const locationId = locations[locationIndex].id;   // If there wasn't an error finding it, get its locationId too
+            locations.splice(locationIndex, 1);   // Delete 1 entry at the index in locations
+            locationsMap.delete(locationId);   // Delete the location in locationsMap using the extracted locationId
+            locationsByNodeId.delete(nodeId);   // Delete the location in locationsByNodeId using the nodeId
+        }
+        else{
+            console.log("LOCATION WAS NOT DELETED (SAFE IF NODE WAS JUST DELETED)");
+        }
+    } 
 
     /////////////////// POPUP HELPER FUNCTIONS //////////////////////////////////////////////////////////////////////
 
@@ -534,9 +574,11 @@
 
                 <div style="margin-top:6px; display:flex; gap:1px;">
                     <button class="btn-edit">Edit</button>
+                    <button class="btn-delete">Delete</button>
                     <button class="btn-save" style="display:none;">Save</button>
                     <button class="btn-cancel" style="display:none;">Cancel</button>
                 </div>
+
             </div>
         `;
     }
@@ -579,6 +621,7 @@
                     style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
                 <div style="margin-top:6px; display:flex; gap:1px;">
                     <button class="btn-edit">Edit</button>
+                    <button class="btn-delete">Delete</button>
                     <button class="btn-save" style="display:none;">Save</button>
                     <button class="btn-cancel" style="display:none;">Cancel</button>
                 </div>
