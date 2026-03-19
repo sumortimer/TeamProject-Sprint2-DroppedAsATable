@@ -712,13 +712,15 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                displayRoute(data);} 
+                displayRoute(data, Number(startNode), Number(endNode));} 
         })
 
     }
     function findRouteWithName() {
         const startNode = document.getElementById('routeStartName').value;
         const endNode = document.getElementById('routeEndName').value;
+        const startNodeId = [...locationsMap.values()].find(l => l.name === startNode)?.nodeId ?? null;
+        const endNodeId = [...locationsMap.values()].find(l => l.name === endNode)?.nodeId ?? null;
         const preferences = [document.getElementById('distance').value, document.getElementById('lighting').value, document.getElementById('crime').value, document.getElementById('greenery').value, document.getElementById('gradient').value];
         // Clear previous route
         clearRoute();
@@ -743,11 +745,11 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                displayRoute(data);} 
+                displayRoute(data, startNodeId, endNodeId);} 
         })
 
     }
-    function displayRoute(routeData, num) {
+    function displayRoute(routeData, startNode, endNode) {
         const pathOne = routeData.path;
         const pathTwo = routeData.pathTwo;
         const pathThree = routeData.pathThree;
@@ -787,6 +789,13 @@
             opacity: 0.8,
             smoothFactor: 1
         }).addTo(map);
+
+        console.log(markersMap.get(startNode));   // DEBUG
+        for (const key of markersMap.keys()){   // For every key of markersMap
+            if ((key !== startNode && key !== endNode) && locationsByNodeId.get(key) !== undefined) {   // If it's not the startNode or endNode (and must be a location)
+                map.removeLayer(markersMap.get(key));   // Hide the marker
+            }
+        }
         
         // Display route info
         let info = `<h4>Route from Node ${routeData.start} to ${routeData.end}:</h4>`;
