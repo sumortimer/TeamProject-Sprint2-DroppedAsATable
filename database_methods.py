@@ -10,7 +10,6 @@ class DatabaseMethods:
         self.connection=sqlite3.connect("task6.db") #when the object is created, it either connects to, (or creates if not detected) task6.db
         self.connection.execute("PRAGMA foreign_keys = ON;") #enables foreign key constraints
         self.setup()
-
     # Destructor that automatically commits and closes the databases once the DatabaseMethods object goes out of scope.
     def __del__(self):
         try:
@@ -19,12 +18,10 @@ class DatabaseMethods:
         except:
             pass
             # Database is already closed.
-
     #call at the start, creates tables inside task6.db if they dont already exist
     def setup(self):
         try:
             cursor=self.connection.cursor()
-        
             #table to store users, if anyone knows anything about password security stuff we could do that instead of storing plaintext
             cursor.execute("CREATE TABLE IF NOT EXISTS nodes(nodeID INTEGER PRIMARY KEY, coordinatesX REAL, coordinatesY REAL,lighting REAL, crime REAL, greenery REAL, gradient REAL)")
             cursor.execute("CREATE TABLE IF NOT EXISTS users(userID INTEGER PRIMARY KEY, userName TEXT, email TEXT, password TEXT,userType TEXT CHECK(userType in ('T','A','M')), points INTEGER, lengthWeight REAL, lightingWeight REAL, crimeWeight REAL, greeneryWeight REAL, gradientWeight REAL)") # usertype enum is short for travellers, admins, maintainers as said in the spec
@@ -476,7 +473,6 @@ class DatabaseMethods:
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
-    ### REMEMBER TO ADD LOCATIONS ###
     def deleteEdgeByStartNode(self, startNode):
         try:
             cursor=self.connection.cursor()
