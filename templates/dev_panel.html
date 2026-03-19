@@ -9,6 +9,47 @@
     <title>Document</title>
 </head>
 <body>
-    
+    <!-- A back button to go back. -->
+
+    <p>Use the form below with the username of the person you want to promote/demote and your password.</p>
+
+    <form id="form" method="POST">
+        <div>
+            <input  type="text" id="username" name="username" required placeholder="User to promote/demote">
+        </div>
+
+        <br>
+
+        <div>
+            <input type="password" id="password" name="password" required placeholder="Your developer password">
+        </div>
+
+        <br>
+
+        <div>
+            <input type="radio" id="promote" name="action" value="promote" checked>
+            <label for="promote">Promote</label>
+            <input type="radio" id="demote" name="action" value="demote">
+            <label for="demote">Demote</label>
+        </div>
+
+        <p id="error_message">{{ error }}</p>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- Need table that will iterate through -->
+     <div id="auditlog">
+        <!-- Header for table -->
+        {% for audit in audit_log %}
+        <div class="audit">
+            <!-- changeID -->
+            <!-- userID -->
+            <!-- missionID -->
+            <!-- time -->
+        </div>
+        {% endfor %}
+
+    </div>
 </body>
 </html>
