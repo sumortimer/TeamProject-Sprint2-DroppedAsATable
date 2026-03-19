@@ -223,11 +223,16 @@ class DatabaseMethods:
             cursor.execute("DELETE FROM locations WHERE nodeID =?",(nodeID,))
             cursor.execute("DELETE FROM edges WHERE startNode =?",(nodeID,))
             cursor.execute("DELETE FROM edges WHERE endNode =?",(nodeID,))
+            cursor.execute("DELETE FROM changes WHERE missionID in (SELECT missionID FROM missions WHERE startNode=?)",(nodeID,))
+            cursor.execute("DELETE FROM changes WHERE missionID in (SELECT missionID FROM missions WHERE endNode=?)",(nodeID,))
+            cursor.execute("DELETE FROM missions WHERE startNode =?",(nodeID,))
+            cursor.execute("DELETE FROM missions WHERE endNode =?",(nodeID,))
+            cursor.execute("DELETE FROM queryLog WHERE startNode =?",(nodeID,))
+            cursor.execute("DELETE FROM queryLog WHERE endNode =?",(nodeID,))
             cursor.execute("DELETE FROM nodes WHERE nodeID =?",(nodeID,))
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
-
 
     ### REMEMBER TO ADD LOCATIONS ###
     def deleteEdgeByStartNode(self, startNode):
