@@ -16,179 +16,39 @@ if not PEPPER_PASSWORD or not SESSION_KEY:
 
 app.secret_key = SESSION_KEY
 
+
+################# MAP REDIRECTS ####################
 #lighting, greenery, elevation, crime, distance
 @app.route("/", methods=["GET", "POST"])
 def index():
-
     if request.method == "POST":
         start = request.form["start"]
         end = request.form["end"]
-
         return "Route saved to database!"
-    
     # Sends user to login if they are not logged in
     if not isUserAuthenticated():
         return redirect(url_for("login"))
-
     # If the user hasn't accepted the disclaimers this session then tell the index.html to pop-up the disclaimers.
     if not session.get("acceptedTerms"):
         session["acceptedTerms"] = True
         return render_template("index.html", termsNeeded="True")
-
     return render_template("index.html", termsNeeded="False")
-
 @app.route("/map.html")
 def map_redir():
     return redirect(url_for("index"))
 
-# Check for whether user is logged in or not
-# If action requires the user to be an admin or above, then set adminNeeded, vice versa devNeeded.
-# By default if app.debug is set to true then isUserAuthenticated is overridden for testing,
-# you can override this to test this method while still remaining in debug by changing overrideDebug here to True.
-def isUserAuthenticated(adminNeeded=False, devNeeded=False, overrideDebug=False):
-    if app.debug and not overrideDebug:
-        return True
-
-    if adminNeeded:
-        return bool(session.get("user_role") == "A" or session.get("user_role") == "M")
-    elif devNeeded:
-        return bool(session.get("user_role") == "M")
-    return bool(session.get("user_name"))
 
 
-############ Idea for custom error pages ###################
-# @app.errorhandler(404)
-# def page_not_found(e):
-#     # e is the error object
-#     return render_template('404.html'), 404
-
-
-############ ADD METHODS ###################
-
-@app.route("/addnode", methods=["POST"])
-def add_node():
-    data = request.get_json()
-    myDatabase = DatabaseMethods()
-
-    node_id = data["id"]
-    coordx = data["coordx"]
-    coordy = data["coordy"]
-    lighting = data["lighting"]
-    crime = data["crime"]
-    greenery = data["greenery"]
-    gradient = data["gradient"]
-    if myDatabase.nodeExists(node_id):
-        print("Exists")
-        myDatabase.updateNode(node_id, coordx, coordy, lighting, crime, greenery, gradient)
-        
-    else:
-        print("Does not exist")
-        myDatabase.addNode(node_id, coordx, coordy, lighting, crime, greenery, gradient)
-            
-    nodes, edges, locations = myDatabase.getMapData()
-    
-    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
-    
-@app.route("/addsegment", methods=["POST"])
-def add_segment():
-    data = request.get_json()
-    myDatabase = DatabaseMethods()
-
-    segment_id = data["id"]
-    start_node = data["startNode"]
-    end_node = data["endNode"]
-    length = data["length"]
-    ensure_node_exists(myDatabase, start_node)
-    ensure_node_exists(myDatabase, end_node)
-    myDatabase.addEdge(segment_id, start_node, end_node, length)
-    nodes, edges, locations = myDatabase.getMapData()
-    
-    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
-
-@app.route("/addlocation", methods=["POST"])
-def add_location():
-    data = request.get_json()
-    myDatabase = DatabaseMethods()
-
-    location_id = data["id"]
-    name = data["name"]
-    node_id = data["nodeID"]
-    location_type = data["locationType"]
-
-    if myDatabase.locationExists(location_id):
-        print("Exists")
-        myDatabase.updateLocation(location_id, node_id, name, location_type)
-        
-    else:
-        print("Does not exist")
-        myDatabase.addLocation(location_id, node_id, name, location_type)
-            
-    nodes, edges, locations = myDatabase.getMapData()
-    
-    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
-    
-    
-############ EDIT AND DELETE METHODS ###################
-
-@app.route("/editnode", methods=["POST"])
-def edit_node():
-    data = request.get_json()
-    myDatabase = DatabaseMethods()
-
-    start_node = data["id"]
-    myDatabase.deleteEdgeByStartNode(start_node)
-    nodes, edges, locations = myDatabase.getMapData()
-    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
-
-
-@app.route("/editlocation", methods=["POST"])
-def edit_location():
-    data = request.get_json()
-    myDatabase = DatabaseMethods()
-
-    name = data["name"]
-
-@app.route("/editindicators", methods=["POST"])
-def edit_indicators():
-    data = request.get_json()
-    myDatabase = DatabaseMethods()
-
-    node_id = data["id"]
-    lighting = float(data["lighting"])
-    crime = float(data["crime"])
-    greenery = float(data["greenery"])
-    gradient = float(data["gradient"])
-    myDatabase.editIndicators(node_id, lighting, crime, greenery, gradient)
-    nodes, edges, locations = myDatabase.getMapData()
-    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
-
-@app.route("/deletenode", methods=["POST"])
-def delete_node():
-    data = request.get_json()
-    myDatabase = DatabaseMethods()
-
-    node_id = data["nodeID"]
-    
-    myDatabase.deleteNode(node_id)
-    nodes, edges, locations = myDatabase.getMapData()
-    myDatabase.closeConnection()
-    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
-    
-############ GET METHODS ###################
-                
+################# GET ROUTES ########################
 @app.route("/getroute", methods=["POST"])
 def get_route():
     data = request.get_json()
     start_node = int(data["startNode"])
     end_node = int(data["endNode"])
     weights = data["weights"]
-
-    
     # Get data from database
     myDatabase = DatabaseMethods()
     myDatabase.setUserWeights(1, weights)
-     
-    
     # Find route
     myDatabase = DatabaseMethods()
     all_results = routefindingalgorithm.findMultipleRoutes((start_node, end_node))
@@ -196,7 +56,6 @@ def get_route():
     coordinates = myDatabase.getPathCoordinates(all_results[0])
     coordinatesTwo = myDatabase.getPathCoordinates(all_results[1])
     coordinatesThree = myDatabase.getPathCoordinates(all_results[2])
-
     #calculate distance of each route
     costOne = 0
     for i in range(0, len(all_results[0]) - 2):
@@ -207,13 +66,9 @@ def get_route():
     costThree = 0
     for i in range(0, len(all_results[2]) - 2):
         costThree += int(myDatabase.getEdgeLength(all_results[2][i], all_results[2][i + 1])[0][0])
-
     scoresOne = myDatabase.getScoreBreakdown(all_results[0])
     scoresTwo = myDatabase.getScoreBreakdown(all_results[1])
     scoresThree = myDatabase.getScoreBreakdown(all_results[2])
-
-     
-    
     return jsonify({
         "success": True,
         "path": all_results[0],
@@ -231,7 +86,6 @@ def get_route():
         "start": start_node,
         "end": end_node
     })
-
 @app.route("/getroutefromname", methods=["POST"])
 def get_route_from_name():
     myDatabase = DatabaseMethods()
@@ -239,23 +93,19 @@ def get_route_from_name():
     start_name = data.get("startName", "")
     end_name = data.get("endName", "")
     weights = data.get("weights")
-
-    
+    # Execute database methods
     start_node = myDatabase.getNodeFromLocation(start_name)
     end_node = myDatabase.getNodeFromLocation(end_name)
     print(start_node)
     myDatabase.setUserWeights(1, weights)
-     
     # Find route
     all_results = routefindingalgorithm.findMultipleRoutes((start_node, end_node))
     print(all_results)
-
-    myDatabase = DatabaseMethods()
-    
+    myDatabase = DatabaseMethods() ############ ??? ###########
+    # Execute database methods
     coordinates = myDatabase.getPathCoordinates(all_results[0])
     coordinatesTwo = myDatabase.getPathCoordinates(all_results[1])
     coordinatesThree = myDatabase.getPathCoordinates(all_results[2])
-
     #calculate distance of each route
     costOne = 0
     for i in range(0, len(all_results[0]) - 2):
@@ -266,13 +116,9 @@ def get_route_from_name():
     costThree = 0
     for i in range(0, len(all_results[2]) - 2):
         costThree += int(myDatabase.getEdgeLength(all_results[2][i], all_results[2][i + 1])[0][0])
-
     scoresOne = myDatabase.getScoreBreakdown(all_results[0])
     scoresTwo = myDatabase.getScoreBreakdown(all_results[1])
     scoresThree = myDatabase.getScoreBreakdown(all_results[2])
-
-     
-    
     return jsonify({
         "success": True,
         "path": all_results[0],
@@ -289,80 +135,296 @@ def get_route_from_name():
         "scoreThree": scoresThree,
         "start": start_node,
         "end": end_node
-    })    
+    })   
 
-@app.route("/getmapdata", methods=["GET"])
-def mapdata():
+
+
+################# ADD ROUTES #######################
+@app.route("/addnode", methods=["POST"])
+def add_node():
+    data = request.get_json()
     myDatabase = DatabaseMethods()
+    # Collecting the json data
+    node_id = data["id"]
+    coordx = data["coordx"]
+    coordy = data["coordy"]
+    lighting = data["lighting"]
+    crime = data["crime"]
+    greenery = data["greenery"]
+    gradient = data["gradient"]
+    if myDatabase.nodeExists(node_id):
+        print("Exists")
+        myDatabase.updateNode(node_id, coordx, coordy, lighting, crime, greenery, gradient)
+    else:
+        print("Does not exist")
+        myDatabase.addNode(node_id, coordx, coordy, lighting, crime, greenery, gradient)
     nodes, edges, locations = myDatabase.getMapData()
-     
+    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+@app.route("/addsegment", methods=["POST"])
+def add_segment():
+    data = request.get_json()
+    myDatabase = DatabaseMethods()
+    # Collecting the json data
+    segment_id = data["id"]
+    start_node = data["startNode"]
+    end_node = data["endNode"]
+    length = data["length"]
+    ensure_node_exists(myDatabase, start_node)
+    ensure_node_exists(myDatabase, end_node)
+    myDatabase.addEdge(segment_id, start_node, end_node, length)
+    nodes, edges, locations = myDatabase.getMapData()
+    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+@app.route("/addlocation", methods=["POST"])
+def add_location():
+    data = request.get_json()
+    myDatabase = DatabaseMethods()
+    # Collecting the json data
+    location_id = data["id"]
+    name = data["name"]
+    node_id = data["nodeID"]
+    location_type = data["locationType"]
+    if myDatabase.locationExists(location_id):
+        print("Exists")
+        myDatabase.updateLocation(location_id, node_id, name, location_type)
+    else:
+        print("Does not exist")
+        myDatabase.addLocation(location_id, node_id, name, location_type)    
+    nodes, edges, locations = myDatabase.getMapData()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
-############ Mission Methods ###################
 
-@app.route("/login.html")
-def login_redirect():
-    return redirect(url_for('login'))
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    # Checks if user is authenticated, if they are then they are directed away from the log in page.
-    if isUserAuthenticated():
+
+############ EDIT AND DELETE ROUTES ###################
+@app.route("/editnode", methods=["POST"])
+def edit_node():
+    data = request.get_json()
+    myDatabase = DatabaseMethods()
+
+    start_node = data["id"]
+    myDatabase.deleteEdgeByStartNode(start_node)
+    nodes, edges, locations = myDatabase.getMapData()
+    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+@app.route("/editlocation", methods=["POST"])
+def edit_location(): ####### UNIFINSHED #########
+    data = request.get_json()
+    myDatabase = DatabaseMethods()
+
+    name = data["name"]
+@app.route("/editindicators", methods=["POST"])
+def edit_indicators():
+    data = request.get_json()
+    myDatabase = DatabaseMethods()
+
+    node_id = data["id"]
+    lighting = float(data["lighting"])
+    crime = float(data["crime"])
+    greenery = float(data["greenery"])
+    gradient = float(data["gradient"])
+    myDatabase.editIndicators(node_id, lighting, crime, greenery, gradient)
+    nodes, edges, locations = myDatabase.getMapData()
+    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+@app.route("/edit_mission.html", methods=["GET"])
+def edit_mission_r():
+    return redirect(url_for("edit_mission"))
+@app.route("/edit_mission", methods=["GET", "POST"])
+def edit_mission():
+    if not isUserAuthenticated(adminNeeded=True):
         return redirect(url_for("index"))
 
     if request.method == "GET":
-        return render_template("login.html")
+        myDatabase = DatabaseMethods()
+        try:
+            # Gets id from URL
+            mission_id = request.args.get('id', type=int)
+
+
+            # Checks if ID variable is actually in the URL.
+            if mission_id == None:
+                abort(404)
+            
+
+            # Gets question from the URL.
+            database_response = myDatabase.getMissionQuestion(mission_id)
+
+            if not database_response:
+                abort(404)
+            if database_response[0] == None:
+                abort(404)
+            
+            question = database_response[0][0]
+
+            return render_template("edit_mission.html", question=question)
+        except Exception as e:
+            abort(500)
+        finally:
+            myDatabase.closeConnection()
+
     elif request.method == "POST":
-            myDatabase = DatabaseMethods()
-            try:
-                username = request.form.get("username")
-                password = request.form.get("password")   
-
-                # Checks if a username and password have been sent and aren't blank.
-                if (not username or not password):
-                    return render_template("login.html", error="No username or password has been entered")
-
-                # Usernames are case insensitive(?)
-                # username = username.lower()
-
-                # Checks with the database to see if a user with this username exists.
-                database_response = myDatabase.getLoginDetails(username)
-                #[0][0] = user_id, [0][1] = password
-
-                # Checks if the response is blank.
-                if not database_response:
-                    # Blank response either means no user exists or bad database connection.
-                    return render_template("login.html", error="Incorrect username or password has been entered")
-                database_id = database_response[0][0]
-                database_password = database_response[0][1]
-
-                database_usertype = myDatabase.getUserType(database_id)
-                if not database_usertype:
-                    return render_template("login.html", error="Incorrect username or password has been entered")
-                if not database_usertype[0]:
-                    return render_template("login.html", error="Incorrect username or password has been entered")
-                if not database_usertype[0][0]:
-                    return render_template("login.html", error="Incorrect username or password has been entered")
-
-                # If the passwords match then create session and redirect the user to /map.
-                if check_password_hash(database_password, password + PEPPER_PASSWORD):
-
-                    session["user_id"] = database_id
-                    session["user_role"] = database_usertype[0][0]
-                    session["user_name"] = username
-
-                    return redirect(url_for("index"))
-                else:
-                    return render_template("login.html", error="Incorrect username or password has been entered")
-            except Exception as e:
-                return render_template("login.html", error=e)
-            finally:
-                myDatabase.closeConnection()
+        myDatabase = DatabaseMethods()
+        try:
+            data = request.get_json(silent=True)
+            if not data:
+                abort(400)
+            mission_id = data["id"]
+            question = data["question"]
 
 
+            # Checks to see if required arguments were sent
+            if mission_id == None or question == None:
+                abort(400)
+
+            # No mission with this ID exists
+            if not myDatabase.getMissionQuestion(mission_id):
+                abort(400)
+
+            if not session.get("user_id"): # DEBUG
+                myDatabase.editMissionQuestion(-1, mission_id, question)
+            else:
+                myDatabase.editMissionQuestion(session["user_id"], mission_id, question)
+            return "missions_t1" # Not a redirect, as the frontend handles the redirect. Change it so backend handles redirect like with login?
+        
+        except Exception as e:
+            print("Error", e)
+            abort(500)
+        
+        finally:
+            myDatabase.closeConnection()
+
+@app.route("/deletenode", methods=["POST"])
+def delete_node():
+    data = request.get_json()
+    myDatabase = DatabaseMethods()
+
+    node_id = data["nodeID"]
+    
+    myDatabase.deleteNode(node_id)
+    nodes, edges, locations = myDatabase.getMapData()
+    myDatabase.closeConnection()
+    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+
+
+
+############# MISSION ROUTES ########################
+@app.route("/missions_t1.html", methods=["GET"])
+def missions_1r():
+    return redirect(url_for('missions_1'))
+@app.route("/missions_t1", methods=["GET"])
+def missions_1():
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
+
+    if request.method == "GET":
+        myDatabase = DatabaseMethods()
+        database_response = myDatabase.getMissionTier(1) # get all missions of tier 1
+        missions = []
+        for m in database_response:
+            id = m[0]
+            question = m[1]
+            missions.append({
+                'question': question,
+                'id': id
+            })
+        myDatabase.closeConnection()
+        
+        return render_template("missions_t1.html", missions=missions)
+@app.route("/missions_t2.html", methods=["GET"])
+def missions_2r():
+    return redirect(url_for('missions_2'))
+@app.route("/missions_t2", methods=["GET"])
+def missions_2():
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
+    if request.method == "GET":
+        myDatabase = DatabaseMethods()
+        database_response = myDatabase.getMissionTier(2) # get all missions of tier 2
+        missions = []
+        for m in database_response:
+            id = m[0]
+            question = m[1]
+            missions.append({
+                'question': question,
+                'id': id
+            })
+        myDatabase.closeConnection()
+        
+        return render_template("missions_t2.html", missions=missions)
+@app.route("/missions_t3.html", methods=["GET"])
+def missions_3r():
+    return redirect(url_for('missions_3'))
+@app.route("/missions_t3", methods=["GET"])
+def missions_3():
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
+    if request.method == "GET":
+        myDatabase = DatabaseMethods()
+        database_response = myDatabase.getMissionTier(3) # get all missions of tier 3
+        missions = []
+        for m in database_response:
+            id = m[0]
+            question = m[1]
+            missions.append({
+                'question': question,
+                'id': id
+            })
+        myDatabase.closeConnection()
+        
+        return render_template("missions_t3.html", missions=missions)
+@app.route("/mission_display.html", methods=["GET"])
+def mission_display_r():
+    return redirect(url_for("mission_display"))
+@app.route("/mission_display", methods=["GET", "POST"])
+def mission_display():
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
+
+    if request.method == "GET":
+        myDatabase = DatabaseMethods()
+
+        try:
+            # Gets id from URL
+            mission_id = request.args.get('id', type=int)
+
+            # Checks if ID variable is actually in the URL.
+            if mission_id == None:
+                return redirect(url_for("missions_t1"))
+            
+            # Gets question from the URL.
+            database_response = myDatabase.getMissionQuestion(mission_id)
+
+            if not database_response:
+                return redirect(url_for("missions_t1"))
+            if database_response[0] == None:
+                return redirect(url_for("missions_t1"))
+            
+            question = database_response[0][0]
+            image = "mission_"+str(mission_id)+".png"
+            # Check correct option here
+            answer = myDatabase.getMissionData(mission_id)[0][3]
+            if answer == "Red":
+                red = "Correct"
+                green = "Incorrect"
+                blue = "Incorrect"
+            elif answer == "Green":
+                red = "Incorrect"
+                green = "Correct"
+                blue = "Incorrect"
+            elif answer == "Blue":
+                red = "Incorrect"
+                green = "Incorrect"
+                blue = "Correct"
+
+
+            myDatabase.closeConnection()
+            return render_template("mission_display.html", question=question, image=image, red=red, green=green, blue=blue, id=mission_id)
+        except:
+            myDatabase.closeConnection()
+
+
+
+################ ACCOUNT RELATED ROUTES ########################
 @app.route("/signup.html")
 def signup_redirect():
     return redirect(url_for('signup'))
-
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     # Checks if user is authenticated, if they are then they are directed away from the sign up page.
@@ -485,220 +547,104 @@ def signup():
             abort(500)
         finally:
             myDatabase.closeConnection()
-
-
-
-@app.route("/missions_t1.html", methods=["GET"])
-def missions_1r():
-    return redirect(url_for('missions_1'))
-
-@app.route("/missions_t1", methods=["GET"])
-def missions_1():
-    if not isUserAuthenticated():
+@app.route("/login.html")
+def login_redirect():
+    return redirect(url_for('login'))
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    # Checks if user is authenticated, if they are then they are directed away from the log in page.
+    if isUserAuthenticated():
         return redirect(url_for("index"))
 
     if request.method == "GET":
-        myDatabase = DatabaseMethods()
-        database_response = myDatabase.getMissionTier(1) # get all missions of tier 1
-        missions = []
-        for m in database_response:
-            id = m[0]
-            question = m[1]
-            missions.append({
-                'question': question,
-                'id': id
-            })
-        myDatabase.closeConnection()
-        
-        return render_template("missions_t1.html", missions=missions)
-
-
-@app.route("/missions_t2.html", methods=["GET"])
-def missions_2r():
-    return redirect(url_for('missions_2'))
-
-@app.route("/missions_t2", methods=["GET"])
-def missions_2():
-    if not isUserAuthenticated():
-        return redirect(url_for("index"))
-    if request.method == "GET":
-        myDatabase = DatabaseMethods()
-        database_response = myDatabase.getMissionTier(2) # get all missions of tier 2
-        missions = []
-        for m in database_response:
-            id = m[0]
-            question = m[1]
-            missions.append({
-                'question': question,
-                'id': id
-            })
-        myDatabase.closeConnection()
-        
-        return render_template("missions_t2.html", missions=missions)
-
-
-@app.route("/missions_t3.html", methods=["GET"])
-def missions_3r():
-    return redirect(url_for('missions_3'))
-
-@app.route("/missions_t3", methods=["GET"])
-def missions_3():
-    if not isUserAuthenticated():
-        return redirect(url_for("index"))
-    if request.method == "GET":
-        myDatabase = DatabaseMethods()
-        database_response = myDatabase.getMissionTier(3) # get all missions of tier 3
-        missions = []
-        for m in database_response:
-            id = m[0]
-            question = m[1]
-            missions.append({
-                'question': question,
-                'id': id
-            })
-        myDatabase.closeConnection()
-        
-        return render_template("missions_t3.html", missions=missions)
-
-
-@app.route("/edit_mission.html", methods=["GET"])
-def edit_mission_r():
-    return redirect(url_for("edit_mission"))
-
-@app.route("/edit_mission", methods=["GET", "POST"])
-def edit_mission():
-    if not isUserAuthenticated(adminNeeded=True):
-        return redirect(url_for("index"))
-
-    if request.method == "GET":
-        myDatabase = DatabaseMethods()
-        try:
-            # Gets id from URL
-            mission_id = request.args.get('id', type=int)
-
-
-            # Checks if ID variable is actually in the URL.
-            if mission_id == None:
-                abort(404)
-            
-
-            # Gets question from the URL.
-            database_response = myDatabase.getMissionQuestion(mission_id)
-
-            if not database_response:
-                abort(404)
-            if database_response[0] == None:
-                abort(404)
-            
-            question = database_response[0][0]
-
-            return render_template("edit_mission.html", question=question)
-        except Exception as e:
-            abort(500)
-        finally:
-            myDatabase.closeConnection()
-
+        return render_template("login.html")
     elif request.method == "POST":
-        myDatabase = DatabaseMethods()
-        try:
-            data = request.get_json(silent=True)
-            if not data:
-                abort(400)
-            mission_id = data["id"]
-            question = data["question"]
+            myDatabase = DatabaseMethods()
+            try:
+                username = request.form.get("username")
+                password = request.form.get("password")   
 
+                # Checks if a username and password have been sent and aren't blank.
+                if (not username or not password):
+                    return render_template("login.html", error="No username or password has been entered")
 
-            # Checks to see if required arguments were sent
-            if mission_id == None or question == None:
-                abort(400)
+                # Usernames are case insensitive(?)
+                # username = username.lower()
 
-            # No mission with this ID exists
-            if not myDatabase.getMissionQuestion(mission_id):
-                abort(400)
+                # Checks with the database to see if a user with this username exists.
+                database_response = myDatabase.getLoginDetails(username)
+                #[0][0] = user_id, [0][1] = password
 
-            if not session.get("user_id"): # DEBUG
-                myDatabase.editMissionQuestion(-1, mission_id, question)
-            else:
-                myDatabase.editMissionQuestion(session["user_id"], mission_id, question)
-            return "missions_t1" # Not a redirect, as the frontend handles the redirect. Change it so backend handles redirect like with login?
-        
-        except Exception as e:
-            print("Error", e)
-            abort(500)
-        
-        finally:
-            myDatabase.closeConnection()
-    
-        
+                # Checks if the response is blank.
+                if not database_response:
+                    # Blank response either means no user exists or bad database connection.
+                    return render_template("login.html", error="Incorrect username or password has been entered")
+                database_id = database_response[0][0]
+                database_password = database_response[0][1]
 
+                database_usertype = myDatabase.getUserType(database_id)
+                if not database_usertype:
+                    return render_template("login.html", error="Incorrect username or password has been entered")
+                if not database_usertype[0]:
+                    return render_template("login.html", error="Incorrect username or password has been entered")
+                if not database_usertype[0][0]:
+                    return render_template("login.html", error="Incorrect username or password has been entered")
+
+                # If the passwords match then create session and redirect the user to /map.
+                if check_password_hash(database_password, password + PEPPER_PASSWORD):
+
+                    session["user_id"] = database_id
+                    session["user_role"] = database_usertype[0][0]
+                    session["user_name"] = username
+
+                    return redirect(url_for("index"))
+                else:
+                    return render_template("login.html", error="Incorrect username or password has been entered")
+            except Exception as e:
+                return render_template("login.html", error=e)
+            finally:
+                myDatabase.closeConnection()
 @app.route("/user_profile.html", methods=["GET"])
 def user_profiler():
     return redirect(url_for('user_profile'))
-
 @app.route("/user_profile", methods=["GET"])
 def user_profile():
     if not isUserAuthenticated():
         return redirect(url_for("index"))
     return render_template("user_profile.html")
+# Check for whether user is logged in or not
+# If action requires the user to be an admin or above, then set adminNeeded, vice versa devNeeded.
+# By default if app.debug is set to true then isUserAuthenticated is overridden for testing,
+# you can override this to test this method while still remaining in debug by changing overrideDebug here to True.
+def isUserAuthenticated(adminNeeded=False, devNeeded=False, overrideDebug=False):
+    if app.debug and not overrideDebug:
+        return True
 
-@app.route("/mission_display.html", methods=["GET"])
-def mission_display_r():
-    return redirect(url_for("mission_display"))
-
-@app.route("/mission_display", methods=["GET", "POST"])
-def mission_display():
-    if not isUserAuthenticated():
-        return redirect(url_for("index"))
-
-    if request.method == "GET":
-        myDatabase = DatabaseMethods()
-
-        try:
-            # Gets id from URL
-            mission_id = request.args.get('id', type=int)
-
-            # Checks if ID variable is actually in the URL.
-            if mission_id == None:
-                return redirect(url_for("missions_t1"))
-            
-            # Gets question from the URL.
-            database_response = myDatabase.getMissionQuestion(mission_id)
-
-            if not database_response:
-                return redirect(url_for("missions_t1"))
-            if database_response[0] == None:
-                return redirect(url_for("missions_t1"))
-            
-            question = database_response[0][0]
-            image = "mission_"+str(mission_id)+".png"
-            # Check correct option here
-            answer = myDatabase.getMissionData(mission_id)[0][3]
-            if answer == "Red":
-                red = "Correct"
-                green = "Incorrect"
-                blue = "Incorrect"
-            elif answer == "Green":
-                red = "Incorrect"
-                green = "Correct"
-                blue = "Incorrect"
-            elif answer == "Blue":
-                red = "Incorrect"
-                green = "Incorrect"
-                blue = "Correct"
+    if adminNeeded:
+        return bool(session.get("user_role") == "A" or session.get("user_role") == "M")
+    elif devNeeded:
+        return bool(session.get("user_role") == "M")
+    return bool(session.get("user_name"))
 
 
-            myDatabase.closeConnection()
-            return render_template("mission_display.html", question=question, image=image, red=red, green=green, blue=blue, id=mission_id)
-        except:
-            myDatabase.closeConnection()
+############ Idea for custom error pages ###################
+# @app.errorhandler(404)
+# def page_not_found(e):
+#     # e is the error object
+#     return render_template('404.html'), 404
 
-############ OTHER METHODS ###################
 
+############ OTHER ROUTES AND FUNCTIONS #########################################
+@app.route("/getmapdata", methods=["GET"])
+def mapdata():
+    myDatabase = DatabaseMethods()
+    nodes, edges, locations = myDatabase.getMapData()
+     
+    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 def ensure_node_exists(database, node_id):
     if not database.nodeExists(node_id):
         database.addPlaceholderNode(node_id)
-   
+
 
 if __name__ == "__main__":
-
     app.run(debug=True)
