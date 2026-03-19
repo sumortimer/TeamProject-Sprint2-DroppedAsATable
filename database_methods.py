@@ -512,6 +512,19 @@ class DatabaseMethods:
         except Exception as e:
             print("Error: ", e)
 
+    def changeUserType(self, username, userType):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("UPDATE users SET userType = ? WHERE userName=?",(userType, username))
+            cursor.close()
+            return(True)
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
+            return(False)
+        except Exception as e:
+            print("Error: ", e)
+            return(False)
+
     #################################
 
     def closeConnection(self): # Please call this when you're finished
