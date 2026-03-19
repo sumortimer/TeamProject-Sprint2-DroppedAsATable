@@ -7,9 +7,14 @@ class DatabaseMethods:
         self.connection.execute("PRAGMA foreign_keys = ON;") #enables foreign key constraints
         self.setup()
 
+    # Destructor that automatically commits and closes the databases once the DatabaseMethods object goes out of scope.
     def __del__(self):
-        self.connection.commit()
-        self.connection.close()
+        try:
+            self.connection.commit()
+            self.connection.close()
+        except:
+            pass
+            # Database is already closed.
 
     #call at the start, creates tables inside task6.db if they dont already exist
     def setup(self):
@@ -18,7 +23,7 @@ class DatabaseMethods:
         
             #table to store users, if anyone knows anything about password security stuff we could do that instead of storing plaintext
             cursor.execute("CREATE TABLE IF NOT EXISTS nodes(nodeID INTEGER PRIMARY KEY, coordinatesX REAL, coordinatesY REAL,lighting REAL, crime REAL, greenery REAL, gradient REAL)")
-            cursor.execute("CREATE TABLE IF NOT EXISTS users(userID INTEGER PRIMARY KEY, userName TEXT, email TEXT, password TEXT,userType TEXT CHECK(userType in ('T','A','M')), points INTEGER, lengthWeight REAL, lightingWeight REAL, crimeWeight REAL, greeneryWeight REAL, gradientWeight)") # usertype enum is short for travellers, admins, maintainers as said in the spec
+            cursor.execute("CREATE TABLE IF NOT EXISTS users(userID INTEGER PRIMARY KEY, userName TEXT, email TEXT, password TEXT,userType TEXT CHECK(userType in ('T','A','M')), points INTEGER, lengthWeight REAL, lightingWeight REAL, crimeWeight REAL, greeneryWeight REAL, gradientWeight REAL)") # usertype enum is short for travellers, admins, maintainers as said in the spec
             cursor.execute("CREATE TABLE IF NOT EXISTS missions(missionID INTEGER PRIMARY KEY, question TEXT, focusIndicator TEXT CHECK(focusIndicator IN ('length','lighting','crime','greenery','gradient')), startNode INTEGER, endNode INTEGER, answer TEXT CHECK(answer IN ('Red','Green','Blue')), FOREIGN KEY(startNode) REFERENCES nodes(nodeID), FOREIGN KEY(endNode) REFERENCES nodes(nodeID))")
             cursor.execute("CREATE TABLE IF NOT EXISTS changes(changeID INTEGER PRIMARY KEY, userID INTEGER, missionID INTEGER, time TEXT, FOREIGN KEY(userID) REFERENCES users(userID), FOREIGN KEY(missionID) REFERENCES missions(missionID))")
             cursor.execute("CREATE TABLE IF NOT EXISTS locations(locationID INTEGER PRIMARY KEY, name TEXT, nodeID INTEGER, locationType TEXT, FOREIGN KEY(nodeID) REFERENCES nodes(nodeID))") #type will be used if we want to display locations with icons on the map e.g station type with a small train image etc...
@@ -197,7 +202,6 @@ class DatabaseMethods:
         self.connection.commit()
         cursor.close()
 
-
     def locationExists(self, locationID):
         cursor = self.connection.cursor()
         cursor.execute("SELECT 1 FROM locations WHERE locationID = ? LIMIT 1", (locationID,))
@@ -213,7 +217,6 @@ class DatabaseMethods:
         self.connection.commit()
         cursor.close()
 
-
     def deleteNode(self, nodeID):  #deletes a node from the table using its nodeID, also removes any related edges and locations
         try:
             cursor=self.connection.cursor()
@@ -225,6 +228,7 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
+
     ### REMEMBER TO ADD LOCATIONS ###
     def deleteEdgeByStartNode(self, startNode):
         try:
@@ -234,6 +238,7 @@ class DatabaseMethods:
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
+
   
     def getMapData(self): #returns a tuple containing (node/location data (if a node isnt a location, location data columns are null) and edge data not including placeholders
         try:
@@ -341,7 +346,9 @@ class DatabaseMethods:
 
     def getIndicatorData(self,indicator): #returns every nodeID and an indicator value for the input indicator
         try:
-            if indicator in ("lighting", "crime","greenery","gradient"):
+            if indicator not in ("lighting", "crime","greenery","gradient"):
+                raise ValueError(f"Invalid indicator: {indicator}")
+            else:
                 cursor=self.connection.cursor()
                 cursor.execute(f"SELECT nodeID, {indicator} FROM nodes")
                 indicatorData=cursor.fetchall()
@@ -357,8 +364,10 @@ class DatabaseMethods:
             cursor=self.connection.cursor()
             cursor.execute("INSERT INTO missions (missionID,question,focusIndicator,startNode,endNode, answer) VALUES(?,?,?,?,?,?)",(None, question,focusIndicator, startNode,endNode, answer))
             cursor.close()
-        except(sqlite3.ProgrammingError):
+        except sqlite3.ProgrammingError:
             print("Database connection has already been closed")
+        except Exception as e:
+            print("Error: ", e)
 
     def getMissionSelectData(self):
         try:
@@ -367,8 +376,10 @@ class DatabaseMethods:
             missionSelectData=cursor.fetchall()
             cursor.close()
             return(missionSelectData)
-        except(sqlite3.ProgrammingError):
+        except sqlite3.ProgrammingError:
             print("Database connection has already been closed")
+        except Exception as e:
+            print("Error: ", e)
 
     def getMissionQuestion(self, missionID):
         try:
@@ -377,8 +388,10 @@ class DatabaseMethods:
             missionSelectData=cursor.fetchall()
             cursor.close()
             return(missionSelectData)
-        except(sqlite3.ProgrammingError):
+        except sqlite3.ProgrammingError:
             print("Database connection has already been closed")
+        except Exception as e:
+            print("Error: ", e)
 
     def getMissionData(self, missionID):
         try:
@@ -387,8 +400,10 @@ class DatabaseMethods:
             missionData=cursor.fetchall()
             cursor.close()
             return(missionData)
-        except(sqlite3.ProgrammingError):
+        except sqlite3.ProgrammingError:
             print("Database connection has already been closed")
+        except Exception as e:
+            print("Error: ", e)
 
     def editMission(self,userID, missionID,newQuestion,newFocusIndicator, newStartNode,newEndNode,newAnswer):
         try:
@@ -396,9 +411,21 @@ class DatabaseMethods:
             cursor.execute("UPDATE missions SET question=?,focusIndicator=?,startNode=?,endNode=?, answer=? WHERE missionID=?",(newQuestion,newFocusIndicator, newStartNode,newEndNode,newAnswer,missionID))
             cursor.execute("INSERT INTO changes (changeID, userID, missionID, time) VALUES(?,?,?,?)",(None,userID,missionID,int(datetime.datetime.now().timestamp())))
             cursor.close()
-        except(sqlite3.ProgrammingError):
-            print("Database connection has already been closed") 
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
+        except Exception as e:
+            print("Error: ", e)
 
+    def editMissionQuestion(self, userID, missionID, newQuestion):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("UPDATE missions SET question=? WHERE missionID=?", (newQuestion, missionID))
+            cursor.execute("INSERT INTO changes (changeID, userID, missionID, time) VALUES(?,?,?,?)", (None, userID, missionID, int(datetime.datetime.now().timestamp())))
+            cursor.close()
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
+        except Exception as e:
+            print("Error: ", e)
     def getLog(self):
         try:
             cursor=self.connection.cursor()
@@ -406,36 +433,87 @@ class DatabaseMethods:
             changes=cursor.fetchall()
             cursor.close()
             return(changes)
-        except(sqlite3.ProgrammingError):
-            print("Database connection has already been closed") 
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
+        except Exception as e:
+            print("Error: ", e)
             
     def addPoints(self, userID): #when a user completes a mission, use this to add a point to their score
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT points FROM users WHERE userID = ?", (userID,))
-            cursor.execute("UPDATE users SET points = ? WHERE userID=?",(cursor.fetchall()+1,userID))
+            cursor.execute("UPDATE users SET points = points + 1 WHERE userID = ?", (userID,))
             cursor.close()
-        except(sqlite3.ProgrammingError):
+        except sqlite3.ProgrammingError:
             print("Database connection has already been closed")
+        except Exception as e:
+            print("Error: ", e)
     ################################
 
-    #login methods##################
-    def addUser(self,username, email, password,usertype): #used when a user chooses to sign up and make an account
+    #login and signup methods##################
+    def addUser(self, username, email, password, usertype): # Used when a user chooses to sign up and make an account
         try:
             cursor=self.connection.cursor()
-            cursor.execute("INSERT INTO users (userID,userName,email,password,userType,points,lengthWeight,lightingWeight,crimeWeight, greeneryWeight, gradientWeight) VALUES (?,?,?,?,?,?,?,?,?,?,?)",(None, username, email, password, usertype,0,1,1,1,1,1))
+            cursor.execute("INSERT INTO users (userName, email, password, userType, points, lengthWeight, lightingWeight, crimeWeight, greeneryWeight, gradientWeight) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                           (username, email, password, usertype, 0, 1, 1, 1, 1, 1))
             cursor.close()
-        except(sqlite3.ProgrammingError):
+            return True
+        except sqlite3.ProgrammingError:
             print("Database connection has already been closed")
+            return False
+        except Exception as e:
+            print("Error: ", e)
+            return False
 
-    def getLoginDetails(self, username, email):  #given the username and email, returns passwords, also gives userID which is used for other user related database methods
+    def getLoginDetails(self, username, email=None):  # Given the username and (optionally) the email, returns passwords. Also returns userID, which is used for other user related database methods.
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT userID, password FROM users WHERE username = ? AND email = ?",(username, email))
+
+            if email is not None:
+                cursor.execute("SELECT userID, password FROM users WHERE userName = ? AND email = ?", (username, email))
+            else:
+                cursor.execute("SELECT userID, password FROM users WHERE userName = ?", (username,))
+
             userDetails = cursor.fetchall()
             cursor.close()
             return(userDetails)
-        except(sqlite3.ProgrammingError):
+        except sqlite3.ProgrammingError:
             print("Database connection has already been closed")
+            return []
+        except Exception as e:
+            print("Error: ", e)
+            return []
+
+    def areUserDetailsUsed(self, username, email): # Given username and email, are either already used in the account database?
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT userID FROM users WHERE userName = ? OR email = ?", (username, email))
+            result = cursor.fetchall()
+            cursor.close()
+
+            # Returns true if either the username or email is used in the database.
+            return len(result) > 0
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
+            return True
+        except Exception as e:
+            print("Error: ", e)
+            return True # Returns true in case of an error, to disallow duplicate entries in the event areUserDetailsUsed fails.
+
+    # An alternative to getUserType that involves using a username instead
+    def getUserTypeViaUsername(self, username):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT userType from users WHERE userName=?",(username,))
+            type=cursor.fetchall()
+            cursor.close()
+            return(type)
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
+        except Exception as e:
+            print("Error: ", e)
+
     #################################
 
+    def closeConnection(self): # Please call this when you're finished
+        self.connection.commit()
+        self.connection.close()

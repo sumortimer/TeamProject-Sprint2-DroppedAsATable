@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -14,13 +14,13 @@
         <h2>Mission 1</h2>
         <p>{{ question }}</p>
         <br>
-        <img id="missionpic" src="{{ url_for('static', filename='MissionRouteExample.png') }}" alt="Picture of the map with 3 routes displayed">
+        <img id="missionpic" src="{{ url_for('static', filename=image) }}" alt="Picture of the map with 3 routes displayed">
         <p id="errormessage"></p>
         <br>
         <div class="options">
-            <input class="optionbutton" id="bluebutton" type="button" value="Blue">
-            <input class="optionbutton" id="greenbutton" type="button" value="Green">
-            <input class="optionbutton" id="redbutton" type="button" value="Red">
+            <input class="optionbutton" id="bluebutton" type="button" value="Blue" name="{{ blue }}">
+            <input class="optionbutton" id="greenbutton" type="button" value="Green" name="{{ green }}">
+            <input class="optionbutton" id="redbutton" type="button" value="Red" name="{{ red }}">
         </div>
     </div>
     

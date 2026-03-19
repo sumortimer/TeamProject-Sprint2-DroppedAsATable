@@ -254,3 +254,57 @@ body {
 #errormessage {
     color: red;
 }
+
+@media (max-width: 800px) {
+    #missiondisplay {
+        text-align: center;
+        margin-top: 10%;
+        padding: 30px;
+        display: grid;
+        grid-auto-rows: auto;
+        gap: 20px;
+        height: 40vh;
+        overflow-y: scroll;
+        scrollbar-width: none;
+    }
+
+    .mission {
+        width: 92%;
+        margin: 0 auto;
+        padding: 2px;
+        height: 10vh;
+        display: grid;
+        grid-template-columns: 10% 80% 10%;
+        visibility: visible;
+        transition: 200ms ease;
+    }
+
+    .mission:hover {
+        background-color: antiquewhite;
+    }
+
+    .trophy {
+        transform: scale(0.5);
+        position: relative;
+        right: 120%;
+    }
+
+    .pin {
+        transform: scale(0.5);
+    }
+
+    .editbutton {
+        transform: scale(0.5);
+        position: relative;
+        right: 60%;
+    }
+
+    .input {
+        width: 85vw;
+    }
+
+    .labelandinput {
+        width: 90vw;
+        padding: 10px;
+    }
+}
