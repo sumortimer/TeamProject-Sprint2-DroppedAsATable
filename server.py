@@ -499,30 +499,18 @@ def missions_1():
 
     if request.method == "GET":
         myDatabase = DatabaseMethods()
-        ids = [1,2,3]
+        database_response = myDatabase.getMissionTier(1) # get all missions of tier 1
         missions = []
-        for i in ids:
-            database_response = myDatabase.getMissionQuestion(i)
-            question = database_response[0][0]
+        for m in database_response:
+            id = m[0]
+            question = m[1]
             missions.append({
                 'question': question,
-                'id': i
+                'id': id
             })
         myDatabase.closeConnection()
         
         return render_template("missions_t1.html", missions=missions)
-    # elif request.method == "POST":
-    #     data = request.get_json()
-    #     print(data)
-    #     # Get mission name and description from database using the mission id
-
-    #     # Pass name and description through to the edit mission page
-
-
-
-    #     print(url_for("edit_mission", mission_id=data["number"]))
-    #     return redirect(url_for("edit_mission", id=data["number"]))
-    #     # return redirect(f"/edit_mission.html?id={data["number"]}")
 
 
 @app.route("/missions_t2.html", methods=["GET"])
@@ -533,7 +521,20 @@ def missions_2r():
 def missions_2():
     if not isUserAuthenticated():
         return redirect(url_for("index"))
-    return render_template("missions_t2.html")
+    if request.method == "GET":
+        myDatabase = DatabaseMethods()
+        database_response = myDatabase.getMissionTier(2) # get all missions of tier 2
+        missions = []
+        for m in database_response:
+            id = m[0]
+            question = m[1]
+            missions.append({
+                'question': question,
+                'id': id
+            })
+        myDatabase.closeConnection()
+        
+        return render_template("missions_t2.html", missions=missions)
 
 
 @app.route("/missions_t3.html", methods=["GET"])
@@ -674,7 +675,7 @@ def mission_display():
 
 
             myDatabase.closeConnection()
-            return render_template("mission_display.html", question=question, image=image, red=red, green=green, blue=blue)
+            return render_template("mission_display.html", question=question, image=image, red=red, green=green, blue=blue, id=mission_id)
         except:
             myDatabase.closeConnection()
 

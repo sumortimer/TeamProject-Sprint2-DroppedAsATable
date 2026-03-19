@@ -11,7 +11,7 @@
 <body>
 
     <div id="mission_display">
-        <h2>Mission 1</h2>
+        <h2>Mission {{ id }}</h2>
         <p>{{ question }}</p>
         <br>
         <img id="missionpic" src="{{ url_for('static', filename=image) }}" alt="Picture of the map with 3 routes displayed">

@@ -84,7 +84,7 @@ Array.from(missionText).forEach((mission, i) => {
         setPinValues();
         savePinValues(pinTier);
 
-        let id = i + 1;
+        let id = mission.getAttribute("name");
 
         window.location.href = "/mission_display?id=" + id;
     });

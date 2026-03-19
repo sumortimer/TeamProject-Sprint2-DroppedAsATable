@@ -541,6 +541,11 @@ class DatabaseMethods:
 
 if __name__ == "__main__":
     db = DatabaseMethods()
-    # db.addMission("Choose the least steep route:", "gradient", 300, 600, "Green") # Green Path Correct
-    # db.addMission("Choose the route with the least crime:", "crime", 619, 519, "Blue") # Blue Path Correct
+    #db.addMission("Choose the least steep route:", "gradient", 300, 600, "Green",1) # Green Path Correct
+    #db.addMission("Choose the route with the least crime:", "crime", 619, 519, "Blue",1) # Blue Path Correct
+    #db.addMission("Choose the route with the most greenery", "greenery", 123, 456, "Green", 1)
+    #db.addMission("Choose the shortest route:", "length", 1, 72, "Red", 1)
+    #db.addMission("Choose the longest route", "length", 453, 512, "Green", 1)
+    db.addMission("Which route has the most crime?", "crime", 213, 444, "Blue", 2)
+    print(db.getMissionTier(1))
     db.closeConnection()
