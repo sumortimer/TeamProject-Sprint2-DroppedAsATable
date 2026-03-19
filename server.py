@@ -757,9 +757,10 @@ def dev_panel():
     finally:
         myDatabase.closeConnection()
 
-
-# ADD LOG OUT METHOD
-
+@app.route("/logout", methods=["GET"])
+def log_out():
+    session.clear()
+    return redirect(url_for("index"))
 
 ############ OTHER METHODS ###################
 
