@@ -546,6 +546,10 @@ if __name__ == "__main__":
     #db.addMission("Choose the route with the most greenery", "greenery", 123, 456, "Green", 1)
     #db.addMission("Choose the shortest route:", "length", 1, 72, "Red", 1)
     #db.addMission("Choose the longest route", "length", 453, 512, "Green", 1)
-    db.addMission("Which route has the most crime?", "crime", 213, 444, "Blue", 2)
+    #db.addMission("Which route has the most crime?", "crime", 213, 444, "Blue", 2)
+    db.addMission("Which route is the shortest and spends the least amount of time on Prince Charles Road?", "length", 400, 402, "Green", 2)
+    db.addMission("Choose the fastest route that avoids North Street:", "length", 300, 402, "Green", 2)
+    db.addMission("Choose the most scenic route(Greenery & Lighting):", "greenery", 22, 50, "Blue", 2) # 10
+    db.addMission("Choose the best hike(Greenery & Gradient):", "gradient", 300, 350, "Blue", 2)
     print(db.getMissionTier(1))
     db.closeConnection()
