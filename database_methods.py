@@ -317,7 +317,7 @@ class DatabaseMethods:
     def getStartCount(self): #returns the name and count of locations sorted by how often they were chosen as a start location
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT name, COUNT(queryID) as noOcc FROM queryLog INNER JOIN locations on queryLog.startNode = locations.nodeID GROUP BY name ORDER BY noOcc DESC")
+            cursor.execute("SELECT name, COUNT(queryID) as noOcc FROM queryLog INNER JOIN locations on queryLog.startNode = locations.nodeID GROUP BY name")
             rates=cursor.fetchall()
             cursor.close()
             return(rates)
@@ -327,7 +327,7 @@ class DatabaseMethods:
     def getEndCount(self): #returns the name and count of locations sorted by how often they were chosen as an end location
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT name, COUNT(queryID) as noOcc FROM queryLog INNER JOIN locations on queryLog.endNode = locations.nodeID GROUP BY name ORDER BY noOcc DESC")
+            cursor.execute("SELECT name, COUNT(queryID) as noOcc FROM queryLog INNER JOIN locations on queryLog.endNode = locations.nodeID GROUP BY name")
             rates=cursor.fetchall()
             cursor.close()
             return(rates)
