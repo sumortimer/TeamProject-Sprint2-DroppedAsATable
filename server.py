@@ -494,8 +494,7 @@ def missions_1():
 
     if request.method == "GET":
         myDatabase = DatabaseMethods()
-        question1 = "Mission Description"
-        ids = [1]
+        ids = [1,2,3]
         missions = []
         for i in ids:
             database_response = myDatabase.getMissionQuestion(i)
@@ -655,9 +654,20 @@ def mission_display():
             question = database_response[0][0]
             image = "mission_"+str(mission_id)+".png"
             # Check correct option here
-            red = "Correct"
-            green = "Incorrect"
-            blue = "Incorrect"
+            answer = myDatabase.getMissionData(mission_id)[0][3]
+            if answer == "Red":
+                red = "Correct"
+                green = "Incorrect"
+                blue = "Incorrect"
+            elif answer == "Green":
+                red = "Incorrect"
+                green = "Correct"
+                blue = "Incorrect"
+            elif answer == "Blue":
+                red = "Incorrect"
+                green = "Incorrect"
+                blue = "Correct"
+
 
             myDatabase.closeConnection()
             return render_template("mission_display.html", question=question, image=image, red=red, green=green, blue=blue)

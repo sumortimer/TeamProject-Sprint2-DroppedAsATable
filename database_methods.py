@@ -396,7 +396,7 @@ class DatabaseMethods:
     def getMissionData(self, missionID):
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT focusIndicator, startNode, endNode,answer from missions WHERE missionID =?",(missionID,))
+            cursor.execute("SELECT focusIndicator, startNode, endNode, answer from missions WHERE missionID =?",(missionID,))
             missionData=cursor.fetchall()
             cursor.close()
             return(missionData)
@@ -517,3 +517,9 @@ class DatabaseMethods:
     def closeConnection(self): # Please call this when you're finished
         self.connection.commit()
         self.connection.close()
+
+if __name__ == "__main__":
+    db = DatabaseMethods()
+    # db.addMission("Choose the least steep route:", "gradient", 300, 600, "Green") # Green Path Correct
+    # db.addMission("Choose the route with the least crime:", "crime", 619, 519, "Blue") # Blue Path Correct
+    db.closeConnection()
