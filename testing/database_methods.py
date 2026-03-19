@@ -3,7 +3,7 @@ import datetime
 
 class DatabaseMethods:
     def __init__(self):
-        self.connection=sqlite3.connect("task6.db") #when the object is created, it either connects to, (or creates if not detected) task6.db
+        self.connection=sqlite3.connect("test_database.db") #when the object is created, it either connects to, (or creates if not detected) task6.db
         self.connection.execute("PRAGMA foreign_keys = ON;") #enables foreign key constraints
         self.setup()
 
@@ -187,10 +187,10 @@ class DatabaseMethods:
             print("Database connection has already been closed")
         
 
-    def addLocation(self,locationID,nodeID,name,locationType):
+    def addLocation(self,nodeID,name,locationType):
         try:
             cursor=self.connection.cursor()
-            cursor.execute("INSERT INTO locations (locationID,name,nodeID,locationType) VALUES(?,?,?,?)",(locationID,name,nodeID,locationType))
+            cursor.execute("INSERT INTO locations (locationID,name,nodeID,locationType) VALUES(?,?,?,?)",(None,name,nodeID,locationType))
             self.connection.commit()
             cursor.close()
         except(sqlite3.ProgrammingError):
@@ -223,6 +223,12 @@ class DatabaseMethods:
             cursor.execute("DELETE FROM locations WHERE nodeID =?",(nodeID,))
             cursor.execute("DELETE FROM edges WHERE startNode =?",(nodeID,))
             cursor.execute("DELETE FROM edges WHERE endNode =?",(nodeID,))
+            cursor.execute("DELETE FROM changes WHERE missionID in (SELECT missionID FROM missions WHERE startNode=?)",(nodeID,))
+            cursor.execute("DELETE FROM changes WHERE missionID in (SELECT missionID FROM missions WHERE endNode=?)",(nodeID,))
+            cursor.execute("DELETE FROM missions WHERE startNode =?",(nodeID,))
+            cursor.execute("DELETE FROM missions WHERE endNode =?",(nodeID,))
+            cursor.execute("DELETE FROM queryLog WHERE startNode =?",(nodeID,))
+            cursor.execute("DELETE FROM queryLog WHERE endNode =?",(nodeID,))
             cursor.execute("DELETE FROM nodes WHERE nodeID =?",(nodeID,))
             cursor.close()
         except(sqlite3.ProgrammingError):
@@ -468,6 +474,16 @@ class DatabaseMethods:
             print("Database connection has already been closed")
         except Exception as e:
             print("Error: ", e)
+
+    def getUserPoints(self,userID):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT points FROM users WHERE userID = ?", (userID,))
+            points=cursor.fetchall()
+            cursor.close()
+            return(points)
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
     ################################
 
     #login and signup methods##################
@@ -484,6 +500,27 @@ class DatabaseMethods:
         except Exception as e:
             print("Error: ", e)
             return False
+        
+    def getAllUsers(self): #for testing purposes
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT userID FROM users")
+            users=cursor.fetchall()
+            cursor.close()
+            return(users)
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
+        
+    def deleteUser(self, userID): #removes a user from the database, ensures all dependent rows are deleted first
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("DELETE FROM changes WHERE userID =?",(userID,))
+            cursor.execute("DELETE FROM queryLog WHERE userID =?",(userID,))
+            cursor.execute("DELETE FROM users WHERE userID =?",(userID,))
+            cursor.close()
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
+
 
     def getLoginDetails(self, username, email=None):  # Given the username and (optionally) the email, returns passwords. Also returns userID, which is used for other user related database methods.
         try:
@@ -539,24 +576,4 @@ class DatabaseMethods:
         self.connection.commit()
         self.connection.close()
 
-if __name__ == "__main__":
-    db = DatabaseMethods()
-    #db.addMission("Choose the least steep route:", "gradient", 300, 600, "Green",1) # Green Path Correct
-    #db.addMission("Choose the route with the least crime:", "crime", 619, 519, "Blue",1) # Blue Path Correct
-    #db.addMission("Choose the route with the most greenery", "greenery", 123, 456, "Green", 1)
-    #db.addMission("Choose the shortest route:", "length", 1, 72, "Red", 1)
-    #db.addMission("Choose the longest route", "length", 453, 512, "Green", 1)
-    #db.addMission("Which route has the most crime?", "crime", 213, 444, "Blue", 2)
-    # db.addMission("Which route is the shortest and spends the least amount of time on Prince Charles Road?", "length", 400, 402, "Green", 2)
-    # db.addMission("Choose the fastest route that avoids North Street:", "length", 300, 402, "Green", 2)
-    # db.addMission("Choose the most scenic route(Greenery & Lighting):", "greenery", 22, 50, "Blue", 2) # 10
-    # db.addMission("Choose the best hike(Greenery & Gradient):", "gradient", 300, 350, "Blue", 2)
-    # db.addMission("Choose the route with the least amount of turns:", "length", 444, 600, "Blue", 2)
-    # db.addMission("Choose the route most suitable for a wheelchair user:", "gradient", 600, 800, "Blue", 3)
-    # db.addMission("If you're getting a train late at night what path should you take?", "crime", 92, 691, "Green", 3)
-    # db.addMission("What's the best route for a learning cyclist?", "length", 432, 21, "Blue", 3) #15
-    # db.addMission("What's the best route for someone that needs to stop by the shops at night?", "lighting", 2, 32, "Red", 3)
-    # db.addMission("Choose the safest route for someone running alone:", "crime", 32, 63, "Green", 3) #gradient too
-    # db.addMission("Choose the best route for someone that like running water:", "greenery", 21, 2, "Red", 3)
-    print(db.getMissionTier(1))
-    db.closeConnection()
+

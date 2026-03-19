@@ -223,11 +223,16 @@ class DatabaseMethods:
             cursor.execute("DELETE FROM locations WHERE nodeID =?",(nodeID,))
             cursor.execute("DELETE FROM edges WHERE startNode =?",(nodeID,))
             cursor.execute("DELETE FROM edges WHERE endNode =?",(nodeID,))
+            cursor.execute("DELETE FROM changes WHERE missionID in (SELECT missionID FROM missions WHERE startNode=?)",(nodeID,))
+            cursor.execute("DELETE FROM changes WHERE missionID in (SELECT missionID FROM missions WHERE endNode=?)",(nodeID,))
+            cursor.execute("DELETE FROM missions WHERE startNode =?",(nodeID,))
+            cursor.execute("DELETE FROM missions WHERE endNode =?",(nodeID,))
+            cursor.execute("DELETE FROM queryLog WHERE startNode =?",(nodeID,))
+            cursor.execute("DELETE FROM queryLog WHERE endNode =?",(nodeID,))
             cursor.execute("DELETE FROM nodes WHERE nodeID =?",(nodeID,))
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
-
 
     ### REMEMBER TO ADD LOCATIONS ###
     def deleteEdgeByStartNode(self, startNode):
@@ -468,6 +473,16 @@ class DatabaseMethods:
             print("Database connection has already been closed")
         except Exception as e:
             print("Error: ", e)
+
+    def getUserPoints(self,userID):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT points FROM users WHERE userID = ?", (userID,))
+            points=cursor.fetchall()
+            cursor.close()
+            return(points)
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
     ################################
 
     #login and signup methods##################
@@ -484,6 +499,16 @@ class DatabaseMethods:
         except Exception as e:
             print("Error: ", e)
             return False
+
+    def deleteUser(self, userID): #removes a user from the database, ensures all dependent rows are deleted first
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("DELETE FROM changes WHERE userID =?",(userID,))
+            cursor.execute("DELETE FROM queryLog WHERE userID =?",(userID,))
+            cursor.execute("DELETE FROM users WHERE userID =?",(userID,))
+            cursor.close()
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
 
     def getLoginDetails(self, username, email=None):  # Given the username and (optionally) the email, returns passwords. Also returns userID, which is used for other user related database methods.
         try:
