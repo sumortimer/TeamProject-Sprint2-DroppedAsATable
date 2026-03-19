@@ -598,11 +598,15 @@ def edit_mission():
             if not myDatabase.getMissionQuestion(mission_id):
                 abort(400)
 
-            myDatabase.editMissionQuestion(session["user_id"], mission_id, question) # [0][2] is endNode
+            if not session.get("user_id"): # DEBUG
+                myDatabase.editMissionQuestion(-1, mission_id, question)
+            else:
+                myDatabase.editMissionQuestion(session["user_id"], mission_id, question)
             return "missions_t1" # Not a redirect, as the frontend handles the redirect. Change it so backend handles redirect like with login?
         
         except Exception as e:
-            return abort(500)
+            print("Error", e)
+            abort(500)
         
         finally:
             myDatabase.closeConnection()
