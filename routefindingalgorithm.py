@@ -14,18 +14,30 @@ def findRoute(segments, nodes, whereRouting, weightings=None):
         for segment in segments: #apply weightings to each segment
             segmentid, start, end, length = segment
             weight = length * (weightings[0]**3) *2
-            weightingIterator = 1
+
+            #go through each node one by one and check if its the start node
             for node in nodes:
                 if node[0] == start:
-                    for tempWeight in node[1:]:
-                        weight += float(tempWeight)*(float(weightings[weightingIterator])**3)*length
-                        weightingIterator+=1
-            weightingIterator = 1
+                    #for each indicator add the cube of the weight*indicator*length to the total weight of that node
+                    #cube is used to increase the difference in weight for different routes
+                    lighting, crime, greenery, gradient =  node[1:]
+                    weight += (1-float(lighting))**3*(float(weightings[0])**3)*length
+                    weight += float(crime)**3*(float(weightings[1])**3)*length
+                    weight += (1-float(greenery))**3*(float(weightings[2])**3)*length
+                    weight += float(gradient)**3*(float(weightings[3])**3)*length
+
+            #go through each node one by one and check if its the end node
             for node in nodes:
                 if node[0] == end:
-                    for tempWeight in node[1:]:
-                        weight += float(tempWeight)*(float(weightings[weightingIterator])**3)*length
-                        weightingIterator+=1
+                    #for each indicator add the cube of the weight*indicator*length to the total weight of that node
+                    #cube is used to increase the difference in weight for different routes
+                    lighting, crime, greenery, gradient =  node[1:]
+                    weight += (1-float(lighting))**3*(float(weightings[0])**3)*length
+                    weight += float(crime)**3*(float(weightings[1])**3)*length
+                    weight += (1-float(greenery))**3*(float(weightings[2])**3)*length
+                    weight += float(gradient)**3*(float(weightings[3])**3)*length
+
+            #append this segments weight to list of weighted segments
             weightedSegments.append((start, end, weight))
     else:
         for segment in segments: #if no weighting only length is used
@@ -121,12 +133,13 @@ def findMultipleRoutes(whereRouting,userID = 1, numberOfRoutes = 3):
     segments = myDatabase.getAllEdges()
     nodes = myDatabase.getAllNodes()
     weightingstemp = myDatabase.getUserWeights(userID)
+    print(weightingstemp)
     weightingstemp = weightingstemp[0]
-    myDatabase.closeConnection()
+    print(weightingstemp)
 
 
     routes = []
-    weightings = []
+    weightings = [0,0,0,0]
 
     largestWeight = 0
     for tempWeight in weightingstemp:
@@ -134,6 +147,7 @@ def findMultipleRoutes(whereRouting,userID = 1, numberOfRoutes = 3):
             largestWeight = float(tempWeight)
     for weightIterator in range(len(weightings)):
         weightings[weightIterator] = float(weightingstemp[weightIterator])/largestWeight
+    print(weightings)
     firstRouteWeights, firstRoute = findRoute(segments, nodes, whereRouting, weightings)
     actualRoute = getPath(firstRoute, whereRouting[0], whereRouting[1])
     routes.append(actualRoute) # add first route to a list
