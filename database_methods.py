@@ -24,7 +24,7 @@ class DatabaseMethods:
             #table to store users, if anyone knows anything about password security stuff we could do that instead of storing plaintext
             cursor.execute("CREATE TABLE IF NOT EXISTS nodes(nodeID INTEGER PRIMARY KEY, coordinatesX REAL, coordinatesY REAL,lighting REAL, crime REAL, greenery REAL, gradient REAL)")
             cursor.execute("CREATE TABLE IF NOT EXISTS users(userID INTEGER PRIMARY KEY, userName TEXT, email TEXT, password TEXT,userType TEXT CHECK(userType in ('T','A','M')), points INTEGER, lengthWeight REAL, lightingWeight REAL, crimeWeight REAL, greeneryWeight REAL, gradientWeight REAL)") # usertype enum is short for travellers, admins, maintainers as said in the spec
-            cursor.execute("CREATE TABLE IF NOT EXISTS missions(missionID INTEGER PRIMARY KEY, question TEXT, focusIndicator TEXT CHECK(focusIndicator IN ('length','lighting','crime','greenery','gradient')), startNode INTEGER, endNode INTEGER, answer TEXT CHECK(answer IN ('Red','Green','Blue')), FOREIGN KEY(startNode) REFERENCES nodes(nodeID), FOREIGN KEY(endNode) REFERENCES nodes(nodeID))")
+            cursor.execute("CREATE TABLE IF NOT EXISTS missions(missionID INTEGER PRIMARY KEY, question TEXT, focusIndicator TEXT CHECK(focusIndicator IN ('length','lighting','crime','greenery','gradient')), startNode INTEGER, endNode INTEGER, answer TEXT CHECK(answer IN ('Red','Green','Blue')), tier INTEGER, FOREIGN KEY(startNode) REFERENCES nodes(nodeID), FOREIGN KEY(endNode) REFERENCES nodes(nodeID))")
             cursor.execute("CREATE TABLE IF NOT EXISTS changes(changeID INTEGER PRIMARY KEY, userID INTEGER, missionID INTEGER, time TEXT, FOREIGN KEY(userID) REFERENCES users(userID), FOREIGN KEY(missionID) REFERENCES missions(missionID))")
             cursor.execute("CREATE TABLE IF NOT EXISTS locations(locationID INTEGER PRIMARY KEY, name TEXT, nodeID INTEGER, locationType TEXT, FOREIGN KEY(nodeID) REFERENCES nodes(nodeID))") #type will be used if we want to display locations with icons on the map e.g station type with a small train image etc...
             cursor.execute("CREATE TABLE IF NOT EXISTS edges(edgeID INTEGER PRIMARY KEY, startNode INTEGER, endNode INTEGER, length REAL, FOREIGN KEY(startNode) REFERENCES nodes(nodeID), FOREIGN KEY(endNode) REFERENCES nodes(nodeID))")
@@ -317,7 +317,7 @@ class DatabaseMethods:
     def getStartCount(self): #returns the name and count of locations sorted by how often they were chosen as a start location
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT name, COUNT(queryID) as noOcc FROM queryLog INNER JOIN locations on queryLog.startNode = locations.nodeID GROUP BY name ORDER BY noOcc DESC")
+            cursor.execute("SELECT name, COUNT(queryID) as noOcc FROM queryLog INNER JOIN locations on queryLog.startNode = locations.nodeID GROUP BY name")
             rates=cursor.fetchall()
             cursor.close()
             return(rates)
@@ -327,13 +327,23 @@ class DatabaseMethods:
     def getEndCount(self): #returns the name and count of locations sorted by how often they were chosen as an end location
         try:
             cursor=self.connection.cursor()
-            cursor.execute("SELECT name, COUNT(queryID) as noOcc FROM queryLog INNER JOIN locations on queryLog.endNode = locations.nodeID GROUP BY name ORDER BY noOcc DESC")
+            cursor.execute("SELECT name, COUNT(queryID) as noOcc FROM queryLog INNER JOIN locations on queryLog.endNode = locations.nodeID GROUP BY name")
             rates=cursor.fetchall()
             cursor.close()
             return(rates)
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
+    def getRouteCount(self):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT startNode, endNode, Count(queryID) as noOcc FROM queryLog GROUP BY startNode, endNode")
+            routes=cursor.fetchall()
+            cursor.close()
+            return(routes)
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
+            
     def getUserCount(self): #returns a list of users and query count sorted by the number of queries made
         try:
             cursor=self.connection.cursor()
@@ -359,15 +369,25 @@ class DatabaseMethods:
     ################################
     
     #mission methods################
-    def addMission(self,question,focusIndicator, startNode,endNode, answer):  #for use by an admin to add to the missions table
+    def addMission(self,question,focusIndicator, startNode,endNode, answer, tier):  #for use by an admin to add to the missions table
         try:
             cursor=self.connection.cursor()
-            cursor.execute("INSERT INTO missions (missionID,question,focusIndicator,startNode,endNode, answer) VALUES(?,?,?,?,?,?)",(None, question,focusIndicator, startNode,endNode, answer))
+            cursor.execute("INSERT INTO missions (missionID,question,focusIndicator,startNode,endNode, answer, tier) VALUES(?,?,?,?,?,?,?)",(None, question,focusIndicator, startNode,endNode, answer,tier))
             cursor.close()
         except sqlite3.ProgrammingError:
             print("Database connection has already been closed")
         except Exception as e:
             print("Error: ", e)
+
+    def getMissionTier(self,tier):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT missionID, question, answer FROM missions WHERE tier =?",(tier,))
+            tierMissions=cursor.fetchall()
+            cursor.close()
+            return(tierMissions)
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
 
     def getMissionSelectData(self):
         try:
@@ -405,10 +425,10 @@ class DatabaseMethods:
         except Exception as e:
             print("Error: ", e)
 
-    def editMission(self,userID, missionID,newQuestion,newFocusIndicator, newStartNode,newEndNode,newAnswer):
+    def editMission(self,userID, missionID,newQuestion,newFocusIndicator, newStartNode,newEndNode,newAnswer,newTier):
         try:
             cursor=self.connection.cursor()
-            cursor.execute("UPDATE missions SET question=?,focusIndicator=?,startNode=?,endNode=?, answer=? WHERE missionID=?",(newQuestion,newFocusIndicator, newStartNode,newEndNode,newAnswer,missionID))
+            cursor.execute("UPDATE missions SET question=?,focusIndicator=?,startNode=?,endNode=?, answer=?, tier=? WHERE missionID=?",(newQuestion,newFocusIndicator, newStartNode,newEndNode,newAnswer,newTier, missionID))
             cursor.execute("INSERT INTO changes (changeID, userID, missionID, time) VALUES(?,?,?,?)",(None,userID,missionID,int(datetime.datetime.now().timestamp())))
             cursor.close()
         except sqlite3.ProgrammingError:
@@ -426,6 +446,7 @@ class DatabaseMethods:
             print("Database connection has already been closed")
         except Exception as e:
             print("Error: ", e)
+            
     def getLog(self):
         try:
             cursor=self.connection.cursor()

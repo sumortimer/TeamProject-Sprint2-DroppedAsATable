@@ -30,7 +30,12 @@ def index():
     if not isUserAuthenticated():
         return redirect(url_for("login"))
 
-    return render_template("index.html")
+    # If the user hasn't accepted the disclaimers this session then tell the index.html to pop-up the disclaimers.
+    if not session.get("acceptedTerms"):
+        session["acceptedTerms"] = True;
+        return render_template("index.html", termsNeeded="True")
+
+    return render_template("index.html", termsNeeded="False")
 
 @app.route("/map.html")
 def map_redir():
@@ -643,7 +648,6 @@ def mission_display():
             if mission_id == None:
                 return redirect(url_for("missions_t1"))
             
-
             # Gets question from the URL.
             database_response = myDatabase.getMissionQuestion(mission_id)
 
