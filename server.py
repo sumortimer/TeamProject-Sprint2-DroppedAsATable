@@ -685,45 +685,57 @@ def mission_display():
 def dev_panel():
     if not isUserAuthenticated(devNeeded=True):
         return redirect(url_for("index"))
+    
+    myDatabase = DatabaseMethods()
+    audit_log = []
+    database_response = myDatabase.getLog()
+    for record in database_response:
+        audit_log.append({
+            'changeID': record[0],
+            'userID': record[1],
+            'missionID': record[2],
+            'time': record[3]
+        })
 
     if request.method == "GET":
-        return render_template("dev_panel.html")
+
+        return render_template("dev_panel.html", audit_log=audit_log)
     
     # Everything below this is a POST method.
     myDatabase = DatabaseMethods()
     try:
         if "action" not in request.args:
-            return render_template("dev_panel.html", error="Missing fields required")
+            return render_template("dev_panel.html", audit_log=audit_log, error="Missing fields required")
         action = request.args.get("action", type=str)
 
         user_to_change = request.args.get('username', type=str)
         password_to_check = request.args.get('password', type=int)
 
         if not password_to_check or not user_to_change:
-            return render_template("dev_panel.html", error="Missing fields required")
+            return render_template("dev_panel.html", audit_log=audit_log, error="Missing fields required")
         
         # We should check if the dev entered their password correctly
         database_response = myDatabase.getLoginDetails(session.get("user_name"))
 
         if not database_response:
-            return render_template("dev_panel.html", error="Database error")
+            return render_template("dev_panel.html", audit_log=audit_log, error="Database error")
         if not database_response[0]:
-            return render_template("dev_panel.html", error="Database error")
+            return render_template("dev_panel.html", audit_log=audit_log, error="Database error")
         if not database_response[0][1]:
-            return render_template("dev_panel.html", error="Database error")
+            return render_template("dev_panel.html", audit_log=audit_log, error="Database error")
         
         # Checks if the passwords don't match
         if not check_password_hash(database_response[0][1], password_to_check + PEPPER_PASSWORD):
-            return render_template("dev_panel.html", error="Incorrect password")
+            return render_template("dev_panel.html", audit_log=audit_log, error="Incorrect password")
         
         # Check if username exists, if they do then update them
         database_response = myDatabase.getUserTypeViaUsername(user_to_change)
         if not database_response:
-            return render_template("dev_panel.html", error="Database error")
+            return render_template("dev_panel.html", audit_log=audit_log, error="Database error")
         if not database_response[0]:
-            return render_template("dev_panel.html", error="Database error")
+            return render_template("dev_panel.html", audit_log=audit_log, error="Database error")
         if not database_response[0][0]:
-            return render_template("dev_panel.html", error="Database error")
+            return render_template("dev_panel.html", audit_log=audit_log, error="Database error")
         
         user_type = database_response[0][0]
 
@@ -733,14 +745,14 @@ def dev_panel():
         elif action == "demote":
             new_user_type = 'T'
         else:
-            return render_template("dev_panel.html", error="Incorrect field entered")
+            return render_template("dev_panel.html", audit_log=audit_log, error="Incorrect field entered")
 
         if user_type == "A" and action == "promote":
-            return render_template("dev_panel.html", error="User is already admin")
+            return render_template("dev_panel.html", audit_log=audit_log, error="User is already admin")
         elif user_type == "T" and action == "demote":
-            return render_template("dev_panel.html", error="User is already traveller")
+            return render_template("dev_panel.html", audit_log=audit_log, error="User is already traveller")
         elif user_type == "M":
-            return render_template("dev_panel.html", error="Cannot change permissions of developer")
+            return render_template("dev_panel.html", audit_log=audit_log, error="Cannot change permissions of developer")
         else:
             if (myDatabase.changeUserType(user_to_change, new_user_type)):
                 correct = ""
@@ -748,12 +760,12 @@ def dev_panel():
                     correct = "User promoted to admin"
                 elif action == "demote":
                     correct = "User demoted to traveller"
-                return render_template("dev_panel.html", correct=correct)
-            return render_template("dev_panel.html", error="Database error promoting user")
+                return render_template("dev_panel.html", audit_log=audit_log, correct=correct)
+            return render_template("dev_panel.html", audit_log=audit_log, error="Database error promoting user")
 
     except Exception as e:
         print("Error: ", e)
-        return render_template("dev_panel.html", error="Database error")
+        return render_template("dev_panel.html", audit_log=audit_log, error="Database error")
     finally:
         myDatabase.closeConnection()
 

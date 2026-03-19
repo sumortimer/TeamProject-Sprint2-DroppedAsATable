@@ -426,6 +426,7 @@ class DatabaseMethods:
             print("Database connection has already been closed")
         except Exception as e:
             print("Error: ", e)
+            
     def getLog(self):
         try:
             cursor=self.connection.cursor()
