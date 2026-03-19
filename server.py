@@ -30,6 +30,9 @@ def index():
     if not isUserAuthenticated():
         return redirect(url_for("login"))
 
+    if isUserAuthenticated(adminNeeded=True):
+        return render_template("index.html", termsNeeded="False") # ADMIN CHANGE
+
     # If the user hasn't accepted the disclaimers this session then tell the index.html to pop-up the disclaimers.
     if not session.get("acceptedTerms"):
         session["acceptedTerms"] = True;
@@ -510,6 +513,9 @@ def missions_1():
                 'id': i
             })
         myDatabase.closeConnection()
+
+        if isUserAuthenticated(adminNeeded=True):
+            return render_template("missions_t1.html", missions=missions) # ADMIN CHANGE
         
         return render_template("missions_t1.html", missions=missions)
     # elif request.method == "POST":
@@ -534,6 +540,9 @@ def missions_2r():
 def missions_2():
     if not isUserAuthenticated():
         return redirect(url_for("index"))
+    
+    if isUserAuthenticated(adminNeeded=True):
+            return render_template("missions_t2.html") # ADMIN CHANGE
     return render_template("missions_t2.html")
 
 
@@ -545,6 +554,9 @@ def missions_3r():
 def missions_3():
     if not isUserAuthenticated():
         return redirect(url_for("index"))
+    
+    if isUserAuthenticated(adminNeeded=True):
+            return render_template("missions_t3.html") # ADMIN CHANGE
     return render_template("missions_t3.html")
 
 
