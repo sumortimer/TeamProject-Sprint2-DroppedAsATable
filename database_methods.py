@@ -547,9 +547,16 @@ if __name__ == "__main__":
     #db.addMission("Choose the shortest route:", "length", 1, 72, "Red", 1)
     #db.addMission("Choose the longest route", "length", 453, 512, "Green", 1)
     #db.addMission("Which route has the most crime?", "crime", 213, 444, "Blue", 2)
-    db.addMission("Which route is the shortest and spends the least amount of time on Prince Charles Road?", "length", 400, 402, "Green", 2)
-    db.addMission("Choose the fastest route that avoids North Street:", "length", 300, 402, "Green", 2)
-    db.addMission("Choose the most scenic route(Greenery & Lighting):", "greenery", 22, 50, "Blue", 2) # 10
-    db.addMission("Choose the best hike(Greenery & Gradient):", "gradient", 300, 350, "Blue", 2)
+    # db.addMission("Which route is the shortest and spends the least amount of time on Prince Charles Road?", "length", 400, 402, "Green", 2)
+    # db.addMission("Choose the fastest route that avoids North Street:", "length", 300, 402, "Green", 2)
+    # db.addMission("Choose the most scenic route(Greenery & Lighting):", "greenery", 22, 50, "Blue", 2) # 10
+    # db.addMission("Choose the best hike(Greenery & Gradient):", "gradient", 300, 350, "Blue", 2)
+    # db.addMission("Choose the route with the least amount of turns:", "length", 444, 600, "Blue", 2)
+    # db.addMission("Choose the route most suitable for a wheelchair user:", "gradient", 600, 800, "Blue", 3)
+    # db.addMission("If you're getting a train late at night what path should you take?", "crime", 92, 691, "Green", 3)
+    # db.addMission("What's the best route for a learning cyclist?", "length", 432, 21, "Blue", 3) #15
+    # db.addMission("What's the best route for someone that needs to stop by the shops at night?", "lighting", 2, 32, "Red", 3)
+    # db.addMission("Choose the safest route for someone running alone:", "crime", 32, 63, "Green", 3) #gradient too
+    # db.addMission("Choose the best route for someone that like running water:", "greenery", 21, 2, "Red", 3)
     print(db.getMissionTier(1))
     db.closeConnection()

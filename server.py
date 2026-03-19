@@ -32,7 +32,7 @@ def index():
 
     # If the user hasn't accepted the disclaimers this session then tell the index.html to pop-up the disclaimers.
     if not session.get("acceptedTerms"):
-        session["acceptedTerms"] = True;
+        session["acceptedTerms"] = True
         return render_template("index.html", termsNeeded="True")
 
     return render_template("index.html", termsNeeded="False")
@@ -545,7 +545,20 @@ def missions_3r():
 def missions_3():
     if not isUserAuthenticated():
         return redirect(url_for("index"))
-    return render_template("missions_t3.html")
+    if request.method == "GET":
+        myDatabase = DatabaseMethods()
+        database_response = myDatabase.getMissionTier(3) # get all missions of tier 3
+        missions = []
+        for m in database_response:
+            id = m[0]
+            question = m[1]
+            missions.append({
+                'question': question,
+                'id': id
+            })
+        myDatabase.closeConnection()
+        
+        return render_template("missions_t3.html", missions=missions)
 
 
 @app.route("/edit_mission.html", methods=["GET"])
