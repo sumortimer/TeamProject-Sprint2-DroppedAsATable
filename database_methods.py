@@ -238,6 +238,7 @@ class DatabaseMethods:
             cursor.close()
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
+
   
     def getMapData(self): #returns a tuple containing (node/location data (if a node isnt a location, location data columns are null) and edge data not including placeholders
         try:
