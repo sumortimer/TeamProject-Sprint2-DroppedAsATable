@@ -334,6 +334,16 @@ class DatabaseMethods:
         except(sqlite3.ProgrammingError):
             print("Database connection has already been closed")
 
+    def getRouteCount(self):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT startNode, endNode, Count(queryID) as noOcc FROM queryLog GROUP BY startNode, endNode")
+            routes=cursor.fetchall()
+            cursor.close()
+            return(routes)
+        except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
+            
     def getUserCount(self): #returns a list of users and query count sorted by the number of queries made
         try:
             cursor=self.connection.cursor()
