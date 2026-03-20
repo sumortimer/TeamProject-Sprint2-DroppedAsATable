@@ -523,6 +523,35 @@ class DatabaseMethods:
         except Exception as e:
             print("Error: ", e)
             return True # Returns true in case of an error, to disallow duplicate entries in the event areUserDetailsUsed fails.
+
+    # An alternative to getUserType that involves using a username instead
+    def getUserTypeViaUsername(self, username):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT userType from users WHERE userName=?",(username,))
+            type=cursor.fetchall()
+            cursor.close()
+            return(type)
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
+        except Exception as e:
+            print("Error: ", e)
+
+    def changeUserType(self, username, userType):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("UPDATE users SET userType = ? WHERE userName=?",(userType, username))
+            cursor.close()
+            return(True)
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
+            return(False)
+        except Exception as e:
+            print("Error: ", e)
+            return(False)
+
+    #################################
+
     def closeConnection(self): # Please call this when you're finished
         self.connection.commit()
         self.connection.close()
