@@ -1,0 +1,121 @@
+
+* {
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+}
+
+footer {
+    font-size: 10px;
+}
+
+#missionBtn {
+    position: relative;
+    z-index: 10000000000;
+    left: 10px;
+    top: 130px;
+    padding: 15px;
+    border-color: black;
+    border-radius: 15px;
+    background-color: antiquewhite;
+    border-width: 3px;
+    border-style: solid;
+    font-weight: bold;
+}
+
+#missionBtn:hover {
+    border-color: grey;
+}
+
+#logout {
+    position: relative;
+    z-index: 10000000000;
+    width: 90px;
+    left: calc(100% - 110px);
+    bottom: 55px;
+    padding: 15px;
+    border-color: black;
+    border-radius: 15px;
+    background-color: antiquewhite;
+    border-width: 3px;
+    border-style: solid;
+    font-weight: bold;
+}
+
+#toggleNodesBtn {
+    position: relative;
+    z-index: 100000000000;
+    left: 10px;
+    top: 35px;
+    padding: 5px;
+    border-radius: 15px;
+    background-color: rgb(239, 63, 63);
+    border-color: black;
+    border-style: solid;
+    font-weight: bold;
+}
+
+#toggleNodesBtn:hover {
+    border-color: gray;
+}
+
+#map {
+    border-radius: 0px 0px 25px 25px;
+    overflow: hidden;
+    box-shadow: inset 2px 2px 3px 1px gray;
+}
+
+#nodeRoute {
+    background-color: antiquewhite;
+    border-radius: 4px;
+    border-style: solid;
+    border-width: 3px;
+    border-color: black;
+    padding: 20px;
+    text-align: center;
+    z-index: 100000000000000000000000000;
+    width: 300px;
+    height: 200px;
+    position: relative;
+    left: 20px;
+    top: 245px;
+    
+}
+
+#nodeRoute * {
+    padding: 4px;
+}
+
+#locationRoute {
+    z-index: 100000000000000000000000000;
+    position: relative;
+    background-color: antiquewhite;
+    border-radius: 4px;
+    border-style: solid;
+    border-width: 3px;
+    border-color: black;
+    padding: 20px;
+    text-align: center;
+    width: 300px;
+    height: 200px;
+    left: 20px;   
+}
+
+#locationRoute * {
+    padding: 4px;
+}
+
+#nodeReload {
+    position: relative;
+    left: 45%;
+    top: 2px;
+}
+
+#locationReload {
+    position: relative;
+    left: 45%;
+    top: 2px;
+}
