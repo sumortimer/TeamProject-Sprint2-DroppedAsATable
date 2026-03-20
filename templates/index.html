@@ -9,20 +9,6 @@
     />
     <link rel="stylesheet" href="{{ url_for('static', filename='map.css') }}"/>
     <script type="text/javascript" src="{{ url_for('static', filename='map.js') }}" defer></script>
-    <style>
-        #map {
-            height: 800px;
-            width: 100%;
-        }
-        .popup-form input {
-        width: 140px;
-        margin-bottom: 5px;
-        }
-
-        .popup-form button {
-        margin-right: 5px;
-        }
-    </style>
 </head>
 <body>
 
@@ -103,8 +89,10 @@
     </div>
 </div>
 
-<script id="map" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+<div id="map-wrapper">
+    <script id="map" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+</div>
 
     <div>
         <div id="routeInfo" style="margin-top: 15px; padding: 10px; background: white; border-radius: 3px; min-height: 50px;">
@@ -123,8 +111,7 @@
         
         </div>
     </div>
-    
-</div>
+
 
 <footer>
     <br>
