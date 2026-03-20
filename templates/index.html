@@ -54,8 +54,8 @@
             <input type="number" id="routeEnd" min="1" value="600" style="width: 80px;">
         </div>
         <div>
-            <button onclick="findRoute()" id="findroutebutton">Find Route</button>
-            <button onclick="clearRoute()">Clear</button>
+            <button class="routeBtn" onclick="findRoute()" id="findroutebutton">Find Route</button>
+            <button class="routeBtn" onclick="clearRoute()">Clear</button>
         </div>
     </div>
 
@@ -70,77 +70,58 @@
             <input type="string" id="routeEndName" value="Southernhay House Surgery" style="width: 80px;">
         </div>
         <div>
-            <button onclick= "findRouteWithName()" id="findroutebuttonname">Find Route</button>
-            <button onclick="clearRoute()" >Clear</button>
+            <button class="routeBtn" onclick= "findRouteWithName()" id="findroutebuttonname">Find Route</button>
+            <button class="routeBtn" onclick="clearRoute()" >Clear</button>
         </div>
 
-        <div>
-            <label>Distance:</label>
-            <input type="range" id="distance" min="0" max="1" value="0.5" style="width: 40px;">
-            <label>Lighting:</label>
-            <input type="range" id="lighting" min="0" max="1" value="0.5" style="width: 40px;">
-            <label>Greenery:</label>
-            <input type="range" id="greenery" min="0" max="1" value="0.5" style="width: 40px;">
-            <label>Gradient:</label>
-            <input type="range" id="gradient" min="0" max="1" value="0.5" style="width: 40px;">
-            <label>Crime:</label>
-            <input type="range" id="crime" min="0" max="1" value="0.5" style="width: 40px;">
+        <div id="sliders">
+            <div>
+                <label for="distance">Distance:   </label>
+                <input type="range" id="distance" class="slider" min="0" max="1" value="0.5" step="0.05"><br>
+            </div>
+
+            <div>
+                <label for="lighting">Lighting:   </label>
+                <input type="range" id="lighting" class="slider" min="0" max="1" value="0.5" step="0.05"><br>
+            </div>
+
+            <div>
+                <label for="greenery">Greenery:   </label>
+                <input type="range" id="greenery" class="slider" min="0" max="1" value="0.5" step="0.05"><br>
+            </div>
+
+            <div>
+                <label for="gradient">Gradient:   </label>
+                <input type="range" id="gradient" class="slider" min="0" max="1" value="0.5" step="0.05"><br>
+            </div>
+
+            <div>
+                <label for="crime">Crime:     </label>
+                <input type="range" id="crime" class="slider" min="0" max="1" value="0.5" step="0.05">
+            </div>
         </div>
     </div>
 </div>
 
 <script id="map" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<!-- <h2>Custom Routes in Exeter, UK -->
 
-
-<div>
-    <!-- <h3>Route Finder</h3> -->
     <div>
-        <div>
-            <label>Start Node:</label>
-            <input type="number" id="routeStart" min="1" value="300" style="width: 80px;">
-        </div>
-        <div>
-            <label>End Node:</label>
-            <input type="number" id="routeEnd" min="1" value="600" style="width: 80px;">
-        </div>
-        <div>
-            <button onclick="findRoute()" id="findroutebutton">Find Route</button>
-            <button onclick="clearRoute()">Clear</button>
-        </div>
-    </div>
-
-    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        <div>
-            <label>Start Location:</label>
-            <input type="string" id="routeStartName" value="The Imperial" style="width: 80px;">
-        </div>
-        <div>
-            <label>End Node:</label>
-            <input type="string" id="routeEndName" value="Southernhay House Surgery" style="width: 80px;">
-        </div>
-        <div>
-            <button onclick= "findRouteWithName()" id="findroutebuttonname">Find Route</button>
-            <button onclick="clearRoute()" >Clear</button>
+        <div id="routeInfo" style="margin-top: 15px; padding: 10px; background: white; border-radius: 3px; min-height: 50px;">
+            Enter start and end nodes and click "Find Route"
         </div>
 
-        <div>
-            <label>Distance:</label>
-            <input type="number" id="distance" min="0" max="1" value="1" style="width: 40px;">
-            <label>Lighting:</label>
-            <input type="number" id="lighting" min="0" max="1" value="0" style="width: 40px;">
-            <label>Greenery:</label>
-            <input type="number" id="greenery" min="0" max="1" value="0" style="width: 40px;">
-            <label>Gradient:</label>
-            <input type="number" id="gradient" min="0" max="1" value="0" style="width: 40px;">
-            <label>Crime:</label>
-            <input type="number" id="crime" min="0" max="1" value="0" style="width: 40px;">
-        </div>
+        <div id="info">
+            <div id="seeMore">
+                <h4 id="plus">See more <svg id="plusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M446.67-446.67H200v-66.66h246.67V-760h66.66v246.67H760v66.66H513.33V-200h-66.66v-246.67Z"/></svg></h4>
+            </div>
 
-    </div>
-    <div id="routeInfo" style="margin-top: 15px; padding: 10px; background: white; border-radius: 3px; min-height: 50px;">
-        Enter start and end nodes and click "Find Route"
+            <div id="seeLess">
+                <h4 id="minus">See less <svg id="minusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M184.17-435.93v-88.14H776.2v88.14H184.17Z"/></svg></h4>
+                <p id="results"></p>
+            </div>
+        
+        </div>
     </div>
     
 </div>
@@ -882,7 +863,12 @@
         info += `<p><strong>Total Distance:</strong> ${costThree.toFixed(2)}</p>`;
         info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreThree[0].toFixed(2)}Crime: ${scoreThree[1].toFixed(2)}Greenery: ${scoreThree[2].toFixed(2)}Gradient: ${scoreThree[3].toFixed(2)}</p>`;
 
-        document.getElementById('routeInfo').innerHTML = info;
+        // document.getElementById("routeInfo").style.visibility = "hidden";
+        document.getElementById("routeInfo").style.display = "none";
+        // document.getElementById("seeMore").style.visibility = "visible";
+        document.getElementById("seeMore").style.display = "block";
+        document.getElementById('results').innerHTML = info;
+        
         
     }
     function clearRoute() {

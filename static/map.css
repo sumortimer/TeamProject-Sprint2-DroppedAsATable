@@ -8,8 +8,9 @@ body {
     margin: 0;
 }
 
-footer {
+footer p {
     font-size: 10px;
+    padding-left: 5px;
 }
 
 #missionBtn {
@@ -21,7 +22,7 @@ footer {
     border-color: black;
     border-radius: 15px;
     background-color: antiquewhite;
-    border-width: 3px;
+    border-width: 2px;
     border-style: solid;
     font-weight: bold;
 }
@@ -40,7 +41,7 @@ footer {
     border-color: black;
     border-radius: 15px;
     background-color: antiquewhite;
-    border-width: 3px;
+    border-width: 2px;
     border-style: solid;
     font-weight: bold;
 }
@@ -56,6 +57,7 @@ footer {
     border-color: black;
     border-style: solid;
     font-weight: bold;
+    border-width: 2px;
 }
 
 #toggleNodesBtn:hover {
@@ -70,9 +72,9 @@ footer {
 
 #nodeRoute {
     background-color: antiquewhite;
-    border-radius: 4px;
+    border-radius: 6px;
     border-style: solid;
-    border-width: 3px;
+    border-width: 2px;
     border-color: black;
     padding: 20px;
     text-align: center;
@@ -82,7 +84,6 @@ footer {
     position: relative;
     left: 20px;
     top: 245px;
-    
 }
 
 #nodeRoute * {
@@ -93,14 +94,14 @@ footer {
     z-index: 100000000000000000000000000;
     position: relative;
     background-color: antiquewhite;
-    border-radius: 4px;
+    border-radius: 6px;
     border-style: solid;
-    border-width: 3px;
+    border-width: 2px;
     border-color: black;
     padding: 20px;
     text-align: center;
     width: 300px;
-    height: 200px;
+    height: 350px;
     left: 20px;   
 }
 
@@ -118,4 +119,49 @@ footer {
     position: relative;
     left: 45%;
     top: 2px;
+}
+
+.slider {
+    position: relative;
+    top: 8px;
+}
+
+#seeMore {
+    padding: 3px;
+    margin-left: 20px;
+    position: relative;
+    height: 70px;
+}
+
+#seeLess {
+    padding: 3px;
+    margin-left: 20px;
+    position: relative;
+}
+
+#plusSign {
+    position: relative;
+    top: 7px;
+}
+
+#minusSign {
+    position: relative;
+    top: 7px;
+}
+
+#plus:hover {
+    cursor: pointer;
+    width: 110px;
+}
+
+#minus:hover {
+    cursor: pointer;
+    width: 110px;
+}
+
+.routeBtn {
+    border-radius: 3px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
 }
