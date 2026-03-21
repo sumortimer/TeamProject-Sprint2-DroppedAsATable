@@ -183,14 +183,17 @@ def add_location():
     name = data["name"]
     node_id = data["nodeID"]
     location_type = data["locationType"]
+    # Make sure node exists first
+    if not myDatabase.nodeExists(node_id):
+        myDatabase.addPlaceholderNode(node_id)
     if myDatabase.locationExists(location_id):
-        print("Exists")
         myDatabase.updateLocation(location_id, node_id, name, location_type)
     else:
-        print("Does not exist")
-        myDatabase.addLocation(location_id, node_id, name, location_type)    
+        myDatabase.addLocation(location_id, node_id, name, location_type)
     nodes, edges, locations = myDatabase.getMapData()
+    myDatabase.closeConnection()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+
 
 
 
