@@ -6,6 +6,8 @@
 body {
     padding: 0;
     margin: 0;
+    /* background-color: rgb(210, 214, 231); */
+    background-color: rgb(219, 223, 236);
 }
 
 footer p {
@@ -21,7 +23,7 @@ footer p {
     padding: 15px;
     border-color: black;
     border-radius: 15px;
-    background-color: antiquewhite;
+    background-color: rgba(240, 242, 248, 0.933);
     border-width: 2px;
     border-style: solid;
     font-weight: bold;
@@ -34,16 +36,21 @@ footer p {
 #logout {
     position: relative;
     z-index: 10000000000;
-    width: 90px;
+    width: 70px;
+    height: 70px;
     left: calc(100% - 110px);
     bottom: 55px;
-    padding: 15px;
+    padding: 8px;
     border-color: black;
-    border-radius: 15px;
-    background-color: antiquewhite;
+    border-radius: 100%;
+    background-color: rgba(240, 242, 248, 0.947);
     border-width: 2px;
     border-style: solid;
     font-weight: bold;
+}
+
+#logout:hover {
+    border-color: grey;
 }
 
 #toggleNodesBtn {
@@ -53,7 +60,7 @@ footer p {
     top: 35px;
     padding: 5px;
     border-radius: 15px;
-    background-color: rgb(239, 63, 63);
+    background-color: rgba(239, 63, 63, 0.923);
     border-color: black;
     border-style: solid;
     font-weight: bold;
@@ -64,14 +71,27 @@ footer p {
     border-color: gray;
 }
 
-#map {
+#mapWrapper {
     border-radius: 0px 0px 25px 25px;
     overflow: hidden;
     box-shadow: inset 2px 2px 3px 1px gray;
+    border-bottom-style: solid;
+    border-color: rgba(173, 176, 195, 0.764);
+    border-width: 1px;
 }
 
-#nodeRoute {
-    background-color: antiquewhite;
+#map {
+    position: absolute;
+    border-radius: 0px 0px 25px 25px;
+    overflow: hidden;
+    box-shadow: inset 2px 2px 3px 1px gray;
+    border-bottom-style: solid;
+    border-color: rgba(173, 176, 195, 0.764);
+    border-width: 1px;
+}
+
+/* #nodeRoute {
+    background-color: rgba(240, 242, 248, 0.899);
     border-radius: 6px;
     border-style: solid;
     border-width: 2px;
@@ -82,18 +102,35 @@ footer p {
     width: 300px;
     height: 200px;
     position: relative;
-    left: 20px;
+    left: 30px;
     top: 245px;
+} */
+
+.routeInput {
+    background-color: rgba(240, 242, 248, 0.899);
+    border-radius: 6px;
+    border-style: solid;
+    border-width: 2px;
+    border-color: black;
+    padding: 20px;
+    text-align: center;
+    z-index: 100000000000000000000000000;
+    width: 300px;
+    height: 525px;
+    position: relative;
+    left: 30px;
+    top: 150px;
+    
 }
 
 #nodeRoute * {
     padding: 4px;
 }
 
-#locationRoute {
+/* #locationRoute {
     z-index: 100000000000000000000000000;
     position: relative;
-    background-color: antiquewhite;
+    background-color: rgba(240, 242, 248, 0.899);
     border-radius: 6px;
     border-style: solid;
     border-width: 2px;
@@ -102,24 +139,31 @@ footer p {
     text-align: center;
     width: 300px;
     height: 350px;
-    left: 20px;   
-}
+    left: 30px;   
+} */
 
 #locationRoute * {
     padding: 4px;
 }
 
-#nodeReload {
+.reload {
     position: relative;
-    left: 45%;
-    top: 2px;
+    left: 35%;
+    bottom: 16px;
+    margin-top: 0px;
+    padding-top: 0px;
 }
 
-#locationReload {
-    position: relative;
-    left: 45%;
-    top: 2px;
+.reload:hover {
+    cursor: pointer;
 }
+
+.reloadSign {
+    position: relative;
+    top: 11px;
+}
+
+
 
 .slider {
     position: relative;
@@ -151,12 +195,12 @@ footer p {
 
 #plus:hover {
     cursor: pointer;
-    width: 110px;
+    width: 130px;
 }
 
 #minus:hover {
     cursor: pointer;
-    width: 110px;
+    width: 130px;
 }
 
 .routeBtn {
