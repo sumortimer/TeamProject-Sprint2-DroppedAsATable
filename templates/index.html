@@ -211,7 +211,7 @@
         isSatellite = !isSatellite;
     };
     // Adds click and scroll propagation(Cant affect the map while hovering over UI elements)
-    document.querySelectorAll(".map-ui").forEach(el => {
+    document.querySelectorAll(".map-ui, .routeInput, .slider, .routeBtn").forEach(el => {
         L.DomEvent.disableClickPropagation(el);
         L.DomEvent.disableScrollPropagation(el);
     });
