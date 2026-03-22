@@ -58,10 +58,11 @@
     <button id="missionBtn" class="map-ui" onclick="missions()">Missions</button>
     <br><button type="button" class="map-ui" id="toggleNodesBtn">Hide Nodes</button>
     <br><button type="button" class="map-ui" id="logout" onclick="logout()">Log Out</button>
+    <button type="button" id="devBtn" class="map-ui" onclick="goToDev()">dev</button>
 
     <script> 
         function logout(){
-            window.location.href = "{{url_for('missions_1')}}";
+            window.location.href = "{{url_for('logout')}}";
         }
     </script>
 
@@ -131,17 +132,17 @@
 
 
     <div>
-        <div id="routeInfo" class="map-ui" style="margin-top: 15px; padding: 10px; background: white; border-radius: 3px; min-height: 50px;">
+        <div id="routeInfo" class="map-ui" style="margin-top: 15px; padding: 10px; background: rgb(219, 223, 236); border-radius: 3px; min-height: 50px;">
             Enter start and end nodes and click "Find Route"
         </div>
 
         <div id="info" class="map-ui">
             <div id="seeMore">
-                <h4 id="plus">See more <svg id="plusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M446.67-446.67H200v-66.66h246.67V-760h66.66v246.67H760v66.66H513.33V-200h-66.66v-246.67Z"/></svg></h4>
+                <h3 id="plus">See more (Route Statistics) <svg id="plusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M446.67-446.67H200v-66.66h246.67V-760h66.66v246.67H760v66.66H513.33V-200h-66.66v-246.67Z"/></svg></h3>
             </div>
 
             <div id="seeLess">
-                <h4 id="minus">See less <svg id="minusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M184.17-435.93v-88.14H776.2v88.14H184.17Z"/></svg></h4>
+                <h3 id="minus">See less (Route Statistics) <svg id="minusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M184.17-435.93v-88.14H776.2v88.14H184.17Z"/></svg></h3>
                 <p id="results"></p>
             </div>
         
@@ -149,6 +150,12 @@
     </div>
     
 </div>
+
+<script>
+    function goToDev(){
+        window.location.href = "{{url_for('dev_panel')}}";
+    }
+</script>
 
 <footer>
     <br>

@@ -723,7 +723,7 @@ def getAuditLog():
                 'missionID': record[2],
                 'time': record[3]
             })
-        return database_response
+        return audit_log
     except Exception as e:
         print("Error", e)
         return []

@@ -39,18 +39,30 @@
 
         <button type="submit">Submit</button>
     </form>
+        
 
-    <!-- Need table that will iterate through -->
-     <div id="auditlog">
-        <!-- Header for table -->
+    <table id="auditlog">
+        <tr>
+            <th>changeID</th>
+            <th>userID</th>
+            <th>missionID</th>
+            <th>time</th>
+        </tr>
+
         {% for audit in audit_log %}
-        <div class="audit">
-            <!-- changeID -->
-            <!-- userID -->
-            <!-- missionID -->
-            <!-- time -->
-        </div>
+
+        <tr>
+            <td>{{audit["changeID"]}}</td>
+            <td>{{audit["userID"]}}</td>
+            <td>{{audit["missionID"]}}</td>
+            <td>{{audit["time"]}}</td>
+        </tr>
+
         {% endfor %}
+
+    </table>
+
+        
 
     </div>
 </body>
