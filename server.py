@@ -317,11 +317,15 @@ def missions_1r():
 def missions_1():
     if not isUserAuthenticated():
         return redirect(url_for("index"))
+    if isUserAuthenticated(adminNeeded=True):
+        mission_html = "missions_t1_admin.html"
+    else:
+        mission_html = "missions_t1.html"
 
-    if request.method == "GET":
-        myDatabase = DatabaseMethods()
+    myDatabase = DatabaseMethods()
+    missions = []
+    try:
         database_response = myDatabase.getMissionTier(1) # get all missions of tier 1
-        missions = []
         for m in database_response:
             id = m[0]
             question = m[1]
@@ -329,9 +333,11 @@ def missions_1():
                 'question': question,
                 'id': id
             })
+    except Exception as e:
+        print("Error: ", e)
+    finally:
         myDatabase.closeConnection()
-        
-        return render_template("missions_t1.html", missions=missions)
+        return render_template(mission_html, missions=missions)
     
 @app.route("/missions_t2.html", methods=["GET"])
 def missions_2r():
@@ -341,10 +347,15 @@ def missions_2r():
 def missions_2():
     if not isUserAuthenticated():
         return redirect(url_for("index"))
-    if request.method == "GET":
-        myDatabase = DatabaseMethods()
+    if isUserAuthenticated(adminNeeded=True):
+        mission_html = "missions_t2_admin.html"
+    else:
+        mission_html = "missions_t2.html"
+
+    myDatabase = DatabaseMethods()
+    missions = []
+    try:
         database_response = myDatabase.getMissionTier(2) # get all missions of tier 2
-        missions = []
         for m in database_response:
             id = m[0]
             question = m[1]
@@ -352,9 +363,11 @@ def missions_2():
                 'question': question,
                 'id': id
             })
+    except Exception as e:
+        print("Error: ", e)
+    finally:
         myDatabase.closeConnection()
-        
-        return render_template("missions_t2.html", missions=missions)
+        return render_template(mission_html, missions=missions)
     
 @app.route("/missions_t3.html", methods=["GET"])
 def missions_3r():
@@ -364,10 +377,15 @@ def missions_3r():
 def missions_3():
     if not isUserAuthenticated():
         return redirect(url_for("index"))
-    if request.method == "GET":
-        myDatabase = DatabaseMethods()
+    if isUserAuthenticated(adminNeeded=True):
+        mission_html = "missions_t3_admin.html"
+    else:
+        mission_html = "missions_t3.html"
+
+    myDatabase = DatabaseMethods()
+    missions = []
+    try:
         database_response = myDatabase.getMissionTier(3) # get all missions of tier 3
-        missions = []
         for m in database_response:
             id = m[0]
             question = m[1]
@@ -375,9 +393,11 @@ def missions_3():
                 'question': question,
                 'id': id
             })
+    except Exception as e:
+        print("Error: ", e)
+    finally:
         myDatabase.closeConnection()
-        
-        return render_template("missions_t3.html", missions=missions)
+        return render_template(mission_html, missions=missions)
     
 @app.route("/mission_display.html", methods=["GET"])
 def mission_display_r():
@@ -749,11 +769,11 @@ def admin_panel():
         audit_log = getAuditLog()
         return render_template("admin_panel.html", audit_log=audit_log)
 
-
 @app.route("/logout", methods=["GET"])
 def logout():
     session.clear()
     return redirect(url_for("index"))
+
 
 ############ OTHER ROUTES AND FUNCTIONS #########################################
 @app.route("/getmapdata", methods=["GET"])
