@@ -100,8 +100,6 @@ footer p {
     border-color: black;
     padding: 20px;
     text-align: center;
-    width: 300px;
-    height: 350px;
     left: 20px;   
 }
 
@@ -109,17 +107,24 @@ footer p {
     padding: 4px;
 }
 
-#nodeReload {
+.reload {
     position: relative;
-    left: 45%;
-    top: 2px;
+    left: 35%;
+    bottom: 16px;
+    margin-top: 0px;
+    padding-top: 0px;
 }
 
-#locationReload {
-    position: relative;
-    left: 45%;
-    top: 2px;
+.reload:hover {
+    cursor: pointer;
 }
+
+.reloadSign {
+    position: relative;
+    top: 11px;
+}
+
+
 
 .slider {
     position: relative;

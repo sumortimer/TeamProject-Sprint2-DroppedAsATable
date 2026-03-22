@@ -21,27 +21,31 @@ app.secret_key = SESSION_KEY
 #lighting, greenery, elevation, crime, distance
 @app.route("/", methods=["GET", "POST"])
 def index():
+    # Denies request and sends a user to login if they are not logged in
+    if not isUserAuthenticated():
+        return redirect(url_for("login"))
+    
     if request.method == "POST":
         start = request.form["start"]
         end = request.form["end"]
         return "Route saved to database!"
-    # Sends user to login if they are not logged in
-    if not isUserAuthenticated():
-        return redirect(url_for("login"))
     # If the user hasn't accepted the disclaimers this session then tell the index.html to pop-up the disclaimers.
     if not session.get("acceptedTerms"):
         session["acceptedTerms"] = True
         return render_template("index.html", termsNeeded="True")
     return render_template("index.html", termsNeeded="False")
+
 @app.route("/map.html")
 def map_redir():
     return redirect(url_for("index"))
 
-
-
 ################# GET ROUTES ########################
 @app.route("/getroute", methods=["POST"])
 def get_route():
+    # Denies request and sends a user to index if they are not logged in
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
+
     data = request.get_json()
     start_node = int(data["startNode"])
     end_node = int(data["endNode"])
@@ -86,8 +90,13 @@ def get_route():
         "start": start_node,
         "end": end_node
     })
+
 @app.route("/getroutefromname", methods=["POST"])
 def get_route_from_name():
+    # Denies request and sends a user to index if they are not logged in
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
+
     myDatabase = DatabaseMethods()
     data = request.get_json()
     start_name = data.get("startName", "")
@@ -138,10 +147,13 @@ def get_route_from_name():
     })   
 
 
-
 ################# ADD ROUTES #######################
 @app.route("/addnode", methods=["POST"])
 def add_node():
+    # Denies request and sends a user to index if they are not logged in
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
+
     data = request.get_json()
     myDatabase = DatabaseMethods()
     # Collecting the json data
@@ -160,8 +172,13 @@ def add_node():
         myDatabase.addNode(node_id, coordx, coordy, lighting, crime, greenery, gradient)
     nodes, edges, locations = myDatabase.getMapData()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+
 @app.route("/addsegment", methods=["POST"])
 def add_segment():
+    # Denies request and sends a user to index if they are not logged in
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
+
     data = request.get_json()
     myDatabase = DatabaseMethods()
     # Collecting the json data
@@ -174,8 +191,13 @@ def add_segment():
     myDatabase.addEdge(segment_id, start_node, end_node, length)
     nodes, edges, locations = myDatabase.getMapData()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+
 @app.route("/addlocation", methods=["POST"])
 def add_location():
+    # Denies request and sends a user to index if they are not logged in
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
+
     data = request.get_json()
     myDatabase = DatabaseMethods()
     # Collecting the json data
@@ -183,20 +205,25 @@ def add_location():
     name = data["name"]
     node_id = data["nodeID"]
     location_type = data["locationType"]
+    # Make sure node exists first
+    if not myDatabase.nodeExists(node_id):
+        myDatabase.addPlaceholderNode(node_id)
     if myDatabase.locationExists(location_id):
-        print("Exists")
         myDatabase.updateLocation(location_id, node_id, name, location_type)
     else:
-        print("Does not exist")
-        myDatabase.addLocation(location_id, node_id, name, location_type)    
+        myDatabase.addLocation(location_id, node_id, name, location_type)
     nodes, edges, locations = myDatabase.getMapData()
+    myDatabase.closeConnection()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
-
 
 
 ############ EDIT AND DELETE ROUTES ###################
 @app.route("/editnode", methods=["POST"])
 def edit_node():
+    # Denies request and sends a user to index if they are not logged in
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
+
     data = request.get_json()
     myDatabase = DatabaseMethods()
 
@@ -204,14 +231,26 @@ def edit_node():
     myDatabase.deleteEdgeByStartNode(start_node)
     nodes, edges, locations = myDatabase.getMapData()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+
 @app.route("/editlocation", methods=["POST"])
 def edit_location(): ####### UNIFINSHED #########
+    # Denies request and sends a user to index if they are not logged in
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
+
     data = request.get_json()
     myDatabase = DatabaseMethods()
 
     name = data["name"]
+
+    myDatabase.closeConnection()
+
 @app.route("/editindicators", methods=["POST"])
 def edit_indicators():
+    # Denies request and sends a user to index if they are not logged in
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
+
     data = request.get_json()
     myDatabase = DatabaseMethods()
 
@@ -223,9 +262,11 @@ def edit_indicators():
     myDatabase.editIndicators(node_id, lighting, crime, greenery, gradient)
     nodes, edges, locations = myDatabase.getMapData()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+
 @app.route("/edit_mission.html", methods=["GET"])
 def edit_mission_r():
     return redirect(url_for("edit_mission"))
+
 @app.route("/edit_mission", methods=["GET", "POST"])
 def edit_mission():
     if not isUserAuthenticated(adminNeeded=True):
@@ -292,6 +333,10 @@ def edit_mission():
 
 @app.route("/deletenode", methods=["POST"])
 def delete_node():
+    # Denies request and sends a user to index if they are not logged in
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
+
     data = request.get_json()
     myDatabase = DatabaseMethods()
 
@@ -303,20 +348,26 @@ def delete_node():
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
 
-
 ############# MISSION ROUTES ########################
 @app.route("/missions_t1.html", methods=["GET"])
 def missions_1r():
     return redirect(url_for('missions_1'))
+
 @app.route("/missions_t1", methods=["GET"])
 def missions_1():
+    # Denies request and sends a user to index if they are not logged in
     if not isUserAuthenticated():
         return redirect(url_for("index"))
 
-    if request.method == "GET":
-        myDatabase = DatabaseMethods()
+    if isUserAuthenticated(adminNeeded=True):
+        mission_html = "missions_t1_admin.html"
+    else:
+        mission_html = "missions_t1.html"
+
+    myDatabase = DatabaseMethods()
+    missions = []
+    try:
         database_response = myDatabase.getMissionTier(1) # get all missions of tier 1
-        missions = []
         for m in database_response:
             id = m[0]
             question = m[1]
@@ -324,20 +375,31 @@ def missions_1():
                 'question': question,
                 'id': id
             })
+    except Exception as e:
+        print("Error: ", e)
+    finally:
         myDatabase.closeConnection()
-        
-        return render_template("missions_t1.html", missions=missions)
+        return render_template(mission_html, missions=missions)
+    
 @app.route("/missions_t2.html", methods=["GET"])
 def missions_2r():
     return redirect(url_for('missions_2'))
+
 @app.route("/missions_t2", methods=["GET"])
 def missions_2():
+    # Denies request and sends a user to index if they are not logged in
     if not isUserAuthenticated():
         return redirect(url_for("index"))
-    if request.method == "GET":
-        myDatabase = DatabaseMethods()
+
+    if isUserAuthenticated(adminNeeded=True):
+        mission_html = "missions_t2_admin.html"
+    else:
+        mission_html = "missions_t2.html"
+
+    myDatabase = DatabaseMethods()
+    missions = []
+    try:
         database_response = myDatabase.getMissionTier(2) # get all missions of tier 2
-        missions = []
         for m in database_response:
             id = m[0]
             question = m[1]
@@ -345,20 +407,31 @@ def missions_2():
                 'question': question,
                 'id': id
             })
+    except Exception as e:
+        print("Error: ", e)
+    finally:
         myDatabase.closeConnection()
-        
-        return render_template("missions_t2.html", missions=missions)
+        return render_template(mission_html, missions=missions)
+    
 @app.route("/missions_t3.html", methods=["GET"])
 def missions_3r():
     return redirect(url_for('missions_3'))
+
 @app.route("/missions_t3", methods=["GET"])
 def missions_3():
+    # Denies request and sends a user to index if they are not logged in
     if not isUserAuthenticated():
         return redirect(url_for("index"))
-    if request.method == "GET":
-        myDatabase = DatabaseMethods()
+
+    if isUserAuthenticated(adminNeeded=True):
+        mission_html = "missions_t3_admin.html"
+    else:
+        mission_html = "missions_t3.html"
+
+    myDatabase = DatabaseMethods()
+    missions = []
+    try:
         database_response = myDatabase.getMissionTier(3) # get all missions of tier 3
-        missions = []
         for m in database_response:
             id = m[0]
             question = m[1]
@@ -366,14 +439,19 @@ def missions_3():
                 'question': question,
                 'id': id
             })
+    except Exception as e:
+        print("Error: ", e)
+    finally:
         myDatabase.closeConnection()
-        
-        return render_template("missions_t3.html", missions=missions)
+        return render_template(mission_html, missions=missions)
+    
 @app.route("/mission_display.html", methods=["GET"])
 def mission_display_r():
     return redirect(url_for("mission_display"))
+
 @app.route("/mission_display", methods=["GET", "POST"])
 def mission_display():
+    # Denies request and sends a user to index if they are not logged in
     if not isUserAuthenticated():
         return redirect(url_for("index"))
 
@@ -420,11 +498,11 @@ def mission_display():
             myDatabase.closeConnection()
 
 
-
 ################ ACCOUNT RELATED ROUTES ########################
 @app.route("/signup.html")
 def signup_redirect():
     return redirect(url_for('signup'))
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     # Checks if user is authenticated, if they are then they are directed away from the sign up page.
@@ -547,9 +625,11 @@ def signup():
             abort(500)
         finally:
             myDatabase.closeConnection()
+
 @app.route("/login.html")
 def login_redirect():
     return redirect(url_for('login'))
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     # Checks if user is authenticated, if they are then they are directed away from the log in page.
@@ -607,11 +687,15 @@ def login():
 @app.route("/user_profile.html", methods=["GET"])
 def user_profiler():
     return redirect(url_for('user_profile'))
+
 @app.route("/user_profile", methods=["GET"])
 def user_profile():
+    # Denies request and sends a user to index if they are not logged in
     if not isUserAuthenticated():
         return redirect(url_for("index"))
+
     return render_template("user_profile.html")
+
 # Check for whether user is logged in or not
 # If action requires the user to be an admin or above, then set adminNeeded, vice versa devNeeded.
 # By default if app.debug is set to true then isUserAuthenticated is overridden for testing,
@@ -625,13 +709,6 @@ def isUserAuthenticated(adminNeeded=False, devNeeded=False, overrideDebug=False)
     elif devNeeded:
         return bool(session.get("user_role") == "M")
     return bool(session.get("user_name"))
-
-
-############ Idea for custom error pages ###################
-# @app.errorhandler(404)
-# def page_not_found(e):
-#     # e is the error object
-#     return render_template('404.html'), 404
 
 # Needs to be tested
 def getAuditLog():
@@ -741,17 +818,19 @@ def admin_panel():
         audit_log = getAuditLog()
         return render_template("admin_panel.html", audit_log=audit_log)
 
-
 @app.route("/logout", methods=["GET"])
 def logout():
     session.clear()
     return redirect(url_for("index"))
 
-############ OTHER METHODS ###################
 
 ############ OTHER ROUTES AND FUNCTIONS #########################################
 @app.route("/getmapdata", methods=["GET"])
 def mapdata():
+    # Denies request and sends a user to index if they are not logged in
+    if not isUserAuthenticated():
+        return redirect(url_for("index"))
+
     myDatabase = DatabaseMethods()
     nodes, edges, locations = myDatabase.getMapData()
      
@@ -760,6 +839,25 @@ def ensure_node_exists(database, node_id):
     if not database.nodeExists(node_id):
         database.addPlaceholderNode(node_id)
 
+def make_dev_user(username="dev_acc", email="dev@project6.com", password="g00dPass44!"):
+    myDatabase = DatabaseMethods()
+    try:
+        if (myDatabase.areUserDetailsUsed(username, email)):
+            print("Dev account creation unsuccessful, account with this username or email already exists.")
+            return False
+        if (not myDatabase.addUser(username, email, generate_password_hash(password + PEPPER_PASSWORD), 'M')):
+            print("Dev account creation unsuccessful, due to database error.")
+            return False
+        print("Dev account creation successful.")
+        return True
+    except Exception as e:
+        print("Dev account creation unsuccessful.")
+        print("Error: ", e)
+        return False
+    finally:
+        myDatabase.closeConnection()
+   
 
 if __name__ == "__main__":
+    # make_dev_user()
     app.run(debug=False,host='0.0.0.0', port=5000)

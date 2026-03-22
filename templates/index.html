@@ -7,8 +7,44 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='map.css') }}"/>
-    <script type="text/javascript" src="{{ url_for('static', filename='map.js') }}" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.awesome-markers@2.0.4/dist/leaflet.awesome-markers.css">
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.awesome-markers@2.0.4/dist/leaflet.awesome-markers.js"></script>
+    <script src="{{ url_for('static', filename='map.js') }}" defer></script>
+
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+            html, body, #map {
+            height: 98%;
+            width: 100vw;
+        }
+        .popup-form input {
+        width: 140px;
+        margin-bottom: 5px;
+        }
+
+        .popup-form button {
+        margin-right: 5px;
+        }
+        
+        #nodeRoute {
+        position: absolute;
+        cursor: default;
+        pointer-events: auto;
+        }
+        #locationRoute {
+        position: absolute;
+        cursor: default;
+        pointer-events: auto;
+        }
+    </style>
 </head>
 <body>
 
@@ -18,10 +54,10 @@
     }
 </script> -->
 
-<div id="map">
-    <button id="missionBtn" onclick="missions()">Missions</button>
-    <br><button type="button" id="toggleNodesBtn">Hide Nodes</button>
-    <br><button type="button" id="logout" onclick="logout()">Log Out</button>
+<div id="map" class="map-ui">
+    <button id="missionBtn" class="map-ui" onclick="missions()">Missions</button>
+    <br><button type="button" class="map-ui" id="toggleNodesBtn">Hide Nodes</button>
+    <br><button type="button" class="map-ui" id="logout" onclick="logout()">Log Out</button>
 
     <script> 
         function logout(){
@@ -29,8 +65,8 @@
         }
     </script>
 
-    <div id="nodeRoute">
-        <svg id="nodeReload" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M203.52-308.67q-24.39-39.68-36.7-82.31-12.32-42.63-12.32-87.5 0-135.43 94.2-231.23 94.19-95.79 228.91-95.79h7.24l-60.42-60.41 58.64-58.39L647.37-760l-164.3 164.3-58.64-58.39 60.42-60.41h-6.52q-96.9 0-164.86 68.83-67.97 68.82-67.97 167.19 0 26.72 6.36 52.32 6.36 25.59 19.07 50.07l-67.41 67.42ZM476.93-35.46l-164.3-164.3 164.3-164.54 58.64 58.63-60.42 60.41h6.52q96.9 0 164.86-68.95 67.97-68.94 67.97-167.31 0-26.72-6.36-52.32-6.36-25.59-19.07-50.07l67.41-67.18q24.39 39.68 36.7 82.19 12.32 42.51 12.32 87.38 0 135.43-94.2 231.35-94.19 95.91-228.91 95.91h-7.24l60.42 60.17-58.64 58.63Z"/></svg>
+    <div id="nodeRoute" class="map-ui">
+        <h4 id="nodeReload" class="reload">Use Locations <svg class="reloadSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M203.52-308.67q-24.39-39.68-36.7-82.31-12.32-42.63-12.32-87.5 0-135.43 94.2-231.23 94.19-95.79 228.91-95.79h7.24l-60.42-60.41 58.64-58.39L647.37-760l-164.3 164.3-58.64-58.39 60.42-60.41h-6.52q-96.9 0-164.86 68.83-67.97 68.82-67.97 167.19 0 26.72 6.36 52.32 6.36 25.59 19.07 50.07l-67.41 67.42ZM476.93-35.46l-164.3-164.3 164.3-164.54 58.64 58.63-60.42 60.41h6.52q96.9 0 164.86-68.95 67.97-68.94 67.97-167.31 0-26.72-6.36-52.32-6.36-25.59-19.07-50.07l67.41-67.18q24.39 39.68 36.7 82.19 12.32 42.51 12.32 87.38 0 135.43-94.2 231.35-94.19 95.91-228.91 95.91h-7.24l60.42 60.17-58.64 58.63Z"/></svg></h4>
         <div>
             <label>Start Node:</label>
             <input type="number" id="routeStart" min="1" value="300" style="width: 80px;">
@@ -40,19 +76,23 @@
             <input type="number" id="routeEnd" min="1" value="600" style="width: 80px;">
         </div>
         <div>
-            <button class="routeBtn" onclick="findRoute()" id="findroutebutton">Find Route</button>
-            <button class="routeBtn" onclick="clearRoute()">Clear</button>
+            <button class="routeBtn" class="map-ui" onclick="findRoute()" id="findroutebutton">Find Route</button>
+            <button class="routeBtn" class="map-ui" onclick="clearRoute()">Clear</button>
         </div>
+        <div id="mapToggle">
+        <button class="routeBtn" class="map-ui" id="toggleBasemapBtn">Satellite</button>
+        </div>
+
     </div>
 
-    <div id="locationRoute">
-        <svg id="locationReload" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M203.52-308.67q-24.39-39.68-36.7-82.31-12.32-42.63-12.32-87.5 0-135.43 94.2-231.23 94.19-95.79 228.91-95.79h7.24l-60.42-60.41 58.64-58.39L647.37-760l-164.3 164.3-58.64-58.39 60.42-60.41h-6.52q-96.9 0-164.86 68.83-67.97 68.82-67.97 167.19 0 26.72 6.36 52.32 6.36 25.59 19.07 50.07l-67.41 67.42ZM476.93-35.46l-164.3-164.3 164.3-164.54 58.64 58.63-60.42 60.41h6.52q96.9 0 164.86-68.95 67.97-68.94 67.97-167.31 0-26.72-6.36-52.32-6.36-25.59-19.07-50.07l67.41-67.18q24.39 39.68 36.7 82.19 12.32 42.51 12.32 87.38 0 135.43-94.2 231.35-94.19 95.91-228.91 95.91h-7.24l60.42 60.17-58.64 58.63Z"/></svg>
+    <div id="locationRoute" class="map-ui">
+        <h4 id="locationReload" class="reload">Use Nodes <svg class="reloadSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M203.52-308.67q-24.39-39.68-36.7-82.31-12.32-42.63-12.32-87.5 0-135.43 94.2-231.23 94.19-95.79 228.91-95.79h7.24l-60.42-60.41 58.64-58.39L647.37-760l-164.3 164.3-58.64-58.39 60.42-60.41h-6.52q-96.9 0-164.86 68.83-67.97 68.82-67.97 167.19 0 26.72 6.36 52.32 6.36 25.59 19.07 50.07l-67.41 67.42ZM476.93-35.46l-164.3-164.3 164.3-164.54 58.64 58.63-60.42 60.41h6.52q96.9 0 164.86-68.95 67.97-68.94 67.97-167.31 0-26.72-6.36-52.32-6.36-25.59-19.07-50.07l67.41-67.18q24.39 39.68 36.7 82.19 12.32 42.51 12.32 87.38 0 135.43-94.2 231.35-94.19 95.91-228.91 95.91h-7.24l60.42 60.17-58.64 58.63Z"/></svg></h4>
         <div>
             <label>Start Location:</label>
             <input type="string" id="routeStartName" value="The Imperial" style="width: 80px;">
         </div>
         <div>
-            <label>End Node:</label>
+            <label>End Node:</label>    
             <input type="string" id="routeEndName" value="Southernhay House Surgery" style="width: 80px;">
         </div>
         <div>
@@ -89,17 +129,13 @@
     </div>
 </div>
 
-<div id="map-wrapper">
-    <script id="map" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-</div>
 
     <div>
-        <div id="routeInfo" style="margin-top: 15px; padding: 10px; background: white; border-radius: 3px; min-height: 50px;">
+        <div id="routeInfo" class="map-ui" style="margin-top: 15px; padding: 10px; background: white; border-radius: 3px; min-height: 50px;">
             Enter start and end nodes and click "Find Route"
         </div>
 
-        <div id="info">
+        <div id="info" class="map-ui">
             <div id="seeMore">
                 <h4 id="plus">See more <svg id="plusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M446.67-446.67H200v-66.66h246.67V-760h66.66v246.67H760v66.66H513.33V-200h-66.66v-246.67Z"/></svg></h4>
             </div>
@@ -133,26 +169,55 @@
     const map = L.map("map", {
     maxBounds: exeterBounds,
     maxBoundsViscosity: 1.0,
-    minZoom: 20
-    }).setView([50.72868246470866, -3.5257188929846914], 2);
+    minZoom: 14
+    }).setView([50.72868246470866, -3.5257188929846914], 14);
+    setTimeout(() => map.setMinZoom(15), 500);   // Zoom in after minute period
 
-    setTimeout(() => map.setMinZoom(15), 500);
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-    
+    // Map layers
+    const osmLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap contributors"
+    });
+    const satLayer = L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    { maxZoom: 20, attribution: "Tiles © Esri" }
+    );
+    const labelsLayer = L.tileLayer(
+    "https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+    { maxZoom: 20, attribution: "© Esri" }
+    );
+    osmLayer.addTo(map);   // Begin with OSM layer
+    const nodesLayer = L.layerGroup().addTo(map);   // Add new layer to map for just nodes
 
-    const nodesLayer = L.layerGroup().addTo(map);
+    const toggleLayerButton = document.getElementById("toggleBasemapBtn");
+    const toggleNodesButton = document.getElementById("toggleNodesBtn");
+    let isSatellite = false;
     let nodesVisible = true;
-
-    const toggleBtn = document.getElementById("toggleNodesBtn");
-    toggleBtn.onclick = () => {
+    // Swap logic for changing between satelite and OSM map
+    toggleLayerButton.onclick = () => {
+        if (isSatellite) {
+            map.removeLayer(satLayer);
+            map.removeLayer(labelsLayer);
+            osmLayer.addTo(map);
+            toggleLayerButton.textContent = "Satellite";
+        } else {
+            map.removeLayer(osmLayer);
+            satLayer.addTo(map);
+            labelsLayer.addTo(map);
+            toggleLayerButton.textContent = "OSM";
+        }
+        isSatellite = !isSatellite;
+    };
+    // Adds click and scroll propagation(Cant affect the map while hovering over UI elements)
+    document.querySelectorAll(".map-ui").forEach(el => {
+        L.DomEvent.disableClickPropagation(el);
+        L.DomEvent.disableScrollPropagation(el);
+    });
+    // Logic for toggling nodes on and off
+    toggleNodesButton.onclick = () => {
         toggleNodesVisibility();
         toggleBtn.textContent = nodesVisible ? "Hide Nodes" : "Show Nodes";
         toggleBtn.style.backgroundColor = nodesVisible ? "red" : "green";
     };
-
 
 
     /////////////////// KEY VARIABLES ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -173,6 +238,67 @@
     let newMarker = null;   // NewMarker variable for pre-emptive declaration
     let newLocation = null;   // NewLocation varianle for pre-emptive declaration
     let isCreating = false;   // Keeps track of whether user has the 'creating a new node' popup
+
+    iconMap = new Map();   // Used to store Map of icons for easier icon attribution during location creation
+    // Icon setups
+    const trainIcon = L.AwesomeMarkers.icon({
+        icon: "train",
+        prefix: "fa",
+        markerColor: "blue"
+    });
+    const prisonIcon = L.AwesomeMarkers.icon({
+        icon: "landmark-dome",
+        prefix: "fa",
+        markerColor: "darkred"
+    });
+    const healthIcon = L.AwesomeMarkers.icon({
+        icon: "hospital",
+        prefix: "fa",
+        markerColor: "red"
+    });
+    const shopIcon = L.AwesomeMarkers.icon({
+        icon: "shop",
+        prefix: "fa",
+        markerColor: "orange"
+    });
+    const houseIcon = L.AwesomeMarkers.icon({
+        icon: "house",
+        prefix: "fa",
+        markerColor: "cadetblue"
+    });
+    const foodIcon = L.AwesomeMarkers.icon({
+        icon: "utensils",
+        prefix: "fa",
+        markerColor: "green"
+    });
+    const sportsIcon = L.AwesomeMarkers.icon({
+        icon: "football",
+        prefix: "fa",
+        markerColor: "purple"
+    });
+    const uniIcon = L.AwesomeMarkers.icon({
+        icon: "graduation-cap",
+        prefix: "fa",
+        markerColor: "blue"
+    });
+    const busIcon = L.AwesomeMarkers.icon({
+        icon: "bus",
+        prefix: "fa",
+        markerColor: "darkgreen"
+    });
+    const redIcon = createIcon('red');
+    // Adding the icons to iconMap
+    iconMap.set("Prison", prisonIcon);
+    iconMap.set("prison", prisonIcon);
+    iconMap.set("Station", trainIcon);
+    iconMap.set("Food", foodIcon);
+    iconMap.set("Sports", sportsIcon);
+    iconMap.set("University", uniIcon);
+    iconMap.set("university", uniIcon);
+    iconMap.set("Health", healthIcon);
+    iconMap.set("Shop", shopIcon);
+    iconMap.set("Bus Stop", busIcon);
+    iconMap.set("House", houseIcon);
 
 
     /////////////////// CLASSES //////////////////
@@ -867,7 +993,6 @@
 
     
     /////////////////// ON LOAD FUNCTIONS /////////////////////////////////////
-
     async function loadMapData() {
         const res = await fetch("/getmapdata");   // Fetch database entries for nodes, edges, and locations
         const data = await res.json();
@@ -899,9 +1024,17 @@
             const viewPopup = L.popup()   // Setup new view popup to assign to the marker
                 .setContent(getLocationPopup(locationsByNodeId.get(newNode.id)));
             viewPopup._type = 'view-location';
-            newMarker = L.marker([newNode.lat, newNode.lng], {icon:redIcon}).addTo(map)
-            .bindPopup(viewPopup);
-            markersMap.set(nodeIdFromData, newMarker);
+            const iconChosen = iconMap.get(locationsByNodeId.get(newNode.id).type);   // Check if the location has a type
+            if (iconChosen === undefined){   // If type is undefined, just add a red marker
+                newMarker = L.marker([newNode.lat, newNode.lng], {icon:redIcon}).addTo(map)
+                .bindPopup(viewPopup);
+                markersMap.set(nodeIdFromData, newMarker);
+            }
+            else{   // Otherwise, add the correct marker according to iconMap
+                newMarker = L.marker([newNode.lat, newNode.lng], {icon:iconChosen}).addTo(map)
+                .bindPopup(viewPopup);
+                markersMap.set(nodeIdFromData, newMarker);
+            }
         }
         else{   // Otherwise, set up a normal node popup
             const viewPopup = L.popup()   // Setup new view popup to assign to the marker
@@ -960,10 +1093,8 @@
             popupAnchor: [1, -34]
         });
     }
-    const redIcon = createIcon('red');
     
 </script>
 
 </body>
 </html>
-
