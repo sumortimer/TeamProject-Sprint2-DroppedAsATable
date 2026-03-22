@@ -350,6 +350,7 @@
         //  Upon clicking done, run the function saveNode() with the coordinates of where the click happened
         const popupContentLeftClick = `
         <div class="popup-form">
+            <strong>New Node...</strong><br>
             <label>Node ID: ${nodeId}</label><br>
             <input type="text" pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$" id="connectsTo" placeholder="Connects to: " /><br>
             <button onclick="saveNode(${x.latlng.lat}, ${x.latlng.lng})">Done</button>
@@ -378,8 +379,8 @@
 
         const popupContentRightClick = `
         <div class="popup-form">
+            <strong>New Location...</strong><br>
             <label>Node ID: ${nodeId}</label><br>
-            <label>Name:</label><br>
             <input type="text" id="markerName" placeholder="Enter name" />
             <br>
             <input type="text" pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$" id="connectsToLocation" placeholder="Connects to: " /><br>
@@ -397,6 +398,8 @@
         tempPopup._type = 'create';   // Used to keep track of popup type for click management and better UX
     });
     // Upon opening up a popup on a node
+    let nameView = null;   // Set this globally so we can separate location and nodes inside popupopen without problem or extra code
+    let nameInput = null;
     map.on('popupopen', function (e) {
         if (e.popup._type === 'view-node' || e.popup._type == 'view-location'){
             isCreating = false; // Keeps track of user interactions for better UX
@@ -413,6 +416,11 @@
             const input = el.querySelector(".conn-edit");
             const nodeId = Number(el.querySelector(".popup-form").dataset.nodeId);
 
+            if (locationsByNodeId.get(nodeId) !== undefined){   // If it's a location, declare the name fields too
+                nameView = el.querySelector(".name-view");
+                nameInput = el.querySelector(".name-edit");
+            }
+
             const lightingView = el.querySelector(".ind-lighting");
             const crimeView = el.querySelector(".ind-crime");
             const greeneryView = el.querySelector(".ind-greenery");
@@ -424,6 +432,10 @@
             const gradientInput = el.querySelector(".ind-gradient-input");
 
             editBtn.onclick = () => {
+                if (nameView && nameInput) {   // If it's a location, change the name display too
+                    nameView.style.display = "none";
+                    nameInput.style.display = "inline-block";
+                }
                 viewSpan.style.display = "none";
                 input.style.display = "inline-block";
                 editBtn.style.display = "none";
@@ -441,6 +453,10 @@
                 deleteNode(nodeId);
             };
             cancelBtn.onclick = () => {
+                if (nameView && nameInput) {   // If it's a location, affect the name displays too
+                    nameInput.value = nameView.textContent === "(unnamed)" ? "" : nameView.textContent;
+                    nameView.style.display = "inline";
+                }
                 input.value = viewSpan.textContent === "(none)" ? "" : viewSpan.textContent;
                 viewSpan.style.display = "inline";
                 input.style.display = "none";
@@ -454,7 +470,7 @@
                 isCreating = false;   // Keeps track of user actions for better UX
                 tempPopup = null;
             };
-            saveBtn.onclick = () => {
+            saveBtn.onclick = () => {   // Every editable value here is saved to the database
                 const node = nodesMap.get(nodeId);
                 const newConnections = input;
                 const connectionsArray = handleConnectionsInput(newConnections, nodeId);
@@ -465,8 +481,16 @@
                 if (connectionsArray == false){   // Can't leave connectionsArray empty
                     return;
                 }
-                editNode(nodeId, connectionsArray, node.lighting, node.crime, node.greenery, node.gradient);
-
+                editNode(nodeId, connectionsArray, node.lighting, node.crime, node.greenery, node.gradient);   // First, edit the node entity, and also its marker
+                if (nameView && nameInput) {   // Only then, if we edited and saved a location, update all the necessary details about the location too, including its marker
+                    const newName = nameInput.value.trim() || "(unnamed)";
+                    nameView.textContent = newName;
+                    nameView.style.display = "inline";
+                    nameInput.style.display = "none";
+                    locationsByNodeId.get(nodeId).name = newName;
+                    editLocation(locationsByNodeId.get(nodeId).id, nodeId, newName, undefined);
+                }
+                
                 viewSpan.textContent = connectionsArray.length ? connectionsArray.join(",") : "(none)";
                 viewSpan.style.display = "inline";
                 input.style.display = "none";
@@ -672,6 +696,24 @@
         markersMap.get(nodeId).setPopupContent(getNodePopup(node));   // Update the node's popup content
         console.log(edges);
     }
+    // Triggered when the save button is clicked while editing a location, triggered after the corresponding editNode
+    function editLocation(locationId, nodeId, name, type){
+        const location = locationsByNodeId.get(nodeId);
+        type = "Bus Stop";   // Temporary for debug
+        fetch("/editlocation", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                nodeId: nodeId,
+                locationId: locationId,
+                name: name,
+                locationType: type
+            })
+        });
+        markersMap.get(nodeId).setPopupContent(getLocationPopup(location));   // Update the popup marker
+    }
     // Triggered when OK is selected in the popup made from deleting a node
     function deleteNode(nodeId){
         fetch("/deletenode", {
@@ -755,10 +797,16 @@
         const node = nodesMap.get(location.nodeId);
         const connectionsText = node && node.connections.length ? node.connections.join(",") : "";
         const nameText = (location.name || "").trim();
+        const lighting = node ? node.lighting : null;
+        const crime = node ? node.crime : null;
+        const greenery = node ? node.greenery : null;
+        const gradient = node ? node.gradient : null;
 
         return `
             <div class="popup-form" data-node-id="${location.nodeId}">
-                <strong>${nameText || "(unnamed)"}</strong><br>
+                <strong class="name-view">${nameText || "(unnamed)"}</strong>
+                <input class="name-edit" type="text" value="${nameText}" style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
+                <br>
                 <label>Node ID:</label> ${location.nodeId}<br>
                 <label>Location ID:</label> ${location.id}<br>
 
