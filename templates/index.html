@@ -61,19 +61,19 @@
 
     <script> 
         function logout(){
-            window.location.href = "{{url_for('logout')}}";
+            window.location.href = "{{url_for('missions_1')}}";
         }
     </script>
 
-    <div id="nodeRoute" class="routeInput">
+    <div id="nodeRoute" class="map-ui">
         <h4 id="nodeReload" class="reload">Use Locations <svg class="reloadSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M203.52-308.67q-24.39-39.68-36.7-82.31-12.32-42.63-12.32-87.5 0-135.43 94.2-231.23 94.19-95.79 228.91-95.79h7.24l-60.42-60.41 58.64-58.39L647.37-760l-164.3 164.3-58.64-58.39 60.42-60.41h-6.52q-96.9 0-164.86 68.83-67.97 68.82-67.97 167.19 0 26.72 6.36 52.32 6.36 25.59 19.07 50.07l-67.41 67.42ZM476.93-35.46l-164.3-164.3 164.3-164.54 58.64 58.63-60.42 60.41h6.52q96.9 0 164.86-68.95 67.97-68.94 67.97-167.31 0-26.72-6.36-52.32-6.36-25.59-19.07-50.07l67.41-67.18q24.39 39.68 36.7 82.19 12.32 42.51 12.32 87.38 0 135.43-94.2 231.35-94.19 95.91-228.91 95.91h-7.24l60.42 60.17-58.64 58.63Z"/></svg></h4>
         <div>
             <label>Start Node:</label>
-            <input type="number" id="routeStart" min="1" value="300" style="width: 120px;">
+            <input type="number" id="routeStart" min="1" value="300" style="width: 80px;">
         </div>
         <div>
             <label>End Node:</label>
-            <input type="number" id="routeEnd" min="1" value="600" style="width: 120px;">
+            <input type="number" id="routeEnd" min="1" value="600" style="width: 80px;">
         </div>
         <div>
             <button class="routeBtn" class="map-ui" onclick="findRoute()" id="findroutebutton">Find Route</button>
@@ -85,15 +85,15 @@
 
     </div>
 
-    <div id="locationRoute" class="routeInput">
+    <div id="locationRoute" class="map-ui">
         <h4 id="locationReload" class="reload">Use Nodes <svg class="reloadSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M203.52-308.67q-24.39-39.68-36.7-82.31-12.32-42.63-12.32-87.5 0-135.43 94.2-231.23 94.19-95.79 228.91-95.79h7.24l-60.42-60.41 58.64-58.39L647.37-760l-164.3 164.3-58.64-58.39 60.42-60.41h-6.52q-96.9 0-164.86 68.83-67.97 68.82-67.97 167.19 0 26.72 6.36 52.32 6.36 25.59 19.07 50.07l-67.41 67.42ZM476.93-35.46l-164.3-164.3 164.3-164.54 58.64 58.63-60.42 60.41h6.52q96.9 0 164.86-68.95 67.97-68.94 67.97-167.31 0-26.72-6.36-52.32-6.36-25.59-19.07-50.07l67.41-67.18q24.39 39.68 36.7 82.19 12.32 42.51 12.32 87.38 0 135.43-94.2 231.35-94.19 95.91-228.91 95.91h-7.24l60.42 60.17-58.64 58.63Z"/></svg></h4>
         <div>
             <label>Start Location:</label>
-            <input type="string" id="routeStartName" value="The Imperial" style="width: 120px;">
+            <input type="string" id="routeStartName" value="The Imperial" style="width: 80px;">
         </div>
         <div>
-            <label>End Node:</label>
-            <input type="string" id="routeEndName" value="Southernhay House Surgery" style="width: 120px;">
+            <label>End Node:</label>    
+            <input type="string" id="routeEndName" value="Southernhay House Surgery" style="width: 80px;">
         </div>
         <div>
             <button class="routeBtn" onclick= "findRouteWithName()" id="findroutebuttonname">Find Route</button>
@@ -137,11 +137,11 @@
 
         <div id="info" class="map-ui">
             <div id="seeMore">
-                <h3 id="plus">See more <svg id="plusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M446.67-446.67H200v-66.66h246.67V-760h66.66v246.67H760v66.66H513.33V-200h-66.66v-246.67Z"/></svg></h3>
+                <h4 id="plus">See more <svg id="plusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M446.67-446.67H200v-66.66h246.67V-760h66.66v246.67H760v66.66H513.33V-200h-66.66v-246.67Z"/></svg></h4>
             </div>
 
             <div id="seeLess">
-                <h3 id="minus">See less <svg id="minusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M184.17-435.93v-88.14H776.2v88.14H184.17Z"/></svg></h3>
+                <h4 id="minus">See less <svg id="minusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M184.17-435.93v-88.14H776.2v88.14H184.17Z"/></svg></h4>
                 <p id="results"></p>
             </div>
         
@@ -149,8 +149,6 @@
     </div>
     
 </div>
-
-
 
 <footer>
     <br>
@@ -211,7 +209,7 @@
         isSatellite = !isSatellite;
     };
     // Adds click and scroll propagation(Cant affect the map while hovering over UI elements)
-    document.querySelectorAll(".map-ui, .routeInput, .slider, .routeBtn").forEach(el => {
+    document.querySelectorAll(".map-ui").forEach(el => {
         L.DomEvent.disableClickPropagation(el);
         L.DomEvent.disableScrollPropagation(el);
     });
@@ -219,7 +217,7 @@
     toggleNodesButton.onclick = () => {
         toggleNodesVisibility();
         toggleBtn.textContent = nodesVisible ? "Hide Nodes" : "Show Nodes";
-        toggleBtn.style.backgroundColor = nodesVisible ? "rgba(239, 63, 63, 0.923)" : "rgba(77, 209, 62, 0.923)";
+        toggleBtn.style.backgroundColor = nodesVisible ? "red" : "green";
     };
 
 
@@ -1101,4 +1099,3 @@
 
 </body>
 </html>
-
