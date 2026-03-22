@@ -164,6 +164,28 @@
 
     const toggleBtn = document.getElementById("toggleNodesBtn");
     toggleBtn.onclick = () => {
+    // Swap logic for changing between satelite and OSM map
+    toggleLayerButton.onclick = () => {
+        if (isSatellite) {
+            map.removeLayer(satLayer);
+            map.removeLayer(labelsLayer);
+            osmLayer.addTo(map);
+            toggleLayerButton.textContent = "Satellite";
+        } else {
+            map.removeLayer(osmLayer);
+            satLayer.addTo(map);
+            labelsLayer.addTo(map);
+            toggleLayerButton.textContent = "OSM";
+        }
+        isSatellite = !isSatellite;
+    };
+    // Adds click and scroll propagation(Cant affect the map while hovering over UI elements)
+    document.querySelectorAll(".map-ui, .routeInput, .slider, .routeBtn").forEach(el => {
+        L.DomEvent.disableClickPropagation(el);
+        L.DomEvent.disableScrollPropagation(el);
+    });
+    // Logic for toggling nodes on and off
+    toggleNodesButton.onclick = () => {
         toggleNodesVisibility();
         toggleBtn.textContent = nodesVisible ? "Hide Nodes" : "Show Nodes";
         toggleBtn.style.backgroundColor = nodesVisible ? "rgba(239, 63, 63, 0.923)" : "rgba(77, 209, 62, 0.923)";
