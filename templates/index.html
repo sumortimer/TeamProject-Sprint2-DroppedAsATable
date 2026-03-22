@@ -7,8 +7,15 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='map.css') }}"/>
-    <script type="text/javascript" src="{{ url_for('static', filename='map.js') }}" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.awesome-markers@2.0.4/dist/leaflet.awesome-markers.css">
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.awesome-markers@2.0.4/dist/leaflet.awesome-markers.js"></script>
+    <script src="{{ url_for('static', filename='map.js') }}" defer></script>
+
     <style>
         #map {
             height: 800px;
@@ -57,6 +64,9 @@
         <div>
             <button class="routeBtn" onclick="findRoute()" id="findroutebutton">Find Route</button>
             <button class="routeBtn" onclick="clearRoute()">Clear</button>
+        </div>
+        <div id="mapToggle">
+        <button class="routeBtn" class="map-ui" id="toggleBasemapBtn">Satellite</button>
         </div>
     </div>
 
@@ -142,28 +152,45 @@
 </footer>
 
 <script> ////////////// SETTING MAP BOUNDARIES AND CREATING MAP ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    const exeterBounds = L.latLngBounds(
+     const exeterBounds = L.latLngBounds(
     [50.695, -3.575], 
     [50.755, -3.480] 
     );
     const map = L.map("map", {
     maxBounds: exeterBounds,
     maxBoundsViscosity: 1.0,
-    minZoom: 20
-    }).setView([50.72868246470866, -3.5257188929846914], 2);
+    minZoom: 14
+    }).setView([50.72868246470866, -3.5257188929846914], 14);
+    setTimeout(() => map.setMinZoom(15), 500);   // Zoom in after minute period
 
-    setTimeout(() => map.setMinZoom(15), 500);
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    // Map layers
+    const osmLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap contributors"
+    });
+    const satLayer = L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    { maxZoom: 20, attribution: "Tiles © Esri" }
+    );
+    const labelsLayer = L.tileLayer(
+    "https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+    { maxZoom: 20, attribution: "© Esri" }
+    );
+    osmLayer.addTo(map);   // Begin with OSM layer
     
 
     const nodesLayer = L.layerGroup().addTo(map);
+
+    const toggleLayerButton = document.getElementById("toggleBasemapBtn");
+    const toggleNodesButton = document.getElementById("toggleNodesBtn");
+    let isSatellite = false;
     let nodesVisible = true;
 
-    const toggleBtn = document.getElementById("toggleNodesBtn");
     toggleBtn.onclick = () => {
+        toggleNodesVisibility();
+        toggleBtn.textContent = nodesVisible ? "Hide Nodes" : "Show Nodes";
+        toggleBtn.style.backgroundColor = nodesVisible ? "rgba(239, 63, 63, 0.923)" : "rgba(77, 209, 62, 0.923)";
+    };
+
     // Swap logic for changing between satelite and OSM map
     toggleLayerButton.onclick = () => {
         if (isSatellite) {
@@ -178,17 +205,6 @@
             toggleLayerButton.textContent = "OSM";
         }
         isSatellite = !isSatellite;
-    };
-    // Adds click and scroll propagation(Cant affect the map while hovering over UI elements)
-    document.querySelectorAll(".map-ui, .routeInput, .slider, .routeBtn").forEach(el => {
-        L.DomEvent.disableClickPropagation(el);
-        L.DomEvent.disableScrollPropagation(el);
-    });
-    // Logic for toggling nodes on and off
-    toggleNodesButton.onclick = () => {
-        toggleNodesVisibility();
-        toggleBtn.textContent = nodesVisible ? "Hide Nodes" : "Show Nodes";
-        toggleBtn.style.backgroundColor = nodesVisible ? "rgba(239, 63, 63, 0.923)" : "rgba(77, 209, 62, 0.923)";
     };
 
 
@@ -212,6 +228,65 @@
     let newLocation = null;   // NewLocation varianle for pre-emptive declaration
     let isCreating = false;   // Keeps track of whether user has the 'creating a new node' popup
 
+    iconMap = new Map();   // Used to store Map of icons for easier icon attribution during location creation
+    // Icon setups
+    const trainIcon = L.AwesomeMarkers.icon({
+        icon: "train",
+        prefix: "fa",
+        markerColor: "blue"
+    });
+    const prisonIcon = L.AwesomeMarkers.icon({
+        icon: "landmark-dome",
+        prefix: "fa",
+        markerColor: "darkred"
+    });
+    const healthIcon = L.AwesomeMarkers.icon({
+        icon: "hospital",
+        prefix: "fa",
+        markerColor: "red"
+    });
+    const shopIcon = L.AwesomeMarkers.icon({
+        icon: "shop",
+        prefix: "fa",
+        markerColor: "orange"
+    });
+    const houseIcon = L.AwesomeMarkers.icon({
+        icon: "house",
+        prefix: "fa",
+        markerColor: "cadetblue"
+    });
+    const foodIcon = L.AwesomeMarkers.icon({
+        icon: "utensils",
+        prefix: "fa",
+        markerColor: "green"
+    });
+    const sportsIcon = L.AwesomeMarkers.icon({
+        icon: "football",
+        prefix: "fa",
+        markerColor: "purple"
+    });
+    const uniIcon = L.AwesomeMarkers.icon({
+        icon: "graduation-cap",
+        prefix: "fa",
+        markerColor: "blue"
+    });
+    const busIcon = L.AwesomeMarkers.icon({
+        icon: "bus",
+        prefix: "fa",
+        markerColor: "darkgreen"
+    });
+    // Adding the icons to iconMap
+    iconMap.set("Prison", prisonIcon);
+    iconMap.set("prison", prisonIcon);
+    iconMap.set("Station", trainIcon);
+    iconMap.set("Food", foodIcon);
+    iconMap.set("Sports", sportsIcon);
+    iconMap.set("University", uniIcon);
+    iconMap.set("university", uniIcon);
+    iconMap.set("Health", healthIcon);
+    iconMap.set("Shop", shopIcon);
+    iconMap.set("Bus Stop", busIcon);
+    iconMap.set("House", houseIcon);
 
     /////////////////// CLASSES //////////////////
 
