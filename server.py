@@ -33,11 +33,10 @@ def index():
         session["acceptedTerms"] = True
         return render_template("index.html", termsNeeded="True")
     return render_template("index.html", termsNeeded="False")
+
 @app.route("/map.html")
 def map_redir():
     return redirect(url_for("index"))
-
-
 
 ################# GET ROUTES ########################
 @app.route("/getroute", methods=["POST"])
@@ -86,6 +85,7 @@ def get_route():
         "start": start_node,
         "end": end_node
     })
+
 @app.route("/getroutefromname", methods=["POST"])
 def get_route_from_name():
     myDatabase = DatabaseMethods()
@@ -138,7 +138,6 @@ def get_route_from_name():
     })   
 
 
-
 ################# ADD ROUTES #######################
 @app.route("/addnode", methods=["POST"])
 def add_node():
@@ -160,6 +159,7 @@ def add_node():
         myDatabase.addNode(node_id, coordx, coordy, lighting, crime, greenery, gradient)
     nodes, edges, locations = myDatabase.getMapData()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+
 @app.route("/addsegment", methods=["POST"])
 def add_segment():
     data = request.get_json()
@@ -174,6 +174,7 @@ def add_segment():
     myDatabase.addEdge(segment_id, start_node, end_node, length)
     nodes, edges, locations = myDatabase.getMapData()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+
 @app.route("/addlocation", methods=["POST"])
 def add_location():
     data = request.get_json()
@@ -195,8 +196,6 @@ def add_location():
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
 
-
-
 ############ EDIT AND DELETE ROUTES ###################
 @app.route("/editnode", methods=["POST"])
 def edit_node():
@@ -207,12 +206,14 @@ def edit_node():
     myDatabase.deleteEdgeByStartNode(start_node)
     nodes, edges, locations = myDatabase.getMapData()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+
 @app.route("/editlocation", methods=["POST"])
 def edit_location(): ####### UNIFINSHED #########
     data = request.get_json()
     myDatabase = DatabaseMethods()
 
     name = data["name"]
+
 @app.route("/editindicators", methods=["POST"])
 def edit_indicators():
     data = request.get_json()
@@ -226,9 +227,11 @@ def edit_indicators():
     myDatabase.editIndicators(node_id, lighting, crime, greenery, gradient)
     nodes, edges, locations = myDatabase.getMapData()
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
+
 @app.route("/edit_mission.html", methods=["GET"])
 def edit_mission_r():
     return redirect(url_for("edit_mission"))
+
 @app.route("/edit_mission", methods=["GET", "POST"])
 def edit_mission():
     if not isUserAuthenticated(adminNeeded=True):
@@ -306,7 +309,6 @@ def delete_node():
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
 
-
 ############# MISSION ROUTES ########################
 @app.route("/missions_t1.html", methods=["GET"])
 def missions_1r():
@@ -330,9 +332,11 @@ def missions_1():
         myDatabase.closeConnection()
         
         return render_template("missions_t1.html", missions=missions)
+    
 @app.route("/missions_t2.html", methods=["GET"])
 def missions_2r():
     return redirect(url_for('missions_2'))
+
 @app.route("/missions_t2", methods=["GET"])
 def missions_2():
     if not isUserAuthenticated():
@@ -351,9 +355,11 @@ def missions_2():
         myDatabase.closeConnection()
         
         return render_template("missions_t2.html", missions=missions)
+    
 @app.route("/missions_t3.html", methods=["GET"])
 def missions_3r():
     return redirect(url_for('missions_3'))
+
 @app.route("/missions_t3", methods=["GET"])
 def missions_3():
     if not isUserAuthenticated():
@@ -372,9 +378,11 @@ def missions_3():
         myDatabase.closeConnection()
         
         return render_template("missions_t3.html", missions=missions)
+    
 @app.route("/mission_display.html", methods=["GET"])
 def mission_display_r():
     return redirect(url_for("mission_display"))
+
 @app.route("/mission_display", methods=["GET", "POST"])
 def mission_display():
     if not isUserAuthenticated():
@@ -423,11 +431,11 @@ def mission_display():
             myDatabase.closeConnection()
 
 
-
 ################ ACCOUNT RELATED ROUTES ########################
 @app.route("/signup.html")
 def signup_redirect():
     return redirect(url_for('signup'))
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     # Checks if user is authenticated, if they are then they are directed away from the sign up page.
@@ -550,9 +558,11 @@ def signup():
             abort(500)
         finally:
             myDatabase.closeConnection()
+
 @app.route("/login.html")
 def login_redirect():
     return redirect(url_for('login'))
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     # Checks if user is authenticated, if they are then they are directed away from the log in page.
@@ -610,11 +620,13 @@ def login():
 @app.route("/user_profile.html", methods=["GET"])
 def user_profiler():
     return redirect(url_for('user_profile'))
+
 @app.route("/user_profile", methods=["GET"])
 def user_profile():
     if not isUserAuthenticated():
         return redirect(url_for("index"))
     return render_template("user_profile.html")
+
 # Check for whether user is logged in or not
 # If action requires the user to be an admin or above, then set adminNeeded, vice versa devNeeded.
 # By default if app.debug is set to true then isUserAuthenticated is overridden for testing,
@@ -628,13 +640,6 @@ def isUserAuthenticated(adminNeeded=False, devNeeded=False, overrideDebug=False)
     elif devNeeded:
         return bool(session.get("user_role") == "M")
     return bool(session.get("user_name"))
-
-
-############ Idea for custom error pages ###################
-# @app.errorhandler(404)
-# def page_not_found(e):
-#     # e is the error object
-#     return render_template('404.html'), 404
 
 # Needs to be tested
 def getAuditLog():
@@ -750,8 +755,6 @@ def logout():
     session.clear()
     return redirect(url_for("index"))
 
-############ OTHER METHODS ###################
-
 ############ OTHER ROUTES AND FUNCTIONS #########################################
 @app.route("/getmapdata", methods=["GET"])
 def mapdata():
@@ -784,4 +787,4 @@ def make_dev_user(username="dev_acc", email="dev@project6.com", password="g00dPa
 
 if __name__ == "__main__":
     # make_dev_user()
-    app.run(debug=False,host='0.0.0.0', port=5000)
+    app.run(debug=True,host='0.0.0.0', port=5000)
