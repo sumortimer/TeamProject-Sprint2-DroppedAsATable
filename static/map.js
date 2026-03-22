@@ -8,8 +8,10 @@ const seeMore = document.getElementById("seeMore");
 const plus = document.getElementById("plus");
 const minus = document.getElementById("minus");
 
-nodeRoute.style.visibility = "visible";
-locationRoute.style.visibility = "hidden";
+// nodeRoute.style.visibility = "visible";
+// locationRoute.style.visibility = "hidden";
+nodeRoute.style.display = "block";
+locationRoute.style.display = "none";
 
 // seeLess.style.visibility = "hidden";
 // seeMore.style.visibility = "hidden";
@@ -17,13 +19,17 @@ seeMore.style.display = "none";
 seeLess.style.display = "none";
 
 nodeReload.addEventListener("click", (e) => {
-    locationRoute.style.visibility = "visible";
-    nodeRoute.style.visibility = "hidden";
+    // locationRoute.style.visibility = "visible";
+    // nodeRoute.style.visibility = "hidden";
+    locationRoute.style.display = "block";
+    nodeRoute.style.display = "none";
 });
 
 locationReload.addEventListener("click", (e) => {
-    nodeRoute.style.visibility = "visible";
-    locationRoute.style.visibility = "hidden";
+    // nodeRoute.style.visibility = "visible";
+    // locationRoute.style.visibility = "hidden";
+    nodeRoute.style.display = "block";
+    locationRoute.style.display = "none";
 });
 
 plus.addEventListener("click", (e) => {
