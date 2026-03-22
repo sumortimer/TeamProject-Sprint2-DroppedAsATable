@@ -399,6 +399,8 @@
     // Upon opening up a popup on a node
     let nameView = null;   // Set this globally so we can separate location and nodes inside popupopen without problem or extra code
     let nameInput = null;
+    let typeView = null;
+    let typeInput = null;
     map.on('popupopen', function (e) {
         if (e.popup._type === 'view-node' || e.popup._type == 'view-location'){
             isCreating = false; // Keeps track of user interactions for better UX
@@ -418,6 +420,8 @@
             if (locationsByNodeId.get(nodeId) !== undefined){   // If it's a location, declare the name fields too
                 nameView = el.querySelector(".name-view");
                 nameInput = el.querySelector(".name-edit");
+                typeView = el.querySelector(".type-view");
+                typeInput = el.querySelector(".type-edit");
             }
 
             const lightingView = el.querySelector(".ind-lighting");
@@ -431,9 +435,11 @@
             const gradientInput = el.querySelector(".ind-gradient-input");
 
             editBtn.onclick = () => {
-                if (nameView && nameInput) {   // If it's a location, change the name display too
+                if (nameView && nameInput) {   // If it's a location, change the name and type displays too
                     nameView.style.display = "none";
                     nameInput.style.display = "inline-block";
+                    typeView.style.display = "none";
+                    typeInput.style.display = "inline-block";
                 }
                 viewSpan.style.display = "none";
                 input.style.display = "inline-block";
@@ -452,9 +458,11 @@
                 deleteNode(nodeId);
             };
             cancelBtn.onclick = () => {
-                if (nameView && nameInput) {   // If it's a location, affect the name displays too
+                if (nameView && nameInput) {   // If it's a location, affect the name and type displays too
                     nameInput.value = nameView.textContent === "(unnamed)" ? "" : nameView.textContent;
                     nameView.style.display = "inline";
+                    typeView.style.display = "inline";
+                    typeInput.style.display = "none";
                 }
                 input.value = viewSpan.textContent === "(none)" ? "" : viewSpan.textContent;
                 viewSpan.style.display = "inline";
@@ -483,11 +491,16 @@
                 editNode(nodeId, connectionsArray, node.lighting, node.crime, node.greenery, node.gradient);   // First, edit the node entity, and also its marker
                 if (nameView && nameInput) {   // Only then, if we edited and saved a location, update all the necessary details about the location too, including its marker
                     const newName = nameInput.value.trim() || "(unnamed)";
+                    const newType = typeInput.value.trim() || "(none)";
                     nameView.textContent = newName;
                     nameView.style.display = "inline";
                     nameInput.style.display = "none";
+                    typeView.textContent = newType;
+                    typeView.style.display = "inline";
+                    typeInput.style.display = "none";
                     locationsByNodeId.get(nodeId).name = newName;
-                    editLocation(locationsByNodeId.get(nodeId).id, nodeId, newName, undefined);
+                    locationsByNodeId.get(nodeId).type = newType;
+                    editLocation(locationsByNodeId.get(nodeId).id, nodeId, newName, newType);
                 }
                 
                 viewSpan.textContent = connectionsArray.length ? connectionsArray.join(",") : "(none)";
@@ -698,7 +711,7 @@
     // Triggered when the save button is clicked while editing a location, triggered after the corresponding editNode
     function editLocation(locationId, nodeId, name, type){
         const location = locationsByNodeId.get(nodeId);
-        type = "Bus Stop";   // Temporary for debug
+        const node = nodesMap.get(nodeId);
         fetch("/editlocation", {
             method: "POST",
             headers: {
@@ -711,7 +724,20 @@
                 locationType: type
             })
         });
-        markersMap.get(nodeId).setPopupContent(getLocationPopup(location));   // Update the popup marker
+        const viewPopup = L.popup().setContent(getLocationPopup(location));
+        viewPopup._type = "view-location";
+        const iconChosen = iconMap.get(type) ?? redIcon;   // Updating icon on client
+        const existing = markersMap.get(nodeId);   // Find existing marker to remove it first
+        if (existing) {
+            existing.setIcon(iconChosen);
+            existing.setPopupContent(getLocationPopup(location));
+        }
+        else {   // If a marker doesn't already exist in markersMap for the given nodeId
+        newMarker = L.marker([node.lat, node.lng], { icon: iconChosen })
+            .addTo(map)
+            .bindPopup(viewPopup);
+        markersMap.set(nodeId, newMarker);   // Updating marker entry in markersMap
+        }
     }
     // Triggered when OK is selected in the popup made from deleting a node
     function deleteNode(nodeId){
@@ -805,6 +831,10 @@
             <div class="popup-form" data-node-id="${location.nodeId}">
                 <strong class="name-view">${nameText || "(unnamed)"}</strong>
                 <input class="name-edit" type="text" value="${nameText}" style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
+                <br>
+                <label>Type:</label>
+                <span class="type-view">${location.type || "(none)"}</span>
+                <input class="type-edit" type="text" value="${location.type || ""}" style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
                 <br>
                 <label>Node ID:</label> ${location.nodeId}<br>
                 <label>Location ID:</label> ${location.id}<br>
