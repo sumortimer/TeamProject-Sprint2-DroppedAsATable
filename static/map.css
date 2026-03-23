@@ -27,6 +27,20 @@ footer p {
     font-weight: bold;
 }
 
+#analyticsBtn {
+    position: relative;
+    z-index: 10000000000;
+    left: 10px;
+    top: 60px;
+    padding: 15px;
+    border-color: black;
+    border-radius: 15px;
+    background-color: antiquewhite;
+    border-width: 2px;
+    border-style: solid;
+    font-weight: bold;
+}
+
 #missionBtn:hover {
     border-color: grey;
 }

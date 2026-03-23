@@ -35,42 +35,151 @@
     }
 
     .route-panel {
-    position: absolute;
-    width: 320px;
-    padding: 12px;
-    box-sizing: border-box;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 8px;
-    cursor: default;
-    pointer-events: auto;
-    display: block;
-    overflow: visible;
+        position: absolute;
+        width: 320px;
+        padding: 12px;
+        box-sizing: border-box;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 8px;
+        cursor: default;
+        pointer-events: auto;
+        display: block;
+        overflow: visible;
     }
 
     .route-panel .sliders {
-    position: static !important;
-    float: none !important;
-    display: block;
-    margin-top: 8px;
+        position: static !important;
+        float: none !important;
+        display: block;
+        margin-top: 8px;
     }
 
     #nodeRoute { top: 80px; left: 10px; }
-    #locationRoute { top: 80px; left: 10px; }
+    #locationRoute { top: 80px; right: 10px; }
+
+    /* Analytics Menu Styles */
+    .analytics-menu {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 400px;
+        max-width: 90vw;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        z-index: 2000;
+        font-family: Arial, sans-serif;
+    }
+    .analytics-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #ddd;
+        background: #f5f5f5;
+        border-radius: 8px 8px 0 0;
+    }
+    .analytics-header h3 {
+        margin: 0;
+        color: #333;
+    }
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #666;
+    }
+    .close-btn:hover {
+        color: #333;
+    }
+    .analytics-content {
+        padding: 20px;
+    }
+    .analytics-section {
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+    .analytics-section h4 {
+        margin: 0 0 10px 0;
+        color: #555;
+        font-size: 14px;
+    }
+    .analytics-btn {
+        background: #4CAF50;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        margin: 5px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: background 0.3s;
+    }
+    .analytics-btn:hover {
+        background: #45a049;
+    }
+    .reset-btn {
+        background: #ff9800;
+    }
+    .reset-btn:hover {
+        background: #e68900;
+    }
+    .analytics-results {
+        margin-top: 15px;
+        padding: 10px;
+        background: #f9f9f9;
+        border-radius: 4px;
+        max-height: 300px;
+        overflow-y: auto;
+        font-size: 12px;
+    }
+    .analytics-results h5 {
+        margin: 10px 0 5px 0;
+        color: #333;
+    }
+    .analytics-results ul {
+        margin: 0 0 10px 0;
+        padding-left: 20px;
+    }
+    .analytics-results li {
+        margin: 5px 0;
+    }
+    .legend {
+        background: white;
+        padding: 10px;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        font-size: 12px;
+        line-height: 1.5;
+    }
+    .legend h4 {
+        margin: 0 0 5px 0;
+        font-size: 12px;
+    }
+    .legend-color {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        margin-right: 5px;
+        vertical-align: middle;
+    }
+    .legend-item {
+        margin: 5px 0;
+    }
+        
     </style>
 
 </head>
 <body>
 
-<!-- <script>
-    if ({{termsNeeded}} === "True"){
-        alert("Disclaimers: \nThis tool does not reflect real world data\nThis tool is not suitable for emergency use\nCrime and Lighting indicators are synthetic and do not reflect real world values\n\nPress 'ok' to confirm that you have understood these.");
-    }
-</script> -->
-
 <div id="map">
-    <button id="missionBtn" class="map-ui" onclick="missions()">Missions</button>
-    <br><button type="button" class="map-ui" id="toggleNodesBtn">Hide Nodes</button>
-    <br><button type="button" class="map-ui" id="logout" onclick="logout()">Log Out</button>
+    <button id="missionBtn" class="map-ui" onclick="missions()" style="z-index: 1001;">Missions</button>
+    <br><button type="button" class="map-ui" id="toggleNodesBtn" style="z-index: 1001;">Hide Nodes</button>
+    <br><button type="button" class="map-ui" id="logout" onclick="logout()" style="z-index: 1001;">Log Out</button>
+    <br><button type="button" class="map-ui" id="analyticsBtn" onclick="toggleAnalyticsMenu()" style="z-index: 1001;">Analytics View</button>
 
     <script> 
         function logout(){
@@ -134,12 +243,16 @@
 
     <div>
         <label>Start Location:</label>
-        <input type="string" id="routeStartName" value="The Imperial" style="width: 80px;">
+        <select id="routeStartName" style="width: 150px;">
+            <option value="">Select start location...</option>
+        </select>
     </div>
 
     <div>
-        <label>End Node:</label>
-        <input type="string" id="routeEndName" value="Southernhay House Surgery" style="width: 80px;">
+        <label>End Location:</label>
+        <select id="routeEndName" style="width: 150px;">
+            <option value="">Select end location...</option>
+        </select>
     </div>
 
     <div>
@@ -181,24 +294,54 @@
 
 </div>
 
-
-    <div>
-        <div id="routeInfo" class="map-ui" style="margin-top: 15px; padding: 10px; background: white; border-radius: 3px; min-height: 50px;">
-            Enter start and end nodes and click "Find Route"
+<!-- Analytics Menu -->
+<div id="analyticsMenu" class="analytics-menu" style="display: none;">
+    <div class="analytics-header">
+        <h3>Analytics View</h3>
+        <button onclick="toggleAnalyticsMenu()" class="close-btn">×</button>
+    </div>
+    
+    <div class="analytics-content">
+        <div class="analytics-section">
+            <h4>Color Edges By:</h4>
+            <button onclick="colorEdgesBy('lighting')" class="analytics-btn">Lighting</button>
+            <button onclick="colorEdgesBy('crime')" class="analytics-btn">Crime</button>
+            <button onclick="colorEdgesBy('greenery')" class="analytics-btn">Greenery</button>
+            <button onclick="colorEdgesBy('gradient')" class="analytics-btn">Gradient</button>
+            <button onclick="colorEdgesBy('distance')" class="analytics-btn">Distance</button>
+            <button onclick="resetEdgeColors()" class="analytics-btn reset-btn">Reset Colors</button>
         </div>
-
-        <div id="info" class="map-ui">
-            <div id="seeMore">
-                <h4 id="plus">See more <svg id="plusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M446.67-446.67H200v-66.66h246.67V-760h66.66v246.67H760v66.66H513.33V-200h-66.66v-246.67Z"/></svg></h4>
-            </div>
-
-            <div id="seeLess">
-                <h4 id="minus">See less <svg id="minusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M184.17-435.93v-88.14H776.2v88.14H184.17Z"/></svg></h4>
-                <p id="results"></p>
-            </div>
         
+        <div class="analytics-section">
+            <h4>Statistics:</h4>
+            <button onclick="showPopularNodes()" class="analytics-btn">Most Popular Nodes</button>
+            <button onclick="showPopularEdges()" class="analytics-btn">Most Popular Edges</button>
+            <button onclick="showEdgeStatistics()" class="analytics-btn">Edge Statistics</button>
+        </div>
+        
+        <div id="analyticsResults" class="analytics-results">
+            <!-- Results will appear here -->
         </div>
     </div>
+</div>
+
+<div>
+    <div id="routeInfo" class="map-ui" style="margin-top: 15px; padding: 10px; background: white; border-radius: 3px; min-height: 50px;">
+        Enter start and end nodes and click "Find Route"
+    </div>
+
+    <div id="info" class="map-ui">
+        <div id="seeMore">
+            <h4 id="plus">See more <svg id="plusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M446.67-446.67H200v-66.66h246.67V-760h66.66v246.67H760v66.66H513.33V-200h-66.66v-246.67Z"/></svg></h4>
+        </div>
+
+        <div id="seeLess">
+            <h4 id="minus">See less <svg id="minusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M184.17-435.93v-88.14H776.2v88.14H184.17Z"/></svg></h4>
+            <p id="results"></p>
+        </div>
+    
+    </div>
+</div>
 
 
 <footer>
@@ -251,12 +394,12 @@
                 map.removeLayer(satLayer);
                 map.removeLayer(labelsLayer);
                 osmLayer.addTo(map);
-                toggleLayerButton.textContent = "Satellite";
+                btn.textContent = "Satellite";
             } else {
                 map.removeLayer(osmLayer);
                 satLayer.addTo(map);
                 labelsLayer.addTo(map);
-                toggleLayerButton.textContent = "OSM";
+                btn.textContent = "OSM";
             }
             isSatellite = !isSatellite;
             updateToggleLabels();
@@ -268,11 +411,12 @@
         L.DomEvent.disableScrollPropagation(el);
     });
     // Logic for toggling nodes on and off
-    toggleNodesButton.onclick = () => {
-        toggleNodesVisibility();
-        toggleBtn.textContent = nodesVisible ? "Hide Nodes" : "Show Nodes";
-        toggleBtn.style.backgroundColor = nodesVisible ? "red" : "green";
-    };
+    if (toggleNodesButton) {
+        toggleNodesButton.onclick = () => {
+            toggleNodesVisibility();
+            toggleNodesButton.textContent = nodesVisible ? "Hide Nodes" : "Show Nodes";
+        };
+    }
 
 
     /////////////////// KEY VARIABLES ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1101,13 +1245,13 @@
         let info = `<h4>Route from Node ${routeData.start} to ${routeData.end}:</h4>`;
         info += `<p><strong>Red Path:</strong> ${pathOne.join(' → ')}</p>`;
         info += `<p><strong>Total Distance:</strong> ${costOne.toFixed(2)}</p>`;
-        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreOne[0].toFixed(2)}Crime: ${scoreOne[1].toFixed(2)}Greenery: ${scoreOne[2].toFixed(2)}Gradient: ${scoreOne[3].toFixed(2)}</p>`;
+        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreOne[0].toFixed(2)} Crime: ${scoreOne[1].toFixed(2)} Greenery: ${scoreOne[2].toFixed(2)} Gradient: ${scoreOne[3].toFixed(2)}</p>`;
         info += `<p><strong>Green Path:</strong> ${pathTwo.join(' → ')}</p>`;
         info += `<p><strong>Total Distance:</strong> ${costTwo.toFixed(2)}</p>`;
-        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreTwo[0].toFixed(2)}Crime: ${scoreTwo[1].toFixed(2)}Greenery: ${scoreTwo[2].toFixed(2)}Gradient: ${scoreTwo[3].toFixed(2)}</p>`;
+        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreTwo[0].toFixed(2)} Crime: ${scoreTwo[1].toFixed(2)} Greenery: ${scoreTwo[2].toFixed(2)} Gradient: ${scoreTwo[3].toFixed(2)}</p>`;
         info += `<p><strong>Blue Path:</strong> ${pathThree.join(' → ')}</p>`;
         info += `<p><strong>Total Distance:</strong> ${costThree.toFixed(2)}</p>`;
-        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreThree[0].toFixed(2)}Crime: ${scoreThree[1].toFixed(2)}Greenery: ${scoreThree[2].toFixed(2)}Gradient: ${scoreThree[3].toFixed(2)}</p>`;
+        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreThree[0].toFixed(2)} Crime: ${scoreThree[1].toFixed(2)} Greenery: ${scoreThree[2].toFixed(2)} Gradient: ${scoreThree[3].toFixed(2)}</p>`;
 
         // document.getElementById("routeInfo").style.visibility = "hidden";
         document.getElementById("routeInfo").style.display = "none";
@@ -1115,7 +1259,18 @@
         document.getElementById("seeMore").style.display = "block";
         document.getElementById('results').innerHTML = info;
         
+        // Add see more/less functionality
+        document.getElementById("plus").onclick = () => {
+            document.getElementById("seeMore").style.display = "none";
+            document.getElementById("seeLess").style.display = "block";
+        };
+        document.getElementById("minus").onclick = () => {
+            document.getElementById("seeLess").style.display = "none";
+            document.getElementById("seeMore").style.display = "block";
+        };
         
+        document.getElementById("findroutebutton").disabled = false;
+        document.getElementById("findroutebuttonname").disabled = false;
     }
     function clearRoute() {
         if (window.currentRouteLayer) {
@@ -1131,6 +1286,8 @@
         const data = await res.json();
         if (data.nodes.length === 0 && data.edges.length === 0 && data.locations.length === 0) return;
         renderMapFromData(data.nodes, data.edges, data.locations);   // Render the map with the help of these entries
+        populateLocationDropdowns();
+        drawAllEdges(); // Draw edges for analytics
     }
     loadMapData();
 
@@ -1216,6 +1373,35 @@
         locationsByNodeId.set(nodeIdFromData, newLocation);   // Add Location object to Map locationsByNodeId with nodeId key
         locationId = locationIdFromData + 1;   // Use most up to date location ID
     }
+    
+    function populateLocationDropdowns() {
+        const startSelect = document.getElementById('routeStartName');
+        const endSelect = document.getElementById('routeEndName');
+        
+        if (!startSelect || !endSelect) return;
+        
+        // Clear existing options
+        startSelect.innerHTML = '<option value="">Select start location...</option>';
+        endSelect.innerHTML = '<option value="">Select end location...</option>';
+        
+        // Get all locations and sort them alphabetically
+        const locationList = Array.from(locationsMap.values())
+            .sort((a, b) => a.name.localeCompare(b.name));
+        
+        // Add each location as an option
+        locationList.forEach(location => {
+            const startOption = document.createElement('option');
+            startOption.value = location.name;
+            startOption.textContent = location.name;
+            startSelect.appendChild(startOption);
+            
+            const endOption = document.createElement('option');
+            endOption.value = location.name;
+            endOption.textContent = location.name;
+            endSelect.appendChild(endOption);
+        });
+    }
+    
     // Used for the red icon
     function createIcon(color) {
         return L.icon({
@@ -1231,6 +1417,427 @@
         toggleLayerButton.forEach(btn => {
             btn.textContent = isSatellite ? "OSM" : "Satellite";
         });
+    }
+
+    /////////////////// ANALYTICS FUNCTIONS /////////////////////////////////////////////////////////////////////////
+
+    // Global variables for analytics
+    let currentEdgeLayer = null;
+    let currentLegend = null;
+    let edgeColorMap = new Map(); // Store original edge colors
+
+    // Toggle analytics menu
+    function toggleAnalyticsMenu() {
+        const menu = document.getElementById('analyticsMenu');
+        if (menu.style.display === 'none') {
+            menu.style.display = 'block';
+        } else {
+            menu.style.display = 'none';
+        }
+    }
+
+    // Draw all edges on the map
+    function drawAllEdges() {
+        // Remove existing edge layer if it exists
+        if (window.edgeLayer) {
+            map.removeLayer(window.edgeLayer);
+        }
+        
+        // Create a new layer group for edges
+        window.edgeLayer = L.layerGroup().addTo(map);
+        
+        // Draw each edge as a polyline
+        edges.forEach(edge => {
+            const fromNode = nodesMap.get(edge.fromId);
+            const toNode = nodesMap.get(edge.toId);
+            
+            if (fromNode && toNode) {
+                const coordinates = [
+                    [fromNode.lat, fromNode.lng],
+                    [toNode.lat, toNode.lng]
+                ];
+                
+                // Store original color
+                if (!edgeColorMap.has(edge.id)) {
+                    edgeColorMap.set(edge.id, '#888888');
+                }
+                
+                const polyline = L.polyline(coordinates, {
+                    color: edgeColorMap.get(edge.id),
+                    weight: 3,
+                    opacity: 0.7,
+                    originalColor: edgeColorMap.get(edge.id)
+                }).addTo(window.edgeLayer);
+                
+                // Store edge data with the polyline
+                polyline.edgeData = {
+                    id: edge.id,
+                    fromId: edge.fromId,
+                    toId: edge.toId,
+                    distance: calculateEdgeDistance(fromNode, toNode)
+                };
+                
+                // Add click handler for edge info
+                polyline.on('click', (e) => {
+                    showEdgeInfo(edge, fromNode, toNode);
+                });
+            }
+        });
+    }
+
+    // Calculate distance between two nodes (in meters, approximate)
+    function calculateEdgeDistance(node1, node2) {
+        const R = 6371000; // Earth's radius in meters
+        const lat1 = node1.lat * Math.PI / 180;
+        const lat2 = node2.lat * Math.PI / 180;
+        const deltaLat = (node2.lat - node1.lat) * Math.PI / 180;
+        const deltaLng = (node2.lng - node1.lng) * Math.PI / 180;
+        
+        const a = Math.sin(deltaLat/2) * Math.sin(deltaLat/2) +
+                  Math.cos(lat1) * Math.cos(lat2) *
+                  Math.sin(deltaLng/2) * Math.sin(deltaLng/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        
+        return R * c;
+    }
+
+    // Get indicator value for an edge (average of start and end nodes)
+    function getEdgeIndicatorValue(edge, indicator) {
+        const fromNode = nodesMap.get(edge.fromId);
+        const toNode = nodesMap.get(edge.toId);
+        
+        if (!fromNode || !toNode) return 0;
+        
+        let value;
+        switch(indicator) {
+            case 'lighting':
+                value = (fromNode.lighting + toNode.lighting) / 2;
+                break;
+            case 'crime':
+                value = (fromNode.crime + toNode.crime) / 2;
+                break;
+            case 'greenery':
+                value = (fromNode.greenery + toNode.greenery) / 2;
+                break;
+            case 'gradient':
+                value = (fromNode.gradient + toNode.gradient) / 2;
+                break;
+            case 'distance':
+                value = calculateEdgeDistance(fromNode, toNode);
+                break;
+            default:
+                value = 0;
+        }
+        
+        return value;
+    }
+
+    // Color edges based on indicator
+    function colorEdgesBy(indicator) {
+        if (!window.edgeLayer) {
+            drawAllEdges();
+        }
+        
+        const values = [];
+        const colorMap = new Map();
+        
+        // Collect all values for this indicator
+        edges.forEach(edge => {
+            const value = getEdgeIndicatorValue(edge, indicator);
+            values.push(value);
+            colorMap.set(edge.id, value);
+        });
+        
+        // Find min and max for color scaling
+        const minValue = Math.min(...values);
+        const maxValue = Math.max(...values);
+        
+        // Color each edge
+        window.edgeLayer.eachLayer(layer => {
+            const edge = edges.find(e => e.id === layer.edgeData.id);
+            if (edge) {
+                const value = colorMap.get(edge.id);
+                const color = getColorForValue(value, minValue, maxValue, indicator);
+                layer.setStyle({ color: color, weight: 4 });
+                edgeColorMap.set(edge.id, color);
+            }
+        });
+        
+        // Add legend
+        addLegend(indicator, minValue, maxValue);
+        
+        // Show results in analytics menu
+        const resultsDiv = document.getElementById('analyticsResults');
+        resultsDiv.innerHTML = `
+            <h5>Colored by: ${indicator.toUpperCase()}</h5>
+            <p>Min value: ${minValue.toFixed(3)}<br>
+            Max value: ${maxValue.toFixed(3)}</p>
+            <p><small>Click on edges to see detailed information</small></p>
+        `;
+    }
+
+    // Get color based on value (gradient from red to green)
+    function getColorForValue(value, minValue, maxValue, indicator) {
+        // Handle special cases
+        if (indicator === 'crime' || indicator === 'gradient') {
+            // For negative indicators (higher is worse), reverse the color scale
+            const normalized = 1 - ((value - minValue) / (maxValue - minValue));
+            return getGradientColor(normalized);
+        } else {
+            // For positive indicators (higher is better)
+            const normalized = (value - minValue) / (maxValue - minValue);
+            return getGradientColor(normalized);
+        }
+    }
+
+    function getGradientColor(normalized) {
+        // Normalized between 0 and 1
+        // Red (bad) to Yellow (medium) to Green (good)
+        const r = Math.min(255, Math.floor(255 * (1 - normalized) * 2));
+        const g = Math.min(255, Math.floor(255 * normalized * 2));
+        const b = 0;
+        return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    // Add legend to map
+    function addLegend(indicator, minValue, maxValue) {
+        if (currentLegend) {
+            map.removeControl(currentLegend);
+        }
+        
+        const LegendControl = L.Control.extend({
+            onAdd: function() {
+                const div = L.DomUtil.create('div', 'legend');
+                div.innerHTML = `
+                    <h4>${indicator.toUpperCase()}</h4>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: rgb(255,0,0)"></span>
+                        Low (${minValue.toFixed(2)})
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: rgb(255,255,0)"></span>
+                        Medium
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: rgb(0,255,0)"></span>
+                        High (${maxValue.toFixed(2)})
+                    </div>
+                `;
+                return div;
+            }
+        });
+        
+        currentLegend = new LegendControl({ position: 'bottomright' });
+        currentLegend.addTo(map);
+    }
+
+    // Reset edge colors to default
+    function resetEdgeColors() {
+        if (window.edgeLayer) {
+            window.edgeLayer.eachLayer(layer => {
+                layer.setStyle({ color: '#888888', weight: 3 });
+            });
+        }
+        
+        if (currentLegend) {
+            map.removeControl(currentLegend);
+            currentLegend = null;
+        }
+        
+        const resultsDiv = document.getElementById('analyticsResults');
+        resultsDiv.innerHTML = '<p>Edge colors reset to default</p>';
+    }
+
+    // Show edge information on click
+    function showEdgeInfo(edge, fromNode, toNode) {
+        const distance = calculateEdgeDistance(fromNode, toNode);
+        const lighting = getEdgeIndicatorValue(edge, 'lighting');
+        const crime = getEdgeIndicatorValue(edge, 'crime');
+        const greenery = getEdgeIndicatorValue(edge, 'greenery');
+        const gradient = getEdgeIndicatorValue(edge, 'gradient');
+        
+        const popupContent = `
+            <div style="min-width: 200px;">
+                <h4>Edge ${edge.id}</h4>
+                <p><strong>From:</strong> Node ${edge.fromId}<br>
+                <strong>To:</strong> Node ${edge.toId}<br>
+                <strong>Distance:</strong> ${distance.toFixed(2)}m</p>
+                <p><strong>Indicators:</strong><br>
+                Lighting: ${lighting.toFixed(3)}<br>
+                Crime: ${crime.toFixed(3)}<br>
+                Greenery: ${greenery.toFixed(3)}<br>
+                Gradient: ${gradient.toFixed(3)}</p>
+            </div>
+        `;
+        
+        const midPoint = [(fromNode.lat + toNode.lat)/2, (fromNode.lng + toNode.lng)/2];
+        L.popup()
+            .setLatLng(midPoint)
+            .setContent(popupContent)
+            .openOn(map);
+    }
+
+    // Show most popular nodes (based on connections)
+    function showPopularNodes() {
+        const nodePopularity = [];
+        
+        nodesMap.forEach((node, id) => {
+            nodePopularity.push({
+                id: id,
+                connections: node.connections.length,
+                name: locationsByNodeId.get(id)?.name || `Node ${id}`
+            });
+        });
+        
+        nodePopularity.sort((a, b) => b.connections - a.connections);
+        const top10 = nodePopularity.slice(0, 10);
+        
+        const resultsDiv = document.getElementById('analyticsResults');
+        resultsDiv.innerHTML = `
+            <h5>Most Connected Nodes (Top 10)</h5>
+            <ul>
+                ${top10.map(node => `
+                    <li>
+                        <strong>${node.name}</strong>: ${node.connections} connections
+                        <button onclick="centerOnNode(${node.id})" style="margin-left: 10px; font-size: 10px;">View</button>
+                    </li>
+                `).join('')}
+            </ul>
+        `;
+    }
+
+    // Show most popular edges (based on usage - for now based on indicator scores)
+    function showPopularEdges() {
+        const edgeScores = [];
+        
+        edges.forEach(edge => {
+            const lighting = getEdgeIndicatorValue(edge, 'lighting');
+            const greenery = getEdgeIndicatorValue(edge, 'greenery');
+            const crime = getEdgeIndicatorValue(edge, 'crime');
+            
+            // Composite score (higher is better)
+            const score = (lighting + greenery + (1 - crime)) / 3;
+            
+            edgeScores.push({
+                id: edge.id,
+                fromId: edge.fromId,
+                toId: edge.toId,
+                score: score,
+                lighting: lighting,
+                greenery: greenery,
+                crime: crime
+            });
+        });
+        
+        edgeScores.sort((a, b) => b.score - a.score);
+        const top10 = edgeScores.slice(0, 10);
+        
+        const resultsDiv = document.getElementById('analyticsResults');
+        resultsDiv.innerHTML = `
+            <h5>Routes with highest indicator scores:</h5>
+            <ul>
+                ${top10.map(edge => `
+                    <li>
+                        <strong>Edge ${edge.id}</strong> (${edge.fromId} → ${edge.toId})<br>
+                        Score: ${edge.score.toFixed(3)}<br>
+                        <small>Lighting: ${edge.lighting.toFixed(2)} | Greenery: ${edge.greenery.toFixed(2)} | Crime: ${edge.crime.toFixed(2)}</small>
+                    </li>
+                `).join('')}
+            </ul>
+        `;
+    }
+
+    // Show edge statistics
+    function showEdgeStatistics() {
+        const distances = [];
+        const lightingValues = [];
+        const crimeValues = [];
+        const greeneryValues = [];
+        const gradientValues = [];
+        
+        edges.forEach(edge => {
+            distances.push(calculateEdgeDistance(nodesMap.get(edge.fromId), nodesMap.get(edge.toId)));
+            lightingValues.push(getEdgeIndicatorValue(edge, 'lighting'));
+            crimeValues.push(getEdgeIndicatorValue(edge, 'crime'));
+            greeneryValues.push(getEdgeIndicatorValue(edge, 'greenery'));
+            gradientValues.push(getEdgeIndicatorValue(edge, 'gradient'));
+        });
+        
+        const stats = {
+            totalEdges: edges.length,
+            avgDistance: average(distances),
+            minDistance: Math.min(...distances),
+            maxDistance: Math.max(...distances),
+            avgLighting: average(lightingValues),
+            avgCrime: average(crimeValues),
+            avgGreenery: average(greeneryValues),
+            avgGradient: average(gradientValues)
+        };
+        
+        const resultsDiv = document.getElementById('analyticsResults');
+        resultsDiv.innerHTML = `
+            <h5>Edge Network Statistics</h5>
+            <p>
+                <strong>Total Edges:</strong> ${stats.totalEdges}<br>
+                <strong>Average Distance:</strong> ${stats.avgDistance.toFixed(2)}m<br>
+                <strong>Shortest Edge:</strong> ${stats.minDistance.toFixed(2)}m<br>
+                <strong>Longest Edge:</strong> ${stats.maxDistance.toFixed(2)}m<br><br>
+                <strong>Average Lighting:</strong> ${stats.avgLighting.toFixed(3)}<br>
+                <strong>Average Crime:</strong> ${stats.avgCrime.toFixed(3)}<br>
+                <strong>Average Greenery:</strong> ${stats.avgGreenery.toFixed(3)}<br>
+                <strong>Average Gradient:</strong> ${stats.avgGradient.toFixed(3)}
+            </p>
+        `;
+    }
+
+    // Center map on a specific node
+    function centerOnNode(nodeId) {
+        const node = nodesMap.get(nodeId);
+        if (node) {
+            map.setView([node.lat, node.lng], 17);
+            if (markersMap.get(nodeId)) {
+                markersMap.get(nodeId).openPopup();
+            }
+        }
+    }
+
+    // Helper function to calculate average
+    function average(arr) {
+        if (arr.length === 0) return 0;
+        return arr.reduce((a, b) => a + b, 0) / arr.length;
+    }
+
+    // Color edges by composite score
+    function colorEdgesByComposite() {
+        if (!window.edgeLayer) {
+            drawAllEdges();
+        }
+        
+        const scores = [];
+        const colorMap = new Map();
+        
+        edges.forEach(edge => {
+            const lighting = getEdgeIndicatorValue(edge, 'lighting');
+            const greenery = getEdgeIndicatorValue(edge, 'greenery');
+            const crime = getEdgeIndicatorValue(edge, 'crime');
+            const score = (lighting + greenery + (1 - crime)) / 3;
+            scores.push(score);
+            colorMap.set(edge.id, score);
+        });
+        
+        const minScore = Math.min(...scores);
+        const maxScore = Math.max(...scores);
+        
+        window.edgeLayer.eachLayer(layer => {
+            const edge = edges.find(e => e.id === layer.edgeData.id);
+            if (edge) {
+                const score = colorMap.get(edge.id);
+                const color = getGradientColor((score - minScore) / (maxScore - minScore));
+                layer.setStyle({ color: color, weight: 4 });
+            }
+        });
+        
+        addLegend('Composite Score (Safety+Enjoyment)', minScore, maxScore);
     }
     
 </script>
