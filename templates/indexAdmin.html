@@ -17,34 +17,47 @@
     <script src="{{ url_for('static', filename='map.js') }}" defer></script>
 
     <style>
-        body {
-            padding: 0;
-            margin: 0;
-        }
-            html, body, #map {
-            height: 98%;
-            width: 100vw;
-        }
-        .popup-form input {
+    body {
+        padding: 0;
+        margin: 0;
+    }
+    html, body, #map {
+        height: 98%;
+        width: 100vw;
+    }
+
+    .popup-form input {
         width: 140px;
         margin-bottom: 5px;
-        }
-
-        .popup-form button {
+    }
+    .popup-form button {
         margin-right: 5px;
-        }
-        
-        #nodeRoute {
-        position: absolute;
-        cursor: default;
-        pointer-events: auto;
-        }
-        #locationRoute {
-        position: absolute;
-        cursor: default;
-        pointer-events: auto;
-        }
+    }
+
+    .route-panel {
+    position: absolute;
+    width: 320px;
+    padding: 12px;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    cursor: default;
+    pointer-events: auto;
+    display: block;
+    overflow: visible;
+    }
+
+    .route-panel .sliders {
+    position: static !important;
+    float: none !important;
+    display: block;
+    margin-top: 8px;
+    }
+
+    #nodeRoute { top: 80px; left: 10px; }
+    #locationRoute { top: 80px; left: 10px; }
     </style>
+
 </head>
 <body>
 
@@ -54,7 +67,7 @@
     }
 </script> -->
 
-<div id="map" class="map-ui">
+<div id="map">
     <button id="missionBtn" class="map-ui" onclick="missions()">Missions</button>
     <br><button type="button" class="map-ui" id="toggleNodesBtn">Hide Nodes</button>
     <br><button type="button" class="map-ui" id="logout" onclick="logout()">Log Out</button>
@@ -65,68 +78,107 @@
         }
     </script>
 
-    <div id="nodeRoute" class="map-ui">
-        <h4 id="nodeReload" class="reload">Use Locations <svg class="reloadSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M203.52-308.67q-24.39-39.68-36.7-82.31-12.32-42.63-12.32-87.5 0-135.43 94.2-231.23 94.19-95.79 228.91-95.79h7.24l-60.42-60.41 58.64-58.39L647.37-760l-164.3 164.3-58.64-58.39 60.42-60.41h-6.52q-96.9 0-164.86 68.83-67.97 68.82-67.97 167.19 0 26.72 6.36 52.32 6.36 25.59 19.07 50.07l-67.41 67.42ZM476.93-35.46l-164.3-164.3 164.3-164.54 58.64 58.63-60.42 60.41h6.52q96.9 0 164.86-68.95 67.97-68.94 67.97-167.31 0-26.72-6.36-52.32-6.36-25.59-19.07-50.07l67.41-67.18q24.39 39.68 36.7 82.19 12.32 42.51 12.32 87.38 0 135.43-94.2 231.35-94.19 95.91-228.91 95.91h-7.24l60.42 60.17-58.64 58.63Z"/></svg></h4>
-        <div>
-            <label>Start Node:</label>
-            <input type="number" id="routeStart" min="1" value="300" style="width: 80px;">
-        </div>
-        <div>
-            <label>End Node:</label>
-            <input type="number" id="routeEnd" min="1" value="600" style="width: 80px;">
-        </div>
-        <div>
-            <button class="routeBtn" class="map-ui" onclick="findRoute()" id="findroutebutton">Find Route</button>
-            <button class="routeBtn" class="map-ui" onclick="clearRoute()">Clear</button>
-        </div>
-        <div id="mapToggle">
-        <button class="routeBtn" class="map-ui" id="toggleBasemapBtn">Satellite</button>
-        </div>
+    <div id="nodeRoute" class="map-ui route-panel">
+    <h4 id="nodeReload" class="reload">Use Locations <svg class="reloadSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M203.52-308.67q-24.39-39.68-36.7-82.31-12.32-42.63-12.32-87.5 0-135.43 94.2-231.23 94.19-95.79 228.91-95.79h7.24l-60.42-60.41 58.64-58.39L647.37-760l-164.3 164.3-58.64-58.39 60.42-60.41h-6.52q-96.9 0-164.86 68.83-67.97 68.82-67.97 167.19 0 26.72 6.36 52.32 6.36 25.59 19.07 50.07l-67.41 67.42ZM476.93-35.46l-164.3-164.3 164.3-164.54 58.64 58.63-60.42 60.41h6.52q96.9 0 164.86-68.95 67.97-68.94 67.97-167.31 0-26.72-6.36-52.32-6.36-25.59-19.07-50.07l67.41-67.18q24.39 39.68 36.7 82.19 12.32 42.51 12.32 87.38 0 135.43-94.2 231.35-94.19 95.91-228.91 95.91h-7.24l60.42 60.17-58.64 58.63Z"/></svg></h4>
 
+    <div>
+        <label>Start Node:</label>
+        <input type="number" id="routeStart" min="1" value="300" style="width: 80px;">
     </div>
 
-    <div id="locationRoute" class="map-ui">
-        <h4 id="locationReload" class="reload">Use Nodes <svg class="reloadSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M203.52-308.67q-24.39-39.68-36.7-82.31-12.32-42.63-12.32-87.5 0-135.43 94.2-231.23 94.19-95.79 228.91-95.79h7.24l-60.42-60.41 58.64-58.39L647.37-760l-164.3 164.3-58.64-58.39 60.42-60.41h-6.52q-96.9 0-164.86 68.83-67.97 68.82-67.97 167.19 0 26.72 6.36 52.32 6.36 25.59 19.07 50.07l-67.41 67.42ZM476.93-35.46l-164.3-164.3 164.3-164.54 58.64 58.63-60.42 60.41h6.52q96.9 0 164.86-68.95 67.97-68.94 67.97-167.31 0-26.72-6.36-52.32-6.36-25.59-19.07-50.07l67.41-67.18q24.39 39.68 36.7 82.19 12.32 42.51 12.32 87.38 0 135.43-94.2 231.35-94.19 95.91-228.91 95.91h-7.24l60.42 60.17-58.64 58.63Z"/></svg></h4>
+    <div>
+        <label>End Node:</label>
+        <input type="number" id="routeEnd" min="1" value="600" style="width: 80px;">
+    </div>
+
+    <div>
+        <button class="routeBtn" onclick="findRoute()" id="findroutebutton">Find Route</button>
+        <button class="routeBtn" onclick="clearRoute()">Clear</button>
+    </div>
+
+    <div id="mapToggle">
+        <button class="routeBtn toggleBasemapBtn">Satellite</button>
+    </div>
+
+    <div class="sliders">
         <div>
-            <label>Start Location:</label>
-            <input type="string" id="routeStartName" value="The Imperial" style="width: 80px;">
+            <label for="distance">Distance:   </label>
+            <input type="range" class="slider slider-distance" min="0" max="1" value="0.5" step="0.05"><br>
         </div>
+
         <div>
-            <label>End Node:</label>    
-            <input type="string" id="routeEndName" value="Southernhay House Surgery" style="width: 80px;">
+            <label for="lighting">Lighting:   </label>
+            <input type="range" class="slider slider-lighting" min="0" max="1" value="0.5" step="0.05"><br>
         </div>
+
         <div>
-            <button class="routeBtn" onclick= "findRouteWithName()" id="findroutebuttonname">Find Route</button>
-            <button class="routeBtn" onclick="clearRoute()" >Clear</button>
+            <label for="greenery">Greenery:   </label>
+            <input type="range" class="slider slider-greenery" min="0" max="1" value="0.5" step="0.05"><br>
         </div>
 
-        <div id="sliders">
-            <div>
-                <label for="distance">Distance:   </label>
-                <input type="range" id="distance" class="slider" min="0" max="1" value="0.5" step="0.05"><br>
-            </div>
+        <div>
+            <label for="gradient">Gradient:   </label>
+            <input type="range" class="slider slider-gradient" min="0" max="1" value="0.5" step="0.05"><br>
+        </div>
 
-            <div>
-                <label for="lighting">Lighting:   </label>
-                <input type="range" id="lighting" class="slider" min="0" max="1" value="0.5" step="0.05"><br>
-            </div>
-
-            <div>
-                <label for="greenery">Greenery:   </label>
-                <input type="range" id="greenery" class="slider" min="0" max="1" value="0.5" step="0.05"><br>
-            </div>
-
-            <div>
-                <label for="gradient">Gradient:   </label>
-                <input type="range" id="gradient" class="slider" min="0" max="1" value="0.5" step="0.05"><br>
-            </div>
-
-            <div>
-                <label for="crime">Crime:     </label>
-                <input type="range" id="crime" class="slider" min="0" max="1" value="0.5" step="0.05">
-            </div>
+        <div>
+            <label for="crime">Crime:     </label>
+            <input type="range" class="slider slider-crime" min="0" max="1" value="0.5" step="0.05">
         </div>
     </div>
+    </div>
+
+
+    <div id="locationRoute" class="map-ui route-panel">
+    <h4 id="locationReload" class="reload">Use Nodes <svg class="reloadSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M203.52-308.67q-24.39-39.68-36.7-82.31-12.32-42.63-12.32-87.5 0-135.43 94.2-231.23 94.19-95.79 228.91-95.79h7.24l-60.42-60.41 58.64-58.39L647.37-760l-164.3 164.3-58.64-58.39 60.42-60.41h-6.52q-96.9 0-164.86 68.83-67.97 68.82-67.97 167.19 0 26.72 6.36 52.32 6.36 25.59 19.07 50.07l-67.41 67.42ZM476.93-35.46l-164.3-164.3 164.3-164.54 58.64 58.63-60.42 60.41h6.52q96.9 0 164.86-68.95 67.97-68.94 67.97-167.31 0-26.72-6.36-52.32-6.36-25.59-19.07-50.07l67.41-67.18q24.39 39.68 36.7 82.19 12.32 42.51 12.32 87.38 0 135.43-94.2 231.35-94.19 95.91-228.91 95.91h-7.24l60.42 60.17-58.64 58.63Z"/></svg></h4>
+
+    <div>
+        <label>Start Location:</label>
+        <input type="string" id="routeStartName" value="The Imperial" style="width: 80px;">
+    </div>
+
+    <div>
+        <label>End Node:</label>
+        <input type="string" id="routeEndName" value="Southernhay House Surgery" style="width: 80px;">
+    </div>
+
+    <div>
+        <button class="routeBtn" onclick="findRouteWithName()" id="findroutebuttonname">Find Route</button>
+        <button class="routeBtn" onclick="clearRoute()">Clear</button>
+    </div>
+
+    <div id="mapToggle">
+        <button class="routeBtn toggleBasemapBtn">Satellite</button>
+    </div>
+
+    <div class="sliders">
+        <div>
+            <label for="distance">Distance:   </label>
+            <input type="range" class="slider slider-distance" min="0" max="1" value="0.5" step="0.05"><br>
+        </div>
+
+        <div>
+            <label for="lighting">Lighting:   </label>
+            <input type="range" class="slider slider-lighting" min="0" max="1" value="0.5" step="0.05"><br>
+        </div>
+
+        <div>
+            <label for="greenery">Greenery:   </label>
+            <input type="range" class="slider slider-greenery" min="0" max="1" value="0.5" step="0.05"><br>
+        </div>
+
+        <div>
+            <label for="gradient">Gradient:   </label>
+            <input type="range" class="slider slider-gradient" min="0" max="1" value="0.5" step="0.05"><br>
+        </div>
+
+        <div>
+            <label for="crime">Crime:     </label>
+            <input type="range" class="slider slider-crime" min="0" max="1" value="0.5" step="0.05">
+        </div>
+    </div>
+    </div>
+
 </div>
 
 
@@ -188,25 +240,28 @@
     osmLayer.addTo(map);   // Begin with OSM layer
     const nodesLayer = L.layerGroup().addTo(map);   // Add new layer to map for just nodes
 
-    const toggleLayerButton = document.getElementById("toggleBasemapBtn");
+    const toggleLayerButton = document.querySelectorAll(".toggleBasemapBtn");
     const toggleNodesButton = document.getElementById("toggleNodesBtn");
     let isSatellite = false;
     let nodesVisible = true;
     // Swap logic for changing between satelite and OSM map
-    toggleLayerButton.onclick = () => {
-        if (isSatellite) {
-            map.removeLayer(satLayer);
-            map.removeLayer(labelsLayer);
-            osmLayer.addTo(map);
-            toggleLayerButton.textContent = "Satellite";
-        } else {
-            map.removeLayer(osmLayer);
-            satLayer.addTo(map);
-            labelsLayer.addTo(map);
-            toggleLayerButton.textContent = "OSM";
-        }
-        isSatellite = !isSatellite;
-    };
+    toggleLayerButton.forEach(btn =>{
+        btn.onclick = () => {
+            if (isSatellite) {
+                map.removeLayer(satLayer);
+                map.removeLayer(labelsLayer);
+                osmLayer.addTo(map);
+                toggleLayerButton.textContent = "Satellite";
+            } else {
+                map.removeLayer(osmLayer);
+                satLayer.addTo(map);
+                labelsLayer.addTo(map);
+                toggleLayerButton.textContent = "OSM";
+            }
+            isSatellite = !isSatellite;
+            updateToggleLabels();
+        };
+    });
     // Adds click and scroll propagation(Cant affect the map while hovering over UI elements)
     document.querySelectorAll(".map-ui").forEach(el => {
         L.DomEvent.disableClickPropagation(el);
@@ -934,7 +989,7 @@
     function findRoute() {
         const startNode = document.getElementById('routeStart').value;
         const endNode = document.getElementById('routeEnd').value;
-        const preferences = [document.getElementById('distance').value, document.getElementById('lighting').value, document.getElementById('crime').value, document.getElementById('greenery').value, document.getElementById('gradient').value];
+        const preferences = [".slider-distance",".slider-lighting",".slider-crime",".slider-greenery",".slider-gradient"].map(s => document.querySelector(s).value);
         // Clear previous route
         clearRoute();
         
@@ -966,7 +1021,7 @@
         const endNode = document.getElementById('routeEndName').value;
         const startNodeId = [...locationsMap.values()].find(l => l.name === startNode)?.nodeId ?? null;
         const endNodeId = [...locationsMap.values()].find(l => l.name === endNode)?.nodeId ?? null;
-        const preferences = [document.getElementById('distance').value, document.getElementById('lighting').value, document.getElementById('crime').value, document.getElementById('greenery').value, document.getElementById('gradient').value];
+        const preferences = [".slider-distance",".slider-lighting",".slider-crime",".slider-greenery",".slider-gradient"].map(s => document.querySelector(s).value);
         // Clear previous route
         clearRoute();
         
@@ -1161,7 +1216,7 @@
         locationsByNodeId.set(nodeIdFromData, newLocation);   // Add Location object to Map locationsByNodeId with nodeId key
         locationId = locationIdFromData + 1;   // Use most up to date location ID
     }
-
+    // Used for the red icon
     function createIcon(color) {
         return L.icon({
             iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png`,
@@ -1169,6 +1224,12 @@
             iconSize: [25, 41],
             iconAnchor: [12, 41],
             popupAnchor: [1, -34]
+        });
+    }
+    // For keeping consistency of OSM<->Satelite map while between toggling node and route finding panels
+    function updateToggleLabels() {
+        toggleLayerButton.forEach(btn => {
+            btn.textContent = isSatellite ? "OSM" : "Satellite";
         });
     }
     
