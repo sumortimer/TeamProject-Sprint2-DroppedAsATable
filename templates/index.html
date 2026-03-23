@@ -58,11 +58,20 @@
     <button id="missionBtn" class="map-ui" onclick="missions()">Missions</button>
     <br><button type="button" class="map-ui" id="toggleNodesBtn">Hide Nodes</button>
     <br><button type="button" class="map-ui" id="logout" onclick="logout()">Log Out</button>
-    <button type="button" id="devBtn" class="map-ui" onclick="goToDev()">dev</button>
+    <br><button type="button" id="devBtn" class="map-ui" onclick="goToDev()">Dev Panel</button>
+    <br><button type="button" id="devBtn" class="map-ui" onclick="goToAdmin()">Admin Panel</button>
 
     <script> 
         function logout(){
             window.location.href = "{{url_for('logout')}}";
+        }
+
+        function goToDev(){
+            window.location.href = "{{url_for('dev_panel')}}";
+        }
+
+        function goToAdmin(){
+            window.location.href = "{{ url_for('admin_panel') }}";
         }
     </script>
 
@@ -150,12 +159,6 @@
     </div>
     
 </div>
-
-<script>
-    function goToDev(){
-        window.location.href = "{{url_for('dev_panel')}}";
-    }
-</script>
 
 <footer>
     <br>
@@ -976,13 +979,13 @@
         let info = `<h4>Route from Node ${routeData.start} to ${routeData.end}:</h4>`;
         info += `<p><strong>Red Path:</strong> ${pathOne.join(' → ')}</p>`;
         info += `<p><strong>Total Distance:</strong> ${costOne.toFixed(2)}</p>`;
-        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreOne[0].toFixed(2)}Crime: ${scoreOne[1].toFixed(2)}Greenery: ${scoreOne[2].toFixed(2)}Gradient: ${scoreOne[3].toFixed(2)}</p>`;
+        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreOne[0].toFixed(2)}   Crime: ${scoreOne[1].toFixed(2)}   Greenery: ${scoreOne[2].toFixed(2)}   Gradient: ${scoreOne[3].toFixed(2)}</p>`;
         info += `<p><strong>Green Path:</strong> ${pathTwo.join(' → ')}</p>`;
         info += `<p><strong>Total Distance:</strong> ${costTwo.toFixed(2)}</p>`;
-        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreTwo[0].toFixed(2)}Crime: ${scoreTwo[1].toFixed(2)}Greenery: ${scoreTwo[2].toFixed(2)}Gradient: ${scoreTwo[3].toFixed(2)}</p>`;
+        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreTwo[0].toFixed(2)}   Crime: ${scoreTwo[1].toFixed(2)}   Greenery: ${scoreTwo[2].toFixed(2)}   Gradient: ${scoreTwo[3].toFixed(2)}</p>`;
         info += `<p><strong>Blue Path:</strong> ${pathThree.join(' → ')}</p>`;
         info += `<p><strong>Total Distance:</strong> ${costThree.toFixed(2)}</p>`;
-        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreThree[0].toFixed(2)}Crime: ${scoreThree[1].toFixed(2)}Greenery: ${scoreThree[2].toFixed(2)}Gradient: ${scoreThree[3].toFixed(2)}</p>`;
+        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreThree[0].toFixed(2)}   Crime: ${scoreThree[1].toFixed(2)}   Greenery: ${scoreThree[2].toFixed(2)}   Gradient: ${scoreThree[3].toFixed(2)}</p>`;
 
         // document.getElementById("routeInfo").style.visibility = "hidden";
         document.getElementById("routeInfo").style.display = "none";

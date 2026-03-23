@@ -1,0 +1,77 @@
+body {
+    background-color: cornsilk;
+}
+
+#form {
+    text-align: center;
+    background-color: lightgray;
+    padding: 15px;
+    border-radius: 5px;
+    border-style: solid;
+    border-width: 2px;
+    width: 50%;
+    margin: 100px auto 100px;
+}
+
+#form .input {
+    border-radius: 3px;
+    padding: 5px;
+    border-width: 1px;
+    border-style: solid;
+}
+
+#form #submit {
+    border-radius: 3px;
+    padding: 5px;
+    width: 60px;
+}
+
+#form #submit:hover {
+    background-color: rgb(230, 230, 230);
+}
+
+#backbutton {
+    display: block;
+    background-color: aliceblue;
+    border-radius: 15px;
+    text-decoration: none;
+    color: black;
+    padding: 14px 16px;
+    font-weight: bold;
+    margin: 0 2%;
+    border-style: solid;
+    border-color: black;
+    transition: 200ms ease;
+    width: 55px;
+}
+
+#backbutton:visited {
+    color: black;
+}
+
+#backbutton:hover {
+    background-color: rgb(229, 232, 234);
+    transition: 300ms ease;
+}
+
+#auditlog {
+    border-collapse: collapse;
+    width: 100%;
+    padding: 20px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+#auditlog, th, td {
+    border-style: solid;
+    border-width: 1px;
+    border-color: black;
+}
+
+#auditlog th {
+    background-color: lightgray;
+}
+
+#auditlog td {
+    background-color: white;
+}

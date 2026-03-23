@@ -6,24 +6,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dev_panel.css') }}"/>
+    <title>Dev Panel</title>
 </head>
 <body>
     <div id="topbar">
         <a id="backbutton" href="javascript: history.back()">< Back</a>
     </div>
 
-    <p>Use the form below with the username of the person you want to promote/demote and your password.</p>
-
     <form id="form" method="POST">
+        <p>Use the form below with the username of the person you want to promote/demote to admin and your password.</p>
+
         <div>
-            <input  type="text" id="username" name="username" required placeholder="User to promote/demote">
+            <input  type="text" id="username" class="input" name="username" required placeholder="User to promote/demote">
         </div>
 
         <br>
 
         <div>
-            <input type="password" id="password" name="password" required placeholder="Your developer password">
+            <input type="password" id="password" class="input" name="password" required placeholder="Your developer password">
         </div>
 
         <br>
@@ -37,7 +38,7 @@
 
         <p id="error_message">{{ error }}</p>
 
-        <button type="submit">Submit</button>
+        <button type="submit" id="submit">Submit</button>
     </form>
         
 
