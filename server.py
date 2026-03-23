@@ -34,12 +34,12 @@ def index():
         return render_template("indexDev.html", termsNeeded="False")
     elif isUserAuthenticated(adminNeeded=True):
         return render_template("indexAdmin.html", termsNeeded="False")
-    
-    # If the user hasn't accepted the disclaimers this session then tell the index.html to pop-up the disclaimers.
+
+    # If the user hasn't accepted the disclaimers this session then tell the indexUser.html to pop-up the disclaimers.
     if not session.get("acceptedTerms"):
         session["acceptedTerms"] = True
-        return render_template("index.html", termsNeeded="True")
-    return render_template("index.html", termsNeeded="False")
+        return render_template("indexUser.html", termsNeeded="True")
+    return render_template("indexUser.html", termsNeeded="False")
 
 @app.route("/map.html")
 def map_redir():
