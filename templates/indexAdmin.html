@@ -420,6 +420,7 @@
         toggleNodesButton.onclick = () => {
             toggleNodesVisibility();
             toggleNodesButton.textContent = nodesVisible ? "Hide Nodes" : "Show Nodes";
+            toggleNodesButton.style.backgroundColor = nodesVisible ? "red" : "green";
         };
     }
 
