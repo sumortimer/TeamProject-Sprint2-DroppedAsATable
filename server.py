@@ -763,19 +763,18 @@ def dev_panel():
     # Everything below this is a POST method.
     myDatabase = DatabaseMethods()
     try:
-        if "action" not in request.args:
-            return render_template("dev_panel.html", audit_log=audit_log, error="Missing fields required")
         action = request.args.get("action", type=str)
+        # if (action == "NULL"):
+        #     return render_template("dev_panel.html", audit_log=audit_log, error="Missing fields required")
 
         user_to_change = request.args.get('username', type=str)
         password_to_check = request.args.get('password', type=str)
 
-        if not password_to_check or not user_to_change:
-            return render_template("dev_panel.html", audit_log=audit_log, error="Missing fields required")
+        # if not password_to_check or not user_to_change:
+        #     return render_template("dev_panel.html", audit_log=audit_log, error="Missing fields required")
         
         # We should check if the dev entered their password correctly
         database_response = myDatabase.getLoginDetails(session.get("user_name"))
-
         if not database_response:
             return render_template("dev_panel.html", audit_log=audit_log, error="Database error")
         if not database_response[0]:
@@ -819,7 +818,7 @@ def dev_panel():
                     correct = "User promoted to admin"
                 elif action == "demote":
                     correct = "User demoted to traveller"
-                return render_template("dev_panel.html", audit_log=audit_log, correct=correct)
+                return render_template("dev_panel.html", audit_log=audit_log, error=correct)
             return render_template("dev_panel.html", audit_log=audit_log, error="Database error promoting user")
 
     except Exception as e:
