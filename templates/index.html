@@ -935,7 +935,7 @@
     function findRoute() {
         const startNode = document.getElementById('routeStart').value;
         const endNode = document.getElementById('routeEnd').value;
-        const preferences = [document.getElementById('distance').value, document.getElementById('lighting').value, document.getElementById('crime').value, document.getElementById('greenery').value, document.getElementById('gradient').value];
+        const preferences = [".slider-distance",".slider-lighting",".slider-crime",".slider-greenery",".slider-gradient"].map(s => document.querySelector(s).value);
         // Clear previous route
         clearRoute();
         
@@ -967,7 +967,7 @@
         const endNode = document.getElementById('routeEndName').value;
         const startNodeId = [...locationsMap.values()].find(l => l.name === startNode)?.nodeId ?? null;
         const endNodeId = [...locationsMap.values()].find(l => l.name === endNode)?.nodeId ?? null;
-        const preferences = [document.getElementById('distance').value, document.getElementById('lighting').value, document.getElementById('crime').value, document.getElementById('greenery').value, document.getElementById('gradient').value];
+        const preferences = [".slider-distance",".slider-lighting",".slider-crime",".slider-greenery",".slider-gradient"].map(s => document.querySelector(s).value);
         // Clear previous route
         clearRoute();
         
