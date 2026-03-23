@@ -864,7 +864,7 @@ def make_dev_user(username="dev_acc", email="dev@project6.com", password="g00dPa
         if (myDatabase.areUserDetailsUsed(username, email)):
             print("Dev account creation unsuccessful, account with this username or email already exists.")
             return False
-        if (not myDatabase.addUser(username, email, generate_password_hash(password + PEPPER_PASSWORD), 'M')):
+        if (not myDatabase.addUser(username, email, generate_password_hash(password + PEPPER_PASSWORD), 'A')):
             print("Dev account creation unsuccessful, due to database error.")
             return False
         print("Dev account creation successful.")
@@ -900,5 +900,5 @@ def reset_user_password(username, email, password):
         myDatabase.closeConnection()
 
 if __name__ == "__main__":
-    # make_dev_user()
+    make_dev_user(username="admin_acc", password="BetterPass2!", email="new@project6.com")
     app.run(debug=False,host='0.0.0.0', port=5000)

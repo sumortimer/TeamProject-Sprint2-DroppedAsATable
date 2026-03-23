@@ -35,7 +35,7 @@ footer p {
     position: relative;
     z-index: 10000000000;
     left: 10px;
-    top: 60px;
+    top: 40px;
     padding: 15px;
     border-color: black;
     border-radius: 15px;
@@ -110,7 +110,7 @@ footer p {
     height: auto;
     position: relative;
     left: 10px;
-    top: 40px;
+    top: 10px !important;
 }
 
 #nodeRoute * {
@@ -127,10 +127,10 @@ footer p {
     text-align: center;
     z-index: 100000000000000000000000000;
     width: 300px;
-    height: 400px;
+    height: auto;
     position: relative;
     left: 10px;
-    top: 225px; 
+    top: 10px !important; 
 }
 
 #locationRoute * {
