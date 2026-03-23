@@ -389,7 +389,7 @@
         }
     }
 
-
+    /*
     /////////////////// CLICK EVENTS ////////////////////////////////
     
     // Upon left clicking the map,
@@ -451,6 +451,7 @@
 
         tempPopup._type = 'create';   // Used to keep track of popup type for click management and better UX
     });
+    */
     // Upon opening up a popup on a node
     let nameView = null;   // Set this globally so we can separate location and nodes inside popupopen without problem or extra code
     let nameInput = null;
@@ -834,7 +835,7 @@
         const connectionsText = node.connections.length ? node.connections.join(",") : "";
         return `
             <div class="popup-form" data-node-id="${node.id}">
-                <label>Node ID:</label> ${node.id}<br>
+                <strong>Node ${node.id}</strong><br>
 
                 <label>Lighting:</label>
                 <span class="ind-view ind-lighting">${node.lighting ?? "(none)"}</span>
@@ -855,20 +856,6 @@
                 <span class="ind-view ind-gradient">${node.gradient ?? "(none)"}</span>
                 <input class="ind-edit ind-gradient-input" type="number" step="0.01" min="0" max="1" value="${node.gradient ?? 0}" style="display:none; width:90px;" />
                 <br><br>
-
-                <label>Connections:</label><br>
-                <span class="conn-view">${connectionsText || "(none)"}</span>
-                <input class="conn-edit" type="text" value="${connectionsText}"
-                    pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$"
-                    style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
-
-                <div style="margin-top:6px; display:flex; gap:1px;">
-                    <button class="btn-edit">Edit</button>
-                    <button class="btn-delete">Delete</button>
-                    <button class="btn-save" style="display:none;">Save</button>
-                    <button class="btn-cancel" style="display:none;">Cancel</button>
-                </div>
-
             </div>
         `;
     }
@@ -885,46 +872,34 @@
         return `
             <div class="popup-form" data-node-id="${location.nodeId}">
                 <strong class="name-view">${nameText || "(unnamed)"}</strong>
-                <input class="name-edit" type="text" value="${nameText}" style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
+                
                 <br>
                 <label>Type:</label>
                 <span class="type-view">${location.type || "(none)"}</span>
-                <input class="type-edit" type="text" value="${location.type || ""}" style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
+
                 <br>
-                <label>Node ID:</label> ${location.nodeId}<br>
-                <label>Location ID:</label> ${location.id}<br>
+                
+                
 
                 <label>Lighting:</label>
                 <span class="ind-view ind-lighting">${node.lighting ?? "(none)"}</span>
-                <input class="ind-edit ind-lighting-input" type="number" step="0.01" value="${node.lighting ?? 0}" style="display:none; width:90px;" />
+                
                 <br>
 
                 <label>Crime:</label>
                 <span class="ind-view ind-crime">${node.crime ?? "(none)"}</span>
-                <input class="ind-edit ind-crime-input" type="number" step="0.01" value="${node.crime ?? 0}" style="display:none; width:90px;" />
+                
                 <br>
 
                 <label>Greenery:</label>
                 <span class="ind-view ind-greenery">${node.greenery ?? "(none)"}</span>
-                <input class="ind-edit ind-greenery-input" type="number" step="0.01" value="${node.greenery ?? 0}" style="display:none; width:90px;" />
+
                 <br>
 
                 <label>Elevation:</label>
                 <span class="ind-view ind-gradient">${node.gradient ?? "(none)"}</span>
-                <input class="ind-edit ind-gradient-input" type="number" step="0.01" min="0" max="1" value="${node.gradient ?? 0}" style="display:none; width:90px;" />
-                <br><br>
 
-                <label>Connections:</label><br>
-                <span class="conn-view">${connectionsText || "(none)"}</span>
-                <input class="conn-edit" type="text" value="${connectionsText}"
-                    pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$"
-                    style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
-                <div style="margin-top:6px; display:flex; gap:1px;">
-                    <button class="btn-edit">Edit</button>
-                    <button class="btn-delete">Delete</button>
-                    <button class="btn-save" style="display:none;">Save</button>
-                    <button class="btn-cancel" style="display:none;">Cancel</button>
-                </div>
+                <br>
             </div>
         `;
     }
@@ -990,6 +965,7 @@
         const startNode = document.getElementById('routeStart').value;
         const endNode = document.getElementById('routeEnd').value;
         const preferences = [".slider-distance",".slider-lighting",".slider-crime",".slider-greenery",".slider-gradient"].map(s => document.querySelector(s).value);
+
         // Clear previous route
         clearRoute();
         
@@ -1022,6 +998,7 @@
         const startNodeId = [...locationsMap.values()].find(l => l.name === startNode)?.nodeId ?? null;
         const endNodeId = [...locationsMap.values()].find(l => l.name === endNode)?.nodeId ?? null;
         const preferences = [".slider-distance",".slider-lighting",".slider-crime",".slider-greenery",".slider-gradient"].map(s => document.querySelector(s).value);
+
         // Clear previous route
         clearRoute();
         

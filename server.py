@@ -233,7 +233,7 @@ def edit_node():
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
 @app.route("/editlocation", methods=["POST"])
-def edit_location(): ####### UNIFINSHED #########
+def edit_location():
     # Denies request and sends a user to index if they are not logged in
     if not isUserAuthenticated():
         return redirect(url_for("index"))
@@ -241,9 +241,14 @@ def edit_location(): ####### UNIFINSHED #########
     data = request.get_json()
     myDatabase = DatabaseMethods()
 
+    location_id = data["locationId"]
+    node_id = data["nodeId"]
     name = data["name"]
-
-    myDatabase.closeConnection()
+    location_type = data["locationType"]
+    print("editlocation:", location_id, node_id, name, location_type)
+    myDatabase.updateLocation(location_id, node_id, name, location_type)
+    nodes, edges, locations = myDatabase.getMapData()
+    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
 @app.route("/editindicators", methods=["POST"])
 def edit_indicators():
