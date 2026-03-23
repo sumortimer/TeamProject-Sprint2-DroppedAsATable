@@ -180,10 +180,15 @@
     <br><button type="button" class="map-ui" id="toggleNodesBtn" style="z-index: 1001;">Hide Nodes</button>
     <br><button type="button" class="map-ui" id="logout" onclick="logout()" style="z-index: 1001;">Log Out</button>
     <br><button type="button" class="map-ui" id="analyticsBtn" onclick="toggleAnalyticsMenu()" style="z-index: 1001;">Analytics View</button>
+    <br><button type="button" id="devBtn" class="map-ui" onclick="goToAdmin()">Admin Panel</button>
 
     <script> 
         function logout(){
-            window.location.href = "{{url_for('missions_1')}}";
+            window.location.href = "{{url_for('logout')}}";
+        }
+
+        function goToAdmin(){
+            window.location.href = "{{ url_for('admin_panel') }}";
         }
     </script>
 
