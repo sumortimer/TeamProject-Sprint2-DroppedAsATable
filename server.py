@@ -900,5 +900,5 @@ def reset_user_password(username, email, password):
         myDatabase.closeConnection()
 
 if __name__ == "__main__":
-    make_dev_user(username="admin_acc", password="BetterPass2!", email="new@project6.com")
+    #make_dev_user(username="admin_acc", password="BetterPass2!", email="new@project6.com")
     app.run(debug=False,host='0.0.0.0', port=5000)
