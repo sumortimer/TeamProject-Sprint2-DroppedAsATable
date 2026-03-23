@@ -233,7 +233,7 @@ def edit_node():
     return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
 @app.route("/editlocation", methods=["POST"])
-def edit_location(): ####### UNIFINSHED #########
+def edit_location():
     # Denies request and sends a user to index if they are not logged in
     if not isUserAuthenticated():
         return redirect(url_for("index"))
@@ -241,9 +241,14 @@ def edit_location(): ####### UNIFINSHED #########
     data = request.get_json()
     myDatabase = DatabaseMethods()
 
+    location_id = data["locationId"]
+    node_id = data["nodeId"]
     name = data["name"]
-
-    myDatabase.closeConnection()
+    location_type = data["locationType"]
+    print("editlocation:", location_id, node_id, name, location_type)
+    myDatabase.updateLocation(location_id, node_id, name, location_type)
+    nodes, edges, locations = myDatabase.getMapData()
+    return jsonify({"nodes": nodes, "edges": edges, "locations": locations})
 
 @app.route("/editindicators", methods=["POST"])
 def edit_indicators():
@@ -567,39 +572,10 @@ def signup():
             if (not re.fullmatch(re_email_valid, email)):
                 return render_template("signup.html", error="Invalid email.")
 
-
             # PASSWORD CHECKS
-
-            # Are passwords equal?
-            if (password != password_confirm):
-                return render_template("signup.html", error="Passwords do not match.")
-            
-            # Is the password at least 8 characters?
-            if (len(password) < 8):
-                return render_template("signup.html", error="Password must be at least 8 characters.")
-
-            # Is the password longer than 128 characters?
-            if (len(password) > 128):
-                return render_template("signup.html", error="Password cannot be longer than 128 characters.")
-
-            # Does the password contain at least one uppercase letter, one lowercase letter, one digit, and one special character?
-            re_pass_valid = r"(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^0-9A-Za-z])"
-                            # (?=.*[A-Z]) checks for one upper case letter, (?=.*[a-z]) checks for one lowercase letter,
-                            # (?=.*[0-9]) checks for one digit and (?=.*[^0-9A-Za-z]) checks for one special character.
-            if (not re.match(re_pass_valid, password)):
-                return render_template("signup.html", error="Password must contain at least one uppercase letter, one lower letter, one digit and a special character.")
-
-            # Does the password contain any whitespace characters?
-            re_pass_valid = r"(?=.*[\s])"
-                            # (?=.*[\s]) checks for one whitespace character
-            if (re.match(re_pass_valid, password)):
-                return render_template("signup.html", error="Password must not contain any whitespace (such as characters).")
-
-            # Does the password contain the username?
-            re_pass_valid = re.escape(username.lower())
-            if (re.search(re_pass_valid, password.lower())):
-                return render_template("signup.html", error="Password must not contain the username.")
-
+            pass_response = password_check(password, password_confirm, username)
+            if (pass_response != "PASSED"):
+                return render_template("signup.html", error=pass_response or "An unexpected error occured.")
 
             # If everything is valid then sign the user up
             if (not myDatabase.addUser(username, email, generate_password_hash(password + PEPPER_PASSWORD), usertype="T")):
@@ -625,6 +601,43 @@ def signup():
             abort(500)
         finally:
             myDatabase.closeConnection()
+
+def password_check(password, password_confirm, username):
+    try:
+        # Are passwords equal?
+        if (password != password_confirm):
+            return "Passwords do not match."
+
+        # Is the password at least 8 characters?
+        if (len(password) < 8):
+            return "Password must be at least 8 characters."
+
+        # Is the password longer than 128 characters?
+        if (len(password) > 128):
+            return "Password cannot be longer than 128 characters."
+
+        # Does the password contain at least one uppercase letter, one lowercase letter, one digit, and one special character?
+        re_pass_valid = r"(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*[^0-9A-Za-z])"
+                        # (?=.*[A-Z]) checks for one upper case letter, (?=.*[a-z]) checks for one lowercase letter,
+                        # (?=.*[0-9]) checks for one digit and (?=.*[^0-9A-Za-z]) checks for one special character.
+        if (not re.match(re_pass_valid, password)):
+            return "Password must contain at least one uppercase letter, one lower letter, one digit and a special character."
+
+        # Does the password contain any whitespace characters?
+        re_pass_valid = r"(?=.*[\s])"
+                        # (?=.*[\s]) checks for one whitespace character
+        if (re.match(re_pass_valid, password)):
+            return "Password must not contain any whitespace (such as characters)."
+
+        # Does the password contain the username?
+        re_pass_valid = re.escape(username.lower())
+        if (re.search(re_pass_valid, password.lower())):
+            return "Password must not contain the username."
+        
+        return "PASSED"
+    except Exception as e:
+        print("Error: ", e)
+        print("Database error.")
 
 @app.route("/login.html")
 def login_redirect():
@@ -749,7 +762,7 @@ def dev_panel():
         action = request.args.get("action", type=str)
 
         user_to_change = request.args.get('username', type=str)
-        password_to_check = request.args.get('password', type=int)
+        password_to_check = request.args.get('password', type=str)
 
         if not password_to_check or not user_to_change:
             return render_template("dev_panel.html", audit_log=audit_log, error="Missing fields required")
@@ -856,7 +869,29 @@ def make_dev_user(username="dev_acc", email="dev@project6.com", password="g00dPa
         return False
     finally:
         myDatabase.closeConnection()
-   
+
+# Debug command to reset or change a user's password.
+def reset_user_password(username, email, password):
+    myDatabase = DatabaseMethods()
+    try:
+        if (not myDatabase.areUserDetailsUsed(username, email)):
+            print("Password reset unsuccessful, account with this username or email does not exist.")
+            return False
+        pass_response = password_check(password, password, username)
+        if (pass_response != "PASSED"):
+            print("Password reset unsuccessful: ", pass_response)
+            return False
+        if (not myDatabase.changePassword(username, email, generate_password_hash(password + PEPPER_PASSWORD))):
+            print("Password reset unsuccessful, due to database error.")
+            return False
+        print("Password reset successful.")
+        return True
+    except Exception as e:
+        print("Password reset unsuccessful.")
+        print("Error: ", e)
+        return False
+    finally:
+        myDatabase.closeConnection()
 
 if __name__ == "__main__":
     # make_dev_user()

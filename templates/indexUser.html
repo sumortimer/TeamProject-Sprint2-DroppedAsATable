@@ -71,20 +71,11 @@
     <button id="missionBtn" class="map-ui" onclick="missions()">Missions</button>
     <br><button type="button" class="map-ui" id="toggleNodesBtn">Hide Nodes</button>
     <br><button type="button" class="map-ui" id="logout" onclick="logout()">Log Out</button>
-    <br><button type="button" id="devBtn" class="map-ui" onclick="goToDev()">Dev Panel</button>
-    <br><button type="button" id="devBtn" class="map-ui" onclick="goToAdmin()">Admin Panel</button>
+    <br><button type="button" class="map-ui" id="analyticsBtn" onclick="toggleAnalyticsMenu()" style="z-index: 1001;">Analytics View</button>
 
     <script> 
         function logout(){
-            window.location.href = "{{url_for('logout')}}";
-        }
-
-        function goToDev(){
-            window.location.href = "{{url_for('dev_panel')}}";
-        }
-
-        function goToAdmin(){
-            window.location.href = "{{ url_for('admin_panel') }}";
+            window.location.href = "{{url_for('missions_1')}}";
         }
     </script>
 
@@ -193,17 +184,17 @@
 
 
     <div>
-        <div id="routeInfo" class="map-ui" style="margin-top: 15px; padding: 10px; background: rgb(219, 223, 236); border-radius: 3px; min-height: 50px;">
+        <div id="routeInfo" class="map-ui" style="margin-top: 15px; padding: 10px; background: white; border-radius: 3px; min-height: 50px;">
             Enter start and end nodes and click "Find Route"
         </div>
 
         <div id="info" class="map-ui">
             <div id="seeMore">
-                <h3 id="plus">See more (Route Statistics) <svg id="plusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M446.67-446.67H200v-66.66h246.67V-760h66.66v246.67H760v66.66H513.33V-200h-66.66v-246.67Z"/></svg></h3>
+                <h4 id="plus">See more <svg id="plusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M446.67-446.67H200v-66.66h246.67V-760h66.66v246.67H760v66.66H513.33V-200h-66.66v-246.67Z"/></svg></h4>
             </div>
 
             <div id="seeLess">
-                <h3 id="minus">See less (Route Statistics) <svg id="minusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M184.17-435.93v-88.14H776.2v88.14H184.17Z"/></svg></h3>
+                <h4 id="minus">See less <svg id="minusSign" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#000000"><path d="M184.17-435.93v-88.14H776.2v88.14H184.17Z"/></svg></h4>
                 <p id="results"></p>
             </div>
         
@@ -399,7 +390,7 @@
         }
     }
 
-
+    /*
     /////////////////// CLICK EVENTS ////////////////////////////////
     
     // Upon left clicking the map,
@@ -461,6 +452,7 @@
 
         tempPopup._type = 'create';   // Used to keep track of popup type for click management and better UX
     });
+    */
     // Upon opening up a popup on a node
     let nameView = null;   // Set this globally so we can separate location and nodes inside popupopen without problem or extra code
     let nameInput = null;
@@ -844,7 +836,7 @@
         const connectionsText = node.connections.length ? node.connections.join(",") : "";
         return `
             <div class="popup-form" data-node-id="${node.id}">
-                <label>Node ID:</label> ${node.id}<br>
+                <strong>Node ${node.id}</strong><br>
 
                 <label>Lighting:</label>
                 <span class="ind-view ind-lighting">${node.lighting ?? "(none)"}</span>
@@ -865,20 +857,6 @@
                 <span class="ind-view ind-gradient">${node.gradient ?? "(none)"}</span>
                 <input class="ind-edit ind-gradient-input" type="number" step="0.01" min="0" max="1" value="${node.gradient ?? 0}" style="display:none; width:90px;" />
                 <br><br>
-
-                <label>Connections:</label><br>
-                <span class="conn-view">${connectionsText || "(none)"}</span>
-                <input class="conn-edit" type="text" value="${connectionsText}"
-                    pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$"
-                    style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
-
-                <div style="margin-top:6px; display:flex; gap:1px;">
-                    <button class="btn-edit">Edit</button>
-                    <button class="btn-delete">Delete</button>
-                    <button class="btn-save" style="display:none;">Save</button>
-                    <button class="btn-cancel" style="display:none;">Cancel</button>
-                </div>
-
             </div>
         `;
     }
@@ -895,46 +873,34 @@
         return `
             <div class="popup-form" data-node-id="${location.nodeId}">
                 <strong class="name-view">${nameText || "(unnamed)"}</strong>
-                <input class="name-edit" type="text" value="${nameText}" style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
+                
                 <br>
                 <label>Type:</label>
                 <span class="type-view">${location.type || "(none)"}</span>
-                <input class="type-edit" type="text" value="${location.type || ""}" style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
+
                 <br>
-                <label>Node ID:</label> ${location.nodeId}<br>
-                <label>Location ID:</label> ${location.id}<br>
+                
+                
 
                 <label>Lighting:</label>
                 <span class="ind-view ind-lighting">${node.lighting ?? "(none)"}</span>
-                <input class="ind-edit ind-lighting-input" type="number" step="0.01" value="${node.lighting ?? 0}" style="display:none; width:90px;" />
+                
                 <br>
 
                 <label>Crime:</label>
                 <span class="ind-view ind-crime">${node.crime ?? "(none)"}</span>
-                <input class="ind-edit ind-crime-input" type="number" step="0.01" value="${node.crime ?? 0}" style="display:none; width:90px;" />
+                
                 <br>
 
                 <label>Greenery:</label>
                 <span class="ind-view ind-greenery">${node.greenery ?? "(none)"}</span>
-                <input class="ind-edit ind-greenery-input" type="number" step="0.01" value="${node.greenery ?? 0}" style="display:none; width:90px;" />
+
                 <br>
 
                 <label>Elevation:</label>
                 <span class="ind-view ind-gradient">${node.gradient ?? "(none)"}</span>
-                <input class="ind-edit ind-gradient-input" type="number" step="0.01" min="0" max="1" value="${node.gradient ?? 0}" style="display:none; width:90px;" />
-                <br><br>
 
-                <label>Connections:</label><br>
-                <span class="conn-view">${connectionsText || "(none)"}</span>
-                <input class="conn-edit" type="text" value="${connectionsText}"
-                    pattern="^(0|[1-9][0-9]*)(,(0|[1-9][0-9]*))*$"
-                    style="display:none; width:160px; max-width:100%; box-sizing:border-box;" />
-                <div style="margin-top:6px; display:flex; gap:1px;">
-                    <button class="btn-edit">Edit</button>
-                    <button class="btn-delete">Delete</button>
-                    <button class="btn-save" style="display:none;">Save</button>
-                    <button class="btn-cancel" style="display:none;">Cancel</button>
-                </div>
+                <br>
             </div>
         `;
     }
@@ -1000,6 +966,7 @@
         const startNode = document.getElementById('routeStart').value;
         const endNode = document.getElementById('routeEnd').value;
         const preferences = [".slider-distance",".slider-lighting",".slider-crime",".slider-greenery",".slider-gradient"].map(s => document.querySelector(s).value);
+
         // Clear previous route
         clearRoute();
         
@@ -1032,6 +999,7 @@
         const startNodeId = [...locationsMap.values()].find(l => l.name === startNode)?.nodeId ?? null;
         const endNodeId = [...locationsMap.values()].find(l => l.name === endNode)?.nodeId ?? null;
         const preferences = [".slider-distance",".slider-lighting",".slider-crime",".slider-greenery",".slider-gradient"].map(s => document.querySelector(s).value);
+
         // Clear previous route
         clearRoute();
         
@@ -1111,13 +1079,13 @@
         let info = `<h4>Route from Node ${routeData.start} to ${routeData.end}:</h4>`;
         info += `<p><strong>Red Path:</strong> ${pathOne.join(' → ')}</p>`;
         info += `<p><strong>Total Distance:</strong> ${costOne.toFixed(2)}</p>`;
-        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreOne[0].toFixed(2)}   Crime: ${scoreOne[1].toFixed(2)}   Greenery: ${scoreOne[2].toFixed(2)}   Gradient: ${scoreOne[3].toFixed(2)}</p>`;
+        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreOne[0].toFixed(2)}Crime: ${scoreOne[1].toFixed(2)}Greenery: ${scoreOne[2].toFixed(2)}Gradient: ${scoreOne[3].toFixed(2)}</p>`;
         info += `<p><strong>Green Path:</strong> ${pathTwo.join(' → ')}</p>`;
         info += `<p><strong>Total Distance:</strong> ${costTwo.toFixed(2)}</p>`;
-        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreTwo[0].toFixed(2)}   Crime: ${scoreTwo[1].toFixed(2)}   Greenery: ${scoreTwo[2].toFixed(2)}   Gradient: ${scoreTwo[3].toFixed(2)}</p>`;
+        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreTwo[0].toFixed(2)}Crime: ${scoreTwo[1].toFixed(2)}Greenery: ${scoreTwo[2].toFixed(2)}Gradient: ${scoreTwo[3].toFixed(2)}</p>`;
         info += `<p><strong>Blue Path:</strong> ${pathThree.join(' → ')}</p>`;
         info += `<p><strong>Total Distance:</strong> ${costThree.toFixed(2)}</p>`;
-        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreThree[0].toFixed(2)}   Crime: ${scoreThree[1].toFixed(2)}   Greenery: ${scoreThree[2].toFixed(2)}   Gradient: ${scoreThree[3].toFixed(2)}</p>`;
+        info += `<p><strong>Score Breakdown: </strong>Lighting: ${scoreThree[0].toFixed(2)}Crime: ${scoreThree[1].toFixed(2)}Greenery: ${scoreThree[2].toFixed(2)}Gradient: ${scoreThree[3].toFixed(2)}</p>`;
 
         // document.getElementById("routeInfo").style.visibility = "hidden";
         document.getElementById("routeInfo").style.display = "none";

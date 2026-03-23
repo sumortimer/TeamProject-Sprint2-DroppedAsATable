@@ -31,6 +31,20 @@ footer p {
     font-weight: bold;
 }
 
+#analyticsBtn {
+    position: relative;
+    z-index: 10000000000;
+    left: 10px;
+    top: 60px;
+    padding: 15px;
+    border-color: black;
+    border-radius: 15px;
+    background-color: antiquewhite;
+    border-width: 2px;
+    border-style: solid;
+    font-weight: bold;
+}
+
 #missionBtn:hover {
     border-color: grey;
 }
@@ -93,7 +107,7 @@ footer p {
     text-align: center;
     z-index: 100000000000000000000000000;
     width: 300px;
-    height: 400px;
+    height: auto;
     position: relative;
     left: 10px;
     top: 225px;
@@ -191,6 +205,30 @@ footer p {
     border-color: black;
 }
 
+#map {
+    height: 100%;
+    width: 100%;
+}
+.popup-form input {
+    width: 140px;
+    margin-bottom: 5px;
+}
+
+.popup-form button {
+    margin-right: 5px;
+}
+#map-wrapper {
+    width: 100%;
+    height: 60%;
+
+}
+
+@media(max-width: 700px){
+    #map-wrapper{
+        width: 100%;
+        height: 80%;
+    }
+}
 #devBtn {
     z-index: 1000000;
     position: relative;

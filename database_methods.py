@@ -436,10 +436,15 @@ class DatabaseMethods:
         except Exception as e:
             print("Error: ", e)
     def updateLocation(self, locationID, nodeID, name, locationType):
-        cursor = self.connection.cursor()
-        cursor.execute("UPDATE locations SET nodeID=?, name=?, locationType=? WHERE locationID=?", (nodeID, name, locationType, locationID))
-        self.connection.commit()
-        cursor.close()
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute("UPDATE locations SET nodeID=?, name=?, locationType=? WHERE locationID=?", (nodeID, name, locationType, locationID))
+            self.connection.commit()
+            cursor.close()
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
+        except Exception as e:
+            print("Error: ", e)
     # Used to update a placeholder node
     def updateNode(self, nodeID, coordinatesX, coordinatesY, lighting, crime, greenery, gradient):
         cursor = self.connection.cursor()
@@ -541,6 +546,19 @@ class DatabaseMethods:
         try:
             cursor=self.connection.cursor()
             cursor.execute("UPDATE users SET userType = ? WHERE userName=?",(userType, username))
+            cursor.close()
+            return(True)
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
+            return(False)
+        except Exception as e:
+            print("Error: ", e)
+            return(False)
+    
+    def changePassword(self, username, email, password):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("UPDATE users SET password = ? WHERE userName=? AND email=?",(password, username, email))
             cursor.close()
             return(True)
         except sqlite3.ProgrammingError:
