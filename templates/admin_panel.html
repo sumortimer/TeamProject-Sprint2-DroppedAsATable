@@ -1,0 +1,43 @@
+
+<!-- Admin panel -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dev_panel.css') }}"/>
+    <title>Admin Panel</title>
+</head>
+<body>
+    <div id="topbar">
+        <a id="backbutton" href="javascript: history.back()">< Back</a>
+    </div>
+        
+
+    <table id="auditlog">
+        <tr>
+            <th>changeID</th>
+            <th>userID</th>
+            <th>missionID</th>
+            <th>time</th>
+        </tr>
+
+        {% for audit in audit_log %}
+
+        <tr>
+            <td>{{audit["changeID"]}}</td>
+            <td>{{audit["userID"]}}</td>
+            <td>{{audit["missionID"]}}</td>
+            <td>{{audit["time"]}}</td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+        
+
+    </div>
+</body>
+</html>
