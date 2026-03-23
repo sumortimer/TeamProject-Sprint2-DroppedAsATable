@@ -130,7 +130,7 @@ footer p {
     height: auto;
     position: relative;
     left: 10px;
-    top: -50px !important;
+    top: 40px !important;
 }
 
 #locationRoute * {
