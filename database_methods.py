@@ -549,6 +549,19 @@ class DatabaseMethods:
         except Exception as e:
             print("Error: ", e)
             return(False)
+    
+    def changePassword(self, username, email, password):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("UPDATE users SET password = ? WHERE userName=? AND email=?",(password, username, email))
+            cursor.close()
+            return(True)
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
+            return(False)
+        except Exception as e:
+            print("Error: ", e)
+            return(False)
 
     #################################
 
