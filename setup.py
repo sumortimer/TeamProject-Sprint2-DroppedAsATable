@@ -2,8 +2,10 @@ from server import make_dev_user
 import random
 import string
 import logging
+import secrets
 logging.basicConfig(filename="devaccount.log", level=logging.INFO)
 
+#Generate developer account
 length = 8
 random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 uname = random_string
@@ -15,3 +17,6 @@ psswd = part1+part2+part3+part4
 make_dev_user(uname, psswd)
 logging.info("Username:"+uname)
 logging.info("Password:"+psswd)
+
+#Generate environment variables
+with open("")
