@@ -757,7 +757,7 @@ def dev_panel():
         action = request.args.get("action", type=str)
 
         user_to_change = request.args.get('username', type=str)
-        password_to_check = request.args.get('password', type=int)
+        password_to_check = request.args.get('password', type=str)
 
         if not password_to_check or not user_to_change:
             return render_template("dev_panel.html", audit_log=audit_log, error="Missing fields required")
