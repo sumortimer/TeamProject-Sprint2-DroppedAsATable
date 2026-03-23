@@ -74,7 +74,7 @@
 
     <script> 
         function logout(){
-            window.location.href = "{{url_for('missions_1')}}";
+            window.location.href = "{{url_for('login')}}";
         }
     </script>
 
@@ -268,11 +268,13 @@
         L.DomEvent.disableScrollPropagation(el);
     });
     // Logic for toggling nodes on and off
-    toggleNodesButton.onclick = () => {
-        toggleNodesVisibility();
-        toggleBtn.textContent = nodesVisible ? "Hide Nodes" : "Show Nodes";
-        toggleBtn.style.backgroundColor = nodesVisible ? "red" : "green";
-    };
+    if (toggleNodesButton) {
+        toggleNodesButton.onclick = () => {
+            toggleNodesVisibility();
+            toggleNodesButton.textContent = nodesVisible ? "Hide Nodes" : "Show Nodes";
+            toggleNodesButton.style.backgroundColor = nodesVisible ? "red" : "green";
+        };
+    }
 
 
     /////////////////// KEY VARIABLES ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
