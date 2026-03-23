@@ -29,6 +29,12 @@ def index():
         start = request.form["start"]
         end = request.form["end"]
         return "Route saved to database!"
+
+    if isUserAuthenticated(devNeeded=True):
+        return render_template("indexDev.html", termsNeeded="False")
+    elif isUserAuthenticated(adminNeeded=True):
+        return render_template("indexAdmin.html", termsNeeded="False")
+    
     # If the user hasn't accepted the disclaimers this session then tell the index.html to pop-up the disclaimers.
     if not session.get("acceptedTerms"):
         session["acceptedTerms"] = True
