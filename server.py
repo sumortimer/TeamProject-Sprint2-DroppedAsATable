@@ -757,18 +757,18 @@ def dev_panel():
     audit_log = getAuditLog()
 
     if request.method == "GET":
-
+        
         return render_template("dev_panel.html", audit_log=audit_log)
     
     # Everything below this is a POST method.
     myDatabase = DatabaseMethods()
     try:
-        if "action" not in request.args:
+        if "action" not in request.form:
             return render_template("dev_panel.html", audit_log=audit_log, error="Missing fields required")
-        action = request.args.get("action", type=str)
+        action = request.form.get("action", type=str)
 
-        user_to_change = request.args.get('username', type=str)
-        password_to_check = request.args.get('password', type=str)
+        user_to_change = request.form.get('username', type=str)
+        password_to_check = request.form.get('password', type=str)
 
         if not password_to_check or not user_to_change:
             return render_template("dev_panel.html", audit_log=audit_log, error="Missing fields required")
