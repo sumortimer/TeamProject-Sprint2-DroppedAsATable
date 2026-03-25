@@ -1,6 +1,7 @@
 from server import reset_user_password, make_dev_user, password_check
 from database_methods import DatabaseMethods
 import os
+import shutil
 print("Select a function:")
 print("1 - Reset a password")
 print("2 - Delete a user")
@@ -69,6 +70,7 @@ elif selection == 4:
 
     if valid:
         id = db.addMission(question, indicator, start, end, answer, tier)
+        shutil.copy(fpath, "static/mission_"+str(id)+".png")
     else:
         print("Please make sure that your mission has the correct information.")
     
