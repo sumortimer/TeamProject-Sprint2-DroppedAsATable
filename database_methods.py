@@ -368,7 +368,9 @@ class DatabaseMethods:
         try:
             cursor=self.connection.cursor()
             cursor.execute("INSERT INTO missions (missionID,question,focusIndicator,startNode,endNode, answer, tier) VALUES(?,?,?,?,?,?,?)",(None, question,focusIndicator, startNode,endNode, answer,tier))
+            id = cursor.lastrowid
             cursor.close()
+            return id
         except sqlite3.ProgrammingError:
             print("Database connection has already been closed")
         except Exception as e:
@@ -485,6 +487,15 @@ class DatabaseMethods:
             self.connection.commit()
             cursor.close()
         except(sqlite3.ProgrammingError):
+            print("Database connection has already been closed")
+    def getUserIDFromName(self, username):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT userID FROM users WHERE userName =?",(username,))
+            id = cursor.fetchone()
+            cursor.close()
+            return id
+        except sqlite3.ProgrammingError:
             print("Database connection has already been closed")
     def deleteUser(self, userID): #removes a user from the database, ensures all dependent rows are deleted first
         try:
