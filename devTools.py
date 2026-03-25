@@ -70,7 +70,7 @@ elif selection == 4:
 
     if valid:
         id = db.addMission(question, indicator, start, end, answer, tier)
-        shutil.copy(fpath, "static/mission_"+str(id)+".png")
+        shutil.copy(fpath, "static/mission_"+str(id)+".png") #copy mission image into static folder
     else:
         print("Please make sure that your mission has the correct information.")
     
