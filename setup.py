@@ -16,10 +16,32 @@ length = 8
 random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 uname = random_string
 part1 = ''.join(random.choices(string.ascii_uppercase, k=1))
-part2= ''.join(random.choices(string.ascii_letters + string.digits + '@:;!?', k=length*2))
+part2= ''.join(random.choices(string.ascii_letters + string.digits + '_-!?', k=length*2))
 part3= ''.join(random.choices(string.digits))
-part4= ''.join(random.choices(['@',':',';','!','?']))
+part4= ''.join(random.choices(['_','-','!','?']))
 psswd = part1+part2+part3+part4
-make_dev_user(uname, psswd)
-logging.info("Username="+uname)
-logging.info("Password="+psswd)
+make_dev_user(username=uname, email=uname+"@gmail.com", password=psswd, userType="M")
+logging.info("DevUsername="+uname)
+logging.info("DevPassword="+psswd)
+#Generate admin account
+random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+uname = random_string
+part1 = ''.join(random.choices(string.ascii_uppercase, k=1))
+part2= ''.join(random.choices(string.ascii_letters + string.digits + '_-!?', k=length*2))
+part3= ''.join(random.choices(string.digits))
+part4= ''.join(random.choices(['_','-','!','?']))
+psswd = part1+part2+part3+part4
+make_dev_user(username=uname, email=uname+"@gmail.com", password=psswd, userType="A")
+logging.info("AdminUsername="+uname)
+logging.info("AdminPassword="+psswd)
+#generate user account
+random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+uname = random_string
+part1 = ''.join(random.choices(string.ascii_uppercase, k=1))
+part2= ''.join(random.choices(string.ascii_letters + string.digits + '_-!?', k=length*2))
+part3= ''.join(random.choices(string.digits))
+part4= ''.join(random.choices(['_','-','!','?']))
+psswd = part1+part2+part3+part4
+make_dev_user(username=uname, email=uname+"@gmail.com", password=psswd, userType="T")
+logging.info("UserUsername="+uname)
+logging.info("UserPassword="+psswd)

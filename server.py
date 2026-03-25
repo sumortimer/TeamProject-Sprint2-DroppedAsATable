@@ -858,13 +858,13 @@ def ensure_node_exists(database, node_id):
     if not database.nodeExists(node_id):
         database.addPlaceholderNode(node_id)
 
-def make_dev_user(username="dev_acc", email="dev@project6.com", password="g00dPass44!"):
+def make_dev_user(username="dev_acc", email="dev@project6.com", password="g00dPass44!", userType="M"):
     myDatabase = DatabaseMethods()
     try:
         if (myDatabase.areUserDetailsUsed(username, email)):
             print("Dev account creation unsuccessful, account with this username or email already exists.")
             return False
-        if (not myDatabase.addUser(username, email, generate_password_hash(password + PEPPER_PASSWORD), 'A')):
+        if (not myDatabase.addUser(username, email, generate_password_hash(password + PEPPER_PASSWORD), userType)):
             print("Dev account creation unsuccessful, due to database error.")
             return False
         print("Dev account creation successful.")
