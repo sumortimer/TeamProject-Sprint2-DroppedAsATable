@@ -3,7 +3,7 @@ import random
 import string
 import logging
 import secrets
-logging.basicConfig(filename="devaccount.log", level=logging.INFO)
+logging.basicConfig(filename="account.log", level=logging.INFO)
 
 #Generate environment variables
 with open(".env", "w") as f:
