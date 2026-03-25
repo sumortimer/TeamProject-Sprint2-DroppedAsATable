@@ -7,7 +7,7 @@ import datetime
 
 class DatabaseMethods:
     def __init__(self):
-        self.connection=sqlite3.connect("task6.db") #when the object is created, it either connects to, (or creates if not detected) task6.db
+        self.connection=sqlite3.connect("test_database.db") #when the object is created, it either connects to, (or creates if not detected) task6.db
         self.connection.execute("PRAGMA foreign_keys = ON;") #enables foreign key constraints
         self.setup()
     # Destructor that automatically commits and closes the databases once the DatabaseMethods object goes out of scope.
@@ -200,6 +200,19 @@ class DatabaseMethods:
             userDetails = cursor.fetchall()
             cursor.close()
             return(userDetails)
+        except sqlite3.ProgrammingError:
+            print("Database connection has already been closed")
+            return []
+        except Exception as e:
+            print("Error: ", e)
+            return []
+    def getAllUsers(self):
+        try:
+            cursor=self.connection.cursor()
+            cursor.execute("SELECT userID FROM users")
+            users = cursor.fetchall()
+            cursor.close()
+            return users
         except sqlite3.ProgrammingError:
             print("Database connection has already been closed")
             return []

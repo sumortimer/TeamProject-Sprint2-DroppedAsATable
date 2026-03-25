@@ -9,6 +9,8 @@ class TestDatabaseMethods(unittest.TestCase):
         db.addUser("abc","abc@email.com","verysecurepassword123","T")
         users=db.getAllUsers()
         self.assertEqual(users,[(1,),(2,),(3,)])
+        db.closeConnection()
+        resetDatabase()
 
     def testUserType(self):
         db = DatabaseMethods()
@@ -17,6 +19,15 @@ class TestDatabaseMethods(unittest.TestCase):
         userType = db.getUserTypeViaUsername("test2")
         self.assertEqual(userType, [("A",)])
         db.closeConnection()
+        resetDatabase()
+
+    def testChangeUserType(self):
+        db = DatabaseMethods()
+        db.changeUserType("test2", "T")
+        userType = db.getUserTypeViaUsername("test")
+        self.assertEqual(userType, [("T",)])
+        db.closeConnection()
+        resetDatabase()
 
     def testUserWeights(self):
         db = DatabaseMethods()
@@ -44,7 +55,23 @@ class TestDatabaseMethods(unittest.TestCase):
         db.closeConnection()
         resetDatabase()
 
+    def testAreUserDetailsUsed(self):
+        db = DatabaseMethods()
+        used = db.areUserDetailsUsed("test", "test@email.com")
+        self.assertTrue(used)
+        used = db.areUserDetailsUsed("Unique", "newperson@email.com")
+        self.assertFalse(used)
+        db.closeConnection()
+        resetDatabase()
+
     # MAP TESTS
+    def testGetIndicatorData(self):
+        db = DatabaseMethods()
+        nodes = db.getIndicatorData("lighting")
+        self.assertEqual(nodes, [(1,0.1),(2,0.2),(3,0.3), (4,0.4)])
+        db.closeConnection()
+        resetDatabase()
+
     def testGetNodes(self):
         db = DatabaseMethods()
         nodes = db.getAllNodes()
@@ -52,6 +79,7 @@ class TestDatabaseMethods(unittest.TestCase):
         self.assertTrue(db.nodeExists(1))
         self.assertFalse(db.nodeExists(17))
         db.closeConnection()
+        resetDatabase()
         
 
     def testUpdateNode(self):
@@ -67,6 +95,7 @@ class TestDatabaseMethods(unittest.TestCase):
         edges = db.getAllEdges()
         self.assertEqual([(1, 1, 2, 20), (2, 1, 3, 40), (3, 2, 3, 50)], edges)
         db.closeConnection()
+        resetDatabase()
 
     def testUpdateEdgeLength(self):
         db = DatabaseMethods()
@@ -81,6 +110,7 @@ class TestDatabaseMethods(unittest.TestCase):
         oneEdges = db.getSurroundingLength(1)
         self.assertEqual(oneEdges, [(2, 20), (3, 40)])
         db.closeConnection()
+        resetDatabase()
 
     def testDeleteNode(self):
         db = DatabaseMethods()
@@ -96,7 +126,20 @@ class TestDatabaseMethods(unittest.TestCase):
         db = DatabaseMethods()
         locs = db.getLocationList()
         self.assertEqual(locs, [(1, "University of Exeter"), (2, "St. David's")])
+        node = db.getNodeFromLocation("University of Exeter")
+        self.assertEqual(node, 1)
         db.closeConnection()
+        resetDatabase()
+
+    def testUpdateLocation(self):
+        db = DatabaseMethods()
+        db.updateLocation(1, 3, "University of NotExeter", "University")
+        locs = db.getLocationList()
+        node = db.getNodeFromLocation("University of NotExeter")
+        self.assertEqual(node, 3)
+        self.assertEqual(locs, [(3, "University of NotExeter"),(2, "St. David's")])
+        db.closeConnection()
+        resetDatabase()
 
     # MISSION TESTS
 
@@ -106,6 +149,8 @@ class TestDatabaseMethods(unittest.TestCase):
         self.assertEqual(selectData, [(1, "Choose the most well lit route")])
         data = db.getMissionData(1)
         self.assertEqual(data, [("lighting", 1, 4, "Red")])
+        tier = db.getMissionTier(1)
+        self.assertEqual(tier, [(1, "Choose the most well lit route", "Red")])
         db.closeConnection()
         resetDatabase()
 
@@ -118,6 +163,14 @@ class TestDatabaseMethods(unittest.TestCase):
         self.assertEqual(data, [("greenery", 2, 3,"Green")])
         log = db.getLog()
         self.assertEqual((log[0][0], log[0][1], log[0][2]), (1,1,1))
+        db.closeConnection()
+        resetDatabase()
+
+    def testEditIndicators(self):
+        db = DatabaseMethods()
+        db.editIndicators(1, 0.2, 0.2, 0.2, 0.2)
+        nodes = db.getIndicatorData("lighting")
+        self.assertEqual(nodes, [(1,0.2),(2,0.2),(3,0.3), (4,0.4)])
         db.closeConnection()
         resetDatabase()
         
@@ -141,8 +194,8 @@ def resetDatabase():
     db.addUser("test", "test@email.com", "password", "T")
     db.addUser("test2", "test2@email.com", "password2", "A")
     #location
-    db.addLocation(1,"University of Exeter", "University")
-    db.addLocation(2,"St. David's", "Station")
+    db.addLocation(1,1,"University of Exeter", "University")
+    db.addLocation(2,2,"St. David's", "Station")
     #missions
     db.addMission("Choose the most well lit route", "lighting", 1, 4,"Red",1)
     db.closeConnection()
