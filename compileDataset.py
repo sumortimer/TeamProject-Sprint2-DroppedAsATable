@@ -4,10 +4,8 @@ import pandas as pd
 import numpy as np
 import random
 import sqlite3
-import geopandas as gpd
-from shapely.geometry import Point
 from scipy.spatial import cKDTree
-from google.colab import files
+import os
 
 # Set seed for reproducibility
 random.seed(42)
@@ -166,15 +164,8 @@ nodes_df = pd.DataFrame(nodes_data)
 edges_df = pd.DataFrame(edges_data)
 
 # 8. SAVE TO DATABASE
-
 db_file = "task6.db"
 conn = sqlite3.connect(db_file)
 nodes_df.to_sql('nodes', conn, if_exists='replace', index=False)
 edges_df.to_sql('edges', conn, if_exists='replace', index=False)
 conn.close()
-
-# Download files
-print("\nDownloading files to your computer...")
-files.download(db_file)
-print("Complete!")
-
