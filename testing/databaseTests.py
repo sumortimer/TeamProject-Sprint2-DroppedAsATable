@@ -65,13 +65,6 @@ class TestDatabaseMethods(unittest.TestCase):
         resetDatabase()
 
     # MAP TESTS
-    def testGetIndicatorData(self):
-        db = DatabaseMethods()
-        nodes = db.getIndicatorData("lighting")
-        self.assertEqual(nodes, [(1,0.1),(2,0.2),(3,0.3), (4,0.4)])
-        db.closeConnection()
-        resetDatabase()
-
     def testGetNodes(self):
         db = DatabaseMethods()
         nodes = db.getAllNodes()
@@ -81,6 +74,12 @@ class TestDatabaseMethods(unittest.TestCase):
         db.closeConnection()
         resetDatabase()
         
+    def testGetIndicatorData(self):
+        db = DatabaseMethods()
+        nodes = db.getIndicatorData("lighting")
+        self.assertEqual(nodes, [(1,0.1),(2,0.2),(3,0.3), (4,0.4)])
+        db.closeConnection()
+        resetDatabase()
 
     def testUpdateNode(self):
         db = DatabaseMethods()
