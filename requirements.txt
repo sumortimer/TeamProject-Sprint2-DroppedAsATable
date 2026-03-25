@@ -17,8 +17,6 @@ scipy==1.17.1
 osmnx==1.9.4
 networkx==3.4.2
 pandas==2.2.3
-geopandas==1.0.1
-shapely==2.0.7
 
 # Database support
 sqlite3  # Built-in with Python, no version needed

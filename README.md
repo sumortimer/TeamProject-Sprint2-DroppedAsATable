@@ -31,8 +31,11 @@ The project uses the following Python packages:
 | MarkupSafe     | 3.0.3  |
 | numpy          | 2.4.2  |
 | python-dotenv  | 1.2.2  |
-| scipy          | 1.17.1  |
+| scipy          | 1.17.1 |
 | Werkzeug       | 3.1.6  |
+| osmnx	         | 1.9.4  |
+| networkx	     | 3.4.2  |
+| pandas	     | 2.2.3  |
 
 They can be installed with `pip install -r requirements.txt`
 ## Testing Instructions 
