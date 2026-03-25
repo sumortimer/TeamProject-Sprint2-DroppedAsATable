@@ -45,4 +45,4 @@ Unit tests can be run by navigating to the testing folder and running the databa
 
 This project uses the GNU General Public Licence. This way, uses can expand the application to add their own personalised features. Please refer to the license section for a more detailed justification. 
 
-Map tiles and data used in this project are © OpenStreetMap contributors, available under the Open Database License. The Map data has been displayed by Leaflet.js, an open-source Javascript API available under the BSD-2 Clause License.
+Map tiles and data used in this analysis are © OpenStreetMap contributors, available under the Open Database License. The map data has been displayed by Leaflet.js, an open‑source JavaScript API available under the BSD‑2 Clause License. Satellite imagery is © Esri and sourced from the ArcGIS World Imagery service.
