@@ -14,7 +14,8 @@ This README file contains some important information regarding our team project,
 | 740067401 | Joseph Tarrant   | [jjt217@exeter.ac.uk](mailto:jjt217@exeter.ac.uk) | Technical Lead     |
 
 ## Requirements
-
+Python 3.10 (Recommended)
+Other recent versions of Python 3 should also work
 ## Dependencies
 
 The project uses the following Python packages:
@@ -33,8 +34,10 @@ The project uses the following Python packages:
 | scipy          | 1.17.1  |
 | Werkzeug       | 3.1.6  |
 
+They can be installed with `pip install -r requirements.txt`
 ## Testing Instructions 
-
+Manual user based testing is detailed in the testing_evidence.pdf document.
+Unit tests can be run by navigating to the testing folder and running the databaseTests.py file.
 ## Licensing
 
 This project uses the GNU General Public Licence. This way, uses can expand the application to add their own personalised features. Please refer to the license section for a more detailed justification. 
