@@ -1,5 +1,6 @@
 To run the unit tests:
-`python databaseTests.py`
+1. Make sure your terminal or environment is running in this directory
+2. `python databaseTests.py`
 
 To run user based tests:
 1. Setup the project as detailed in the deployment guide
