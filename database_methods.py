@@ -604,5 +604,5 @@ if __name__ == "__main__":
     # db.addMission("What's the best route for someone that needs to stop by the shops at night?", "lighting", 2, 32, "Red", 3)
     # db.addMission("Choose the safest route for someone running alone:", "crime", 32, 63, "Green", 3) #gradient too
     # db.addMission("Choose the best route for someone that like running water:", "greenery", 21, 2, "Red", 3)
-    print(db.getMissionTier(1))
+    # db.deleteAllUsers()
     db.closeConnection()
